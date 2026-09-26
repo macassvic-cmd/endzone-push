@@ -1,0 +1,5 @@
+nflreadpy>=0.1.5
+polars
+pyarrow
+pandas
+numpy

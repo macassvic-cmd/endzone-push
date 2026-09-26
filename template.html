@@ -1,0 +1,211 @@
+<title>Endzone Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F1; --panel:#FFFFFF; --ink:#14201A; --muted:#5C6B63; --line:#DCE2DD;
+  --accent:#1F6B45; --accent-soft:#E2EFE7; --hot:#B8641A; --hot-soft:#F7E9DB; --good:#1F7A4A; --bad:#B3392F;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1411; --panel:#151D19; --ink:#E4ECE7; --muted:#93A39A; --line:#26312B;
+  --accent:#58C28C; --accent-soft:#193326; --hot:#E3954D; --hot-soft:#3A2715; --good:#58C28C; --bad:#E7766B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1411; --panel:#151D19; --ink:#E4ECE7; --muted:#93A39A; --line:#26312B;
+  --accent:#58C28C; --accent-soft:#193326; --hot:#E3954D; --hot-soft:#3A2715; --good:#58C28C; --bad:#E7766B; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+h1{font-family:var(--display);font-weight:700;font-size:44px;line-height:.95;margin:0;letter-spacing:.01em;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.games{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.g{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;cursor:pointer;font-family:var(--mono);font-size:12px;min-width:118px;text-align:left;color:var(--ink)}
+.g b{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em}
+.g.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.g .td{color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:4px}
+nav button{font-family:var(--display);font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:none;border:0;border-bottom:3px solid transparent;padding:6px 10px;color:var(--muted);cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar input,.bar select{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px 8px}
+.note{color:var(--muted);font-size:13px;max-width:78ch;margin:0}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-family:var(--display);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+th:first-child,td:first-child{text-align:left}
+th.l,td.l{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+td.n{font-family:var(--body);font-size:14px;font-weight:500}
+tr:last-child td{border-bottom:0}
+.pos{display:inline-block;font-family:var(--mono);font-size:10.5px;padding:1px 5px;border-radius:3px;background:var(--accent-soft);color:var(--accent);margin-left:6px}
+.q{background:var(--hot-soft);color:var(--hot)}
+.bar-cell{position:relative}
+.meter{display:inline-block;height:6px;border-radius:3px;background:var(--accent);vertical-align:middle;margin-right:6px;opacity:.8}
+.odds{width:70px;font:inherit;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 5px;text-align:right}
+.edge-pos{color:var(--good);font-weight:600}.edge-neg{color:var(--bad)}
+.lift{font-weight:600}.lift.up{color:var(--hot)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.card h3{font-family:var(--display);font-size:20px;text-transform:uppercase;letter-spacing:.03em;margin:0}
+.card .tag{font-family:var(--mono);font-size:11px;color:var(--hot);text-transform:uppercase;letter-spacing:.06em}
+.card p{margin:0;color:var(--muted);font-size:13px}
+.recv{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:10px}.rv{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}.rv select{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 4px}
+h2.sec{font-family:var(--display);font-size:20px;text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px}
+.ladder{display:flex;gap:4px;align-items:flex-end;height:38px}
+.ladder i{display:block;width:16px;background:var(--accent);border-radius:2px 2px 0 0}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Endzone <span>Lab</span></h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div class="games" id="games"></div>
+  <nav id="tabs"></nav>
+  <div class="bar" id="bar">
+    <input id="q" placeholder="Search player or team" aria-label="Search">
+    <select id="posf" aria-label="Position"><option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select>
+  </div>
+  <p class="note" id="note"></p>
+  <div id="view"></div>
+</div>
+
+<script>
+const EMBED = __DATA__;
+let D = EMBED;
+const pct = x => (x*100).toFixed(1)+'%';
+const am = n => n>0?'+'+n:''+n;
+const fair = p => { p=Math.min(Math.max(p,1e-4),1-1e-4); return Math.round(p>=.5? -100*p/(1-p) : 100*(1-p)/p); };
+const implied = o => o>0? 100/(o+100) : -o/(-o+100);
+let st = {tab:'any', game:'', sort:null, dir:-1};
+let book = {};
+try { book = JSON.parse(localStorage.getItem('ezl_book')||'{}'); } catch(e){}
+try { const t=localStorage.getItem('ezl_tab'); if(t) st.tab=t; } catch(e){}
+if (location.hash) st.tab = location.hash.slice(1);
+
+function setMeta(){document.getElementById('meta').innerHTML = `${D.season} · WEEK ${D.week}<br>${D.games.length} games · updated ${D.generated}<br>${D.odds_live?`<span style="color:var(--good)">live odds · ${D.n_events} events</span>`:'no live odds feed'}`;}
+st.recv = {};
+const recvMult = (r) => { const g=D.games.find(x=>x.game_id===r.game_id); const v=st.recv[r.game_id]; if(!g||!v) return r.p_first;
+  const mine = (v==='home') === (r.team===g.home); return mine ? r.first_if_recv : r.first_if_kick; };
+
+const TABS = {
+ any:{label:'Anytime TD', note:'Probability of a rushing or receiving TD. Fair = no-vig American price. Type a book price to see your edge (saved in this browser).'},
+ first:{label:'First TD', note:'First TD of the game. Set who receives the opening kickoff once the coin toss is known: the receiving team scores the first TD about 59% of the time at even odds (2023–25 data). Books are often slow to move after the toss.'},
+ qb:{label:'QB Ladders', note:'Passing TD ladders from the game sim. Rush TD is the QB scoring himself.'},
+ stack:{label:'QB + Pass Catcher', note:'Joint probability that the catcher scores AND the QB throws N+ TDs. Lift > 1 means books pricing the legs independently are underpricing the parlay.'},
+ bring:{label:'Bring-backs', note:'Pass catchers on opposite sides of the same game both scoring. Lift shows shared game-script correlation.'},
+ edge:{label:'Edge Board', note:''}
+};
+const tabs=document.getElementById('tabs');
+Object.entries(TABS).forEach(([k,v])=>{const b=document.createElement('button');b.textContent=v.label;b.dataset.k=k;b.onclick=()=>{st.tab=k;st.sort=null;try{localStorage.setItem('ezl_tab',k)}catch(e){};render()};tabs.appendChild(b)});
+
+const gEl=document.getElementById('games');
+function gameBtns(){
+  gEl.innerHTML='';
+  const all=document.createElement('button');all.className='g'+(st.game===''?' on':'');all.innerHTML='<b>ALL GAMES</b><br><span class="td">full slate</span>';all.onclick=()=>{st.game='';render()};gEl.appendChild(all);
+  D.games.forEach(g=>{const b=document.createElement('button');b.className='g'+(st.game===g.game_id?' on':'');
+    const wx=g.wx?`${Math.round(g.wx.wind)} mph${g.wx.precip>=50?' · rain':''}`:(g.indoor?'indoor':'no forecast');
+    b.innerHTML=`<b>${g.away} @ ${g.home}</b><br>${g.away_imp.toFixed(1)}–${g.home_imp.toFixed(1)}<br><span class="td">${g.exp_td.toFixed(2)} exp TD · ${wx}</span>`;
+    b.title=`Lines: ${g.lines||'nflverse'}`;
+    b.onclick=()=>{st.game=g.game_id;render()};gEl.appendChild(b)});
+}
+const gameOf = t => (D.games.find(g=>g.home===t||g.away===t)||{}).game_id;
+
+function table(cols, rows, defSort){
+  const s = st.sort || defSort;
+  rows = rows.slice().sort((a,b)=>{const x=a[s],y=b[s];return (typeof x==='string'? x.localeCompare(y): (x-y))*st.dir});
+  let h='<div class="tbl"><table><thead><tr>'+cols.map(c=>`<th class="${c.l?'l':''}" data-k="${c.k}" scope="col">${c.h}${(s===c.k)?(st.dir<0?' ▾':' ▴'):''}</th>`).join('')+'</tr></thead><tbody>';
+  h+=rows.map(r=>'<tr>'+cols.map(c=>`<td class="${c.cls||''} ${c.l?'l':''}">${c.f?c.f(r):r[c.k]}</td>`).join('')+'</tr>').join('');
+  return h+'</tbody></table></div>';
+}
+function filt(rows, teamKey='team', nameKey='name'){
+  const q=document.getElementById('q').value.toLowerCase(), pf=document.getElementById('posf').value;
+  return rows.filter(r=>(!st.game||gameOf(r[teamKey])===st.game)&&(!pf||!r.pos||r.pos===pf)&&(!q||(r[nameKey]+' '+r[teamKey]).toLowerCase().includes(q)));
+}
+const nameCell = r => `${r.name}<span class="pos">${r.pos||''}</span>${r.questionable?'<span class="pos q">Q</span>':''}`;
+const meter = (p,max) => `<span class="meter" style="width:${Math.round(p/max*60)}px"></span>${pct(p)}`;
+function bookCell(r,pre,p,key){
+  if(r[pre+'best']!=null){const ev=r[pre+'ev'];return `<span title="${r[pre+'nbooks']} books · market ${pct(r[pre+'mkt_p'])} · blend ${pct(r[pre+'blend_p'])} · model-only EV ${(r[pre+'model_ev']*100).toFixed(1)}%">${am(r[pre+'best'])} <span style="color:var(--muted)">${(r[pre+'book']||'').slice(0,10)}</span></span> <span class="${ev>=0.05?'edge-pos':ev<0?'edge-neg':''}">${(ev*100).toFixed(1)}%</span>`}
+  return oddsCell(key,p)}
+function oddsCell(key,p){const v=book[key]??'';let e='';if(v!==''&&!isNaN(+v)&&Math.abs(+v)>=100){const ev=p*(+v>0? +v/100 : 100/-v)-(1-p);e=`<span class="${ev>0?'edge-pos':'edge-neg'}"> ${(ev*100).toFixed(1)}%</span>`}
+  return `<input class="odds" id="o-${key.replace(/[^a-z0-9]/gi,'_')}" data-key="${key}" data-p="${p}" value="${v}" placeholder="+odds" inputmode="numeric" aria-label="Book odds">${e}`}
+
+function render(){
+  gameBtns();
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.k===st.tab));
+  document.getElementById('note').textContent=TABS[st.tab].note;
+  document.getElementById('bar').hidden = st.tab==='edge';
+  const V=document.getElementById('view'); let html='';
+  if(st.tab==='any'){
+    const rows=filt(D.players).filter(r=>r.p_any>0.02);
+    html=table([
+      {k:'name',h:'Player',l:1,cls:'n',f:nameCell},{k:'team',h:'Tm',l:1,f:r=>`${r.team} <span style="color:var(--muted)">v ${r.opp}</span>`},
+      {k:'rush_share',h:'Rush sh',f:r=>pct(r.rush_share)},{k:'rec_share',h:'Rec sh',f:r=>pct(r.rec_share)},
+      {k:'xtd',h:'Exp TD',f:r=>r.xtd.toFixed(2)},{k:'p_any',h:'Anytime',f:r=>meter(r.p_any,.75)},{k:'fair_any',h:'Fair',f:r=>am(r.fair_any)},
+      {k:'p_2plus',h:'2+ TD',f:r=>pct(r.p_2plus)},{k:'fair_2plus',h:'Fair 2+',f:r=>am(r.fair_2plus)},
+      {k:'snap_last',h:'Snap %',f:r=>r.snap_last==null?'–':`${Math.round(r.snap_last*100)}%${r.snap_trend>0.08?' <span class="edge-pos">▲</span>':r.snap_trend<-0.08?' <span class="edge-neg">▼</span>':''}`},
+      {k:'any_ev',h:'Best price / EV',f:r=>bookCell(r,'any_',r.p_any,'any|'+r.name+'|'+r.team)}],rows,'p_any');
+  } else if(st.tab==='first'){
+    const rows=filt(D.players).filter(r=>r.p_first>0.005).map(r=>({...r,p_first:recvMult(r)}));
+    const gl=D.games.filter(g=>!st.game||g.game_id===st.game);
+    html=`<div class="recv">${gl.map(g=>`<label class="rv"><span>${g.away} @ ${g.home} receives</span><select data-g="${g.game_id}" id="rv-${g.game_id}"><option value="">Unknown</option><option value="away" ${st.recv[g.game_id]==='away'?'selected':''}>${g.away}</option><option value="home" ${st.recv[g.game_id]==='home'?'selected':''}>${g.home}</option></select></label>`).join('')}</div>`+table([
+      {k:'name',h:'Player',l:1,cls:'n',f:nameCell},{k:'team',h:'Tm',l:1},
+      {k:'p_first',h:'1st TD',f:r=>meter(r.p_first,.16)},{k:'p_first',h:'Fair',f:r=>am(fair(r.p_first))},
+      {k:'p_team_first',h:'Team 1st',f:r=>pct(r.p_team_first)},{k:'tf',h:'Fair tm 1st',f:r=>am(fair(r.p_team_first))},
+      {k:'q1_share',h:'Q1 share',f:r=>r.q1_share==null?'–':pct(r.q1_share)},
+      {k:'first_ev',h:'Best price / EV',f:r=>{const rr={...r};if(rr.first_best!=null){const bp=(r.p_first+r.first_mkt_p)/2;rr.first_blend_p=bp;rr.first_model_ev=r.p_first*(r.first_best>0?1+r.first_best/100:1+100/-r.first_best)-1;rr.first_ev=bp*(r.first_best>0?1+r.first_best/100:1+100/-r.first_best)-1}return bookCell(rr,'first_',r.p_first,'first|'+r.name+'|'+r.team)}}],rows,'p_first');
+  } else if(st.tab==='qb'){
+    const rows=filt(D.qbs.map(r=>({...r,name:r.qb,pos:'QB'})));
+    html=table([
+      {k:'qb',h:'QB',l:1,cls:'n'},{k:'team',h:'Tm',l:1,f:r=>`${r.team} <span style="color:var(--muted)">v ${r.opp}</span>`},
+      {k:'implied',h:'Implied',f:r=>r.implied.toFixed(1)},{k:'pass_frac',h:'Pass TD%',f:r=>pct(r.pass_frac)},
+      {k:'exp_pass_td',h:'Exp pass TD',f:r=>r.exp_pass_td.toFixed(2)},
+      {k:'lad',h:'1+ / 2+ / 3+',f:r=>`<span class="ladder" style="display:inline-flex;height:22px;vertical-align:middle;margin-right:6px">${[r.p1,r.p2,r.p3].map(p=>`<i style="height:${Math.max(2,p*22)}px;width:7px"></i>`).join('')}</span>`},
+      {k:'p1',h:'1+',f:r=>`${pct(r.p1)} <span style="color:var(--muted)">${am(fair(r.p1))}</span>`},
+      {k:'p2',h:'2+',f:r=>`${pct(r.p2)} <span style="color:var(--muted)">${am(fair(r.p2))}</span>`},
+      {k:'p3',h:'3+',f:r=>`${pct(r.p3)} <span style="color:var(--muted)">${am(fair(r.p3))}</span>`},
+      {k:'p_rush_td',h:'Rush TD',f:r=>pct(r.p_rush_td)},
+      {k:'o1.5',h:'O1.5 best / EV',f:r=>{const o=r['o1.5'];return o?`${am(o.best)} <span style="color:var(--muted)">${o.book.slice(0,10)}</span> <span class="${o.ev>=0.05?'edge-pos':o.ev<0?'edge-neg':''}">${(o.ev*100).toFixed(1)}%</span>`:'–'}}],rows,'p2');
+  } else if(st.tab==='stack'){
+    const k=+(document.getElementById('kf')?.value||2);
+    const rows=filt(D.stacks.filter(r=>r.k===k).map(r=>({...r,name:r.wr})));
+    html=`<div class="bar" style="margin-bottom:10px"><label for="kf">QB throws</label><select id="kf">${[1,2,3].map(x=>`<option ${x===k?'selected':''} value="${x}">${x}+ TD</option>`).join('')}</select></div>`+table([
+      {k:'qb',h:'QB',l:1,cls:'n'},{k:'wr',h:'Catcher',l:1,cls:'n',f:r=>`${r.wr}<span class="pos">${r.pos}</span>`},{k:'team',h:'Tm',l:1},
+      {k:'p_wr',h:'Catcher TD',f:r=>pct(r.p_wr)},{k:'p_qb',h:`QB ${k}+`,f:r=>pct(r.p_qb)},
+      {k:'joint',h:'Joint',f:r=>pct(r.joint)},{k:'lift',h:'Lift',f:r=>`<span class="lift ${r.lift>1.15?'up':''}">${r.lift.toFixed(2)}×</span>`},
+      {k:'fair',h:'Fair parlay',f:r=>am(r.fair)},{k:'naive_fair',h:'If independent',f:r=>am(r.naive_fair)},
+      {k:'bk',h:'Book / edge',f:r=>oddsCell('stk'+k+'|'+r.qb+'|'+r.wr,r.joint)}],rows,'joint');
+  } else if(st.tab==='bring'){
+    const rows=filt(D.bring.map(r=>({...r,name:r.a+' '+r.b,team:r.a_team})));
+    html=table([{k:'game',h:'Game',l:1},{k:'a',h:'Side A',l:1,cls:'n',f:r=>`${r.a} <span style="color:var(--muted)">${r.a_team}</span>`},{k:'b',h:'Side B',l:1,cls:'n',f:r=>`${r.b} <span style="color:var(--muted)">${r.b_team}</span>`},
+      {k:'joint',h:'Both score',f:r=>pct(r.joint)},{k:'lift',h:'Lift',f:r=>`<span class="lift ${r.lift>1.1?'up':''}">${r.lift.toFixed(2)}×</span>`},{k:'fair',h:'Fair',f:r=>am(r.fair)},
+      {k:'bk',h:'Book / edge',f:r=>oddsCell('bb|'+r.a+'|'+r.b,r.joint)}],rows,'joint');
+  } else {
+    const vac=D.vacated.filter(v=>!st.game||gameOf(v.team)===st.game);
+    const top=D.stacks.filter(r=>r.k===2&&r.p_wr>=0.25).sort((a,b)=>b.lift-a.lift).slice(0,3);
+    const ed=(D.edges||[]).filter(e=>!st.game||gameOf(e.team)===st.game);
+    html=(D.odds_live?`<h2 class="sec">Priced edges · EV 5%+ at best book, using a 50/50 model–market blend</h2>`+(ed.length?table([{k:'bet',h:'Bet',l:1,cls:'n'},{k:'team',h:'Tm',l:1},{k:'model_p',h:'Model',f:r=>pct(r.model_p)},{k:'mkt_p',h:'Market',f:r=>pct(r.mkt_p)},{k:'blend_p',h:'Blend',f:r=>pct(r.blend_p)},{k:'best',h:'Best',f:r=>am(r.best)},{k:'book',h:'Book',l:1},{k:'ev',h:'EV',f:r=>`<span class="edge-pos">${(r.ev*100).toFixed(1)}%</span>`}],ed,'ev'):'<p class="note">No bets clear 5% EV right now.</p>'):'<p class="note">Live odds are off. Add an ODDS_API_KEY secret in GitHub to fill this board automatically.</p>')+`<div class="cards" style="margin-top:14px">
+      <div class="card"><span class="tag">Live this week</span><h3>Vacated TD share</h3><p>Players ruled out or on IR who held real red-zone opportunity. Their teammates' projections already absorb it; books often lag.</p>
+        <div class="tbl" style="border:0">${vac.length?`<table><tbody>${vac.map(v=>`<tr><td class="n l">${v.name}</td><td class="l">${v.team}</td><td>${v.kind}</td><td>${pct(v.share)}</td></tr>`).join('')}</tbody></table>`:'<p>None on this game.</p>'}</div></div>
+      <div class="card"><span class="tag">Live this week</span><h3>Most mispriced stacks</h3><p>Highest correlation lift among catchers with a 25%+ TD chance, paired with QB 2+ pass TDs.</p>
+        <div class="tbl" style="border:0"><table><tbody>${top.map(r=>`<tr><td class="n l">${r.qb.split(' ').pop()} + ${r.wr}</td><td class="lift up">${r.lift.toFixed(2)}×</td><td>${am(r.fair)}</td></tr>`).join('')}</tbody></table></div></div>
+      ${[
+       ['Next build','Pick\'em yardage lines','Receiving/rushing/passing yard medians for Underdog and PrizePicks from the same sim, so TD and yardage legs correlate correctly.'],
+       ['Next build','Red-zone snap share','2025 backtest: red-zone snap share adds real signal on top of this model (p = 0.001). Needs a 2026 source such as McAnalytics.'],
+       ['Next build','Closing line tracker','Log bets against the closing price to confirm the model beats the market over time.']
+      ].map(c=>`<div class="card"><span class="tag">${c[0]}</span><h3>${c[1]}</h3><p>${c[2]}</p></div>`).join('')}
+    </div>`;
+  }
+  V.innerHTML=html;
+  V.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(st.sort===k)st.dir*=-1;else{st.sort=k;st.dir=-1}render()});
+  V.querySelectorAll('.odds').forEach(i=>i.onchange=()=>{const v=i.value.trim();if(v)book[i.dataset.key]=v;else delete book[i.dataset.key];try{localStorage.setItem('ezl_book',JSON.stringify(book))}catch(e){};render()});
+  const kf=document.getElementById('kf'); if(kf) kf.onchange=()=>{st.sort=null;render()};
+  V.querySelectorAll('.rv select').forEach(x=>x.onchange=()=>{st.recv[x.dataset.g]=x.value;render()});
+}
+document.getElementById('q').oninput=render;document.getElementById('posf').onchange=render;
+async function boot(){ if(!D){ try{ D = await (await fetch('data/latest.json',{cache:'no-store'})).json(); }catch(e){ document.getElementById('view').innerHTML='<p class="note">Could not load data/latest.json. The weekly job may not have run yet.</p>'; return; } }
+  setMeta(); render(); }
+boot();
+</script>
