@@ -1,0 +1,147 @@
+{
+ "note": "Walk-forward, 2025 weeks 4\u201318, REC_SLOPE 0.35",
+ "rec_slope": 0.35,
+ "props": 4317,
+ "weeks": 15,
+ "hit_rate": 0.2106,
+ "brier": 0.1526,
+ "baseline": 0.1662,
+ "baseline_note": "constant hit-rate prediction",
+ "calibration": [
+  {
+   "bucket": "0\u20135%",
+   "lo": 0.0,
+   "n": 415,
+   "pred": 0.028,
+   "act": 0.082,
+   "ci": 0.026,
+   "thin": false
+  },
+  {
+   "bucket": "5\u201310%",
+   "lo": 0.05,
+   "n": 671,
+   "pred": 0.075,
+   "act": 0.104,
+   "ci": 0.023,
+   "thin": false
+  },
+  {
+   "bucket": "10\u201315%",
+   "lo": 0.1,
+   "n": 638,
+   "pred": 0.124,
+   "act": 0.125,
+   "ci": 0.026,
+   "thin": false
+  },
+  {
+   "bucket": "15\u201320%",
+   "lo": 0.15,
+   "n": 665,
+   "pred": 0.175,
+   "act": 0.179,
+   "ci": 0.029,
+   "thin": false
+  },
+  {
+   "bucket": "20\u201325%",
+   "lo": 0.2,
+   "n": 530,
+   "pred": 0.224,
+   "act": 0.2,
+   "ci": 0.034,
+   "thin": false
+  },
+  {
+   "bucket": "25\u201330%",
+   "lo": 0.25,
+   "n": 438,
+   "pred": 0.275,
+   "act": 0.276,
+   "ci": 0.042,
+   "thin": false
+  },
+  {
+   "bucket": "30\u201335%",
+   "lo": 0.3,
+   "n": 333,
+   "pred": 0.325,
+   "act": 0.327,
+   "ci": 0.05,
+   "thin": false
+  },
+  {
+   "bucket": "35\u201340%",
+   "lo": 0.35,
+   "n": 227,
+   "pred": 0.372,
+   "act": 0.366,
+   "ci": 0.063,
+   "thin": false
+  },
+  {
+   "bucket": "40\u201345%",
+   "lo": 0.4,
+   "n": 172,
+   "pred": 0.424,
+   "act": 0.395,
+   "ci": 0.073,
+   "thin": false
+  },
+  {
+   "bucket": "45\u201350%",
+   "lo": 0.45,
+   "n": 92,
+   "pred": 0.476,
+   "act": 0.489,
+   "ci": 0.102,
+   "thin": false
+  },
+  {
+   "bucket": "50\u201355%",
+   "lo": 0.5,
+   "n": 58,
+   "pred": 0.52,
+   "act": 0.483,
+   "ci": 0.129,
+   "thin": false
+  },
+  {
+   "bucket": "55\u201360%",
+   "lo": 0.55,
+   "n": 46,
+   "pred": 0.573,
+   "act": 0.5,
+   "ci": 0.144,
+   "thin": false
+  },
+  {
+   "bucket": "60\u201365%",
+   "lo": 0.6,
+   "n": 19,
+   "pred": 0.624,
+   "act": 0.579,
+   "ci": 0.222,
+   "thin": false
+  },
+  {
+   "bucket": "65\u201370%",
+   "lo": 0.65,
+   "n": 10,
+   "pred": 0.674,
+   "act": 0.9,
+   "ci": 0.186,
+   "thin": false
+  },
+  {
+   "bucket": "70%+",
+   "lo": 0.7,
+   "n": 3,
+   "pred": 0.718,
+   "act": 1.0,
+   "ci": 0.0,
+   "thin": true
+  }
+ ]
+}

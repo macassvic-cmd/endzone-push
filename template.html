@@ -45,6 +45,9 @@ tr:last-child td{border-bottom:0}
 .meter{display:inline-block;height:6px;border-radius:3px;background:var(--accent);vertical-align:middle;margin-right:6px;opacity:.8}
 .odds{width:70px;font:inherit;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 5px;text-align:right}
 .edge-pos{color:var(--good);font-weight:600}.edge-neg{color:var(--bad)}
+tr.thin td{opacity:.45}.diff-bad{color:var(--bad);font-weight:600}
+details.wk{margin-top:10px}details.wk summary{cursor:pointer;font-family:var(--display);font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:6px 0;color:var(--muted)}details.wk[open] summary{color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px;margin-top:12px}
 .lift{font-weight:600}.lift.up{color:var(--hot)}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:6px}
@@ -81,7 +84,7 @@ const pct = x => (x*100).toFixed(1)+'%';
 const am = n => n>0?'+'+n:''+n;
 const fair = p => { p=Math.min(Math.max(p,1e-4),1-1e-4); return Math.round(p>=.5? -100*p/(1-p) : 100*(1-p)/p); };
 const implied = o => o>0? 100/(o+100) : -o/(-o+100);
-let st = {tab:'any', game:'', sort:null, dir:-1};
+let st = {tab:'any', game:'', sort:null, dir:-1, open:new Set()};
 let book = {};
 try { book = JSON.parse(localStorage.getItem('ezl_book')||'{}'); } catch(e){}
 try { const t=localStorage.getItem('ezl_tab'); if(t) st.tab=t; } catch(e){}
@@ -170,7 +173,12 @@ function render(){
   } else if(st.tab==='results'){
     const R=RES; if(!R){html='<p class="note">No graded weeks yet.</p>';}
     else{
-      const b=R.bet_summary;
+      const b=R.bet_summary, bt=R.backtest_2025;
+      const calTable=rows=>`<div class="tbl" style="border:0"><table><thead><tr><th class="l">Bucket</th><th>Props</th><th>Avg proj</th><th>Actual</th><th>±</th></tr></thead><tbody>${rows.map(c=>`<tr class="${c.thin?'thin':''}"><td class="l">${c.bucket}</td><td>${c.n}</td><td>${pct(c.pred)}</td><td>${pct(c.act)}</td><td>${(c.ci*100).toFixed(1)}</td></tr>`).join('')}</tbody></table></div>`;
+      const wkKey=w=>`${w.season}-${w.week}`;
+      const wkHead=w=>`${w.season} W${w.week}${w.backfill?' <span class="pos">backfill</span>':''} · ${w.hit}/15 hit, expected ${w.exp}`;
+      const wkTable=w=>table([{k:'name',h:'Player',l:1,cls:'n',f:r=>`${r.name}<span class="pos">${r.pos||''}</span>`},{k:'team',h:'Tm',l:1},{k:'p_any',h:'Projection',f:r=>pct(r.p_any)},{k:'hit',h:'Scored',f:r=>r.hit?'<span class="edge-pos">✓</span>':'<span class="edge-neg">✗</span>'}],w.rows,'p_any');
+      const t15=R.top15_by_week||[], reg=R.top15_regulars||[];
       html=`<h2 class="sec">Weekly scorecard</h2>`+table([
         {k:'week',h:'Week',l:1,f:r=>`${r.season} W${r.week}${r.backfill?' <span class="pos">backfill</span>':''}`},{k:'games',h:'Games'},
         {k:'act_scorers',h:'Scorers: actual / exp',f:r=>`${r.act_scorers} / ${r.exp_scorers}`},
@@ -180,9 +188,18 @@ function render(){
         {k:'brier',h:'Brier',f:r=>r.brier.toFixed(3)}],R.weeks,'week')+
       `<div class="cards" style="margin-top:16px">
         <div class="card"><span class="tag">Priced bets</span><h3>${b.n?`${b.won}-${b.n-b.won} · ${b.units>0?'+':''}${b.units}u`:'No graded bets yet'}</h3><p>${b.n?`ROI ${(b.roi*100).toFixed(1)}% at 1 unit per bet on every Edge Board play.`:'Edge Board plays are graded here once the odds feed has run on a slate.'}</p></div>
-        <div class="card"><span class="tag">Calibration · 2026</span><h3>Predicted vs actual</h3><div class="tbl" style="border:0"><table><tbody>${R.calibration.map(c=>`<tr><td class="l">${c.bucket}</td><td>${c.n}</td><td>${pct(c.pred)}</td><td>${pct(c.act)}</td></tr>`).join('')}</tbody></table></div></div>
-        <div class="card"><span class="tag">Backtest · 2025</span><h3>Brier ${R.backtest_2025.brier} vs ${R.backtest_2025.baseline}</h3><div class="tbl" style="border:0"><table><tbody>${R.backtest_2025.calibration.map(c=>`<tr><td class="l">${c[0]}</td><td>${pct(c[1])}</td><td>${pct(c[2])}</td></tr>`).join('')}</tbody></table></div></div>
+        </div>
+      <div class="cal-grid">
+        <div class="card"><span class="tag">Calibration · ${R.cal_season||''}</span><h3>Predicted vs actual</h3><p>5-point buckets. ± is a 95% range on the actual rate (1.96·√(p(1−p)/n)); buckets with fewer than 10 props are greyed.</p>${calTable(R.calibration||[])}</div>
+        <div class="card"><span class="tag">Backtest · 2025</span><h3>${bt?`Brier ${bt.brier} vs ${bt.baseline}`:'Not run yet'}</h3><p>${bt?`${bt.note}. ${bt.props} props, hit rate ${pct(bt.hit_rate)}. Baseline = ${bt.baseline_note}.`:'Run python backtest.py 0.35 and commit backtest_2025.json.'}</p>${bt?calTable(bt.calibration):''}</div>
       </div>`+
+      (t15.length?`<h2 class="sec" style="margin-top:16px">Top 15 by week</h2>`+t15.map((w,i)=>i===0
+          ?`<p class="note" style="margin-bottom:6px">${wkHead(w)}</p>`+wkTable(w)
+          :`<details class="wk" data-wk="${wkKey(w)}"${st.open.has(wkKey(w))?' open':''}><summary>${wkHead(w)}</summary>${wkTable(w)}</details>`).join(''):'')+
+      (reg.length?`<h2 class="sec" style="margin-top:16px">Top-15 regulars</h2><p class="note" style="margin-bottom:6px">Everyone who has made a week's top 15. Diff = hit rate minus average projection; red when the hit rate trails by 15+ points over 3+ appearances.</p>`+table([
+        {k:'name',h:'Player',l:1,cls:'n',f:r=>`${r.name}<span class="pos">${r.pos||''}</span>`},{k:'team',h:'Tm',l:1},
+        {k:'n',h:'In top 15'},{k:'hits',h:'Scored'},{k:'hit_rate',h:'Hit rate',f:r=>pct(r.hit_rate)},{k:'avg_p',h:'Avg proj',f:r=>pct(r.avg_p)},
+        {k:'diff',h:'Diff',f:r=>`<span class="${(r.diff<=-0.15&&r.n>=3)?'diff-bad':''}">${r.diff>0?'+':''}${(r.diff*100).toFixed(1)}</span>`}],reg,'n'):'')+
       (R.last_week.length?`<h2 class="sec" style="margin-top:16px">Last graded week · top 40</h2>`+table([
         {k:'name',h:'Player',l:1,cls:'n',f:r=>`${r.name}<span class="pos">${r.pos||''}</span>`},{k:'team',h:'Tm',l:1},
         {k:'p_any',h:'Anytime',f:r=>pct(r.p_any)},{k:'hit',h:'Scored',f:r=>r.hit?'<span class="edge-pos">✓</span>':'<span class="edge-neg">✗</span>'},
@@ -209,6 +226,7 @@ function render(){
     </div>`;
   }
   V.innerHTML=html;
+  V.querySelectorAll('details.wk').forEach(d=>d.ontoggle=()=>{if(d.open)st.open.add(d.dataset.wk);else st.open.delete(d.dataset.wk)});
   V.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(st.sort===k)st.dir*=-1;else{st.sort=k;st.dir=-1}render()});
   V.querySelectorAll('.odds').forEach(i=>i.onchange=()=>{const v=i.value.trim();if(v)book[i.dataset.key]=v;else delete book[i.dataset.key];try{localStorage.setItem('ezl_book',JSON.stringify(book))}catch(e){};render()});
   const kf=document.getElementById('rzs'); if(kf) kf.onchange=()=>{st.sort=null;render()};
