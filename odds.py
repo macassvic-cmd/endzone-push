@@ -11,6 +11,11 @@ BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
 PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds"]
 # The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
 MARKET_ALIAS = {"player_1st_td": "player_first_td"}
+# What a book's Yes prices for one game should sum to with no margin (2024-25 regular season play-by-play):
+# anytime TD -> mean distinct offensive (run/pass) TD scorers per game; first TD -> share of games whose first
+# TD is scored by an offensive player. Dividing the observed sum by this gives the book's real overround.
+ANCHOR = {"player_anytime_td": 4.10, "player_first_td": 0.945}
+DEFAULT_OVERROUND = {"player_anytime_td": 1.22, "player_first_td": 1.43}   # measured 2026 wk3, used if a book has too few games
 TEAM_ABBR = {
     "Arizona Cardinals": "ARI", "Atlanta Falcons": "ATL", "Baltimore Ravens": "BAL", "Buffalo Bills": "BUF",
     "Carolina Panthers": "CAR", "Chicago Bears": "CHI", "Cincinnati Bengals": "CIN", "Cleveland Browns": "CLE",
@@ -105,22 +110,51 @@ def prop_board(events):
     return board
 
 
-def price_summary(board, market, player, point=None):
-    """Best available Yes/Over price across books, and no-vig consensus probability."""
+def measure_hold(events, min_games=3):
+    """Measured overround per (market, book): median over games of sum(implied Yes) / ANCHOR[market].
+    Falls back to the pooled market figure, then DEFAULT_OVERROUND, when a book prices too few games."""
+    sums = defaultdict(list)
+    for ev in events or []:
+        for b in ev.get("props", {}).get("bookmakers", []):
+            for m in b["markets"]:
+                mk = MARKET_ALIAS.get(m["key"], m["key"])
+                if mk not in ANCHOR:
+                    continue
+                s = sum(implied(o["price"]) for o in m["outcomes"] if o["name"].lower() in ("yes", "over"))
+                if s > 0:
+                    sums[(mk, b["title"])].append(s / ANCHOR[mk])
+    out = dict(DEFAULT_OVERROUND)
+    for mk in ANCHOR:
+        pooled = [x for (m, _), v in sums.items() if m == mk for x in v]
+        if pooled:
+            out[mk] = float(np.median(pooled))
+    for (mk, bk), v in sums.items():
+        out[(mk, bk)] = float(np.median(v)) if len(v) >= min_games else out[mk]
+    return out
+
+
+def american(dec):
+    return int(round((dec - 1) * 100)) if dec >= 2 else int(round(-100 / (dec - 1)))
+
+
+def price_summary(board, market, player, point=None, hold=None):
+    """Best and median Yes/Over price across books, and no-vig consensus probability.
+    `hold` is the dict from measure_hold(); without it a flat DEFAULT_OVERROUND is used."""
     books = board.get((market, norm_name(player), point))
     if not books:
         return None
-    best_book, best = max(((bk, v["yes"]) for bk, v in books.items() if "yes" in v), key=lambda x: decimal(x[1]),
-                          default=(None, None))
-    if best is None:
+    yes = [(bk, v["yes"]) for bk, v in books.items() if "yes" in v]
+    if not yes:
         return None
+    best_book, best = max(yes, key=lambda x: decimal(x[1]))
+    med = american(float(np.median([decimal(pr) for _, pr in yes])))
+    hold = hold or {}
     fair = []
-    for v in books.values():
-        if "yes" in v and "no" in v:
+    for bk, v in books.items():
+        if "yes" in v and "no" in v:                       # two-sided: strip the vig directly
             py, pn = implied(v["yes"]), implied(v["no"])
             fair.append(py / (py + pn))
-    # one-sided markets (most anytime/first TD boards): strip a typical margin
-    if not fair:
-        hold = 0.07 if market == "player_anytime_td" else 0.20 if market == "player_first_td" else 0.05
-        fair = [implied(v["yes"]) / (1 + hold) for v in books.values() if "yes" in v]
-    return dict(best=int(best), book=best_book, n_books=len(books), market_p=float(np.median(fair)))
+        elif "yes" in v:                                   # one-sided: divide by that book's measured overround
+            over = hold.get((market, bk)) or hold.get(market) or DEFAULT_OVERROUND.get(market, 1.05)
+            fair.append(implied(v["yes"]) / over)
+    return dict(best=int(best), book=best_book, median=med, n_books=len(yes), market_p=float(np.median(fair)))

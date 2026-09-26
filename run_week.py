@@ -37,6 +37,9 @@ sched = s2[(s2.season == season) & (s2.week == week)]
 events = O.fetch_all()
 lines = O.game_lines(events)
 board = O.prop_board(events)
+hold = O.measure_hold(events)          # per-book overround measured from this week's boards
+for k, v in sorted(hold.items(), key=str):
+    if isinstance(k, tuple): print(f"hold {k[0]:18} {k[1]:13} {v:.3f}")
 line_src = {}
 for i, g in sched.iterrows():
     l = lines.get((g.away_team, g.home_team))
@@ -104,12 +107,13 @@ for c in ["p_any", "p_first", "p_2plus", "first_if_recv", "first_if_kick"]:
 # ---------- book prices + edge ----------
 BLEND_W = 0.5   # weight on model vs market consensus for EV
 def attach(row, market, prob, point=None, prefix=""):
-    ps = O.price_summary(board, market, row["name"], point) if board else None
+    ps = O.price_summary(board, market, row["name"], point, hold) if board else None
     if not ps: return {}
     ev = prob * O.decimal(ps["best"]) - 1
     blend = BLEND_W * prob + (1 - BLEND_W) * ps["market_p"]      # meet the market halfway
     return {f"{prefix}best": ps["best"], f"{prefix}book": ps["book"], f"{prefix}mkt_p": round(ps["market_p"], 4),
             f"{prefix}ev": round(blend * O.decimal(ps["best"]) - 1, 4), f"{prefix}model_ev": round(ev, 4),
+            f"{prefix}med": ps["median"], f"{prefix}ev_med": round(blend * O.decimal(ps["median"]) - 1, 4),
             f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"]}
 
 ext = [dict(**attach(r, "player_anytime_td", r.p_any, prefix="any_"),
@@ -164,14 +168,16 @@ vac = sh[sh.pid.isin(out_ids | inactive) & (sh.share > 0.08) & (sh.last_ord >= s
 vac = vac.assign(team=vac.last_team, name=vac.pid.map(names).fillna(vac.name))
 vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
 
-# ---------- edge board: every priced bet with EV >= 5% ----------
+# ---------- edge board: priced by 2+ books and EV >= 5% at the median book (not just the best one) ----------
+MIN_BOOKS, MIN_EV = 2, 0.05
 edges = []
 for _, r in df.iterrows():
     for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first)]:
-        ev = r.get(m + "ev")
-        if pd.notna(ev) and ev >= 0.05 and r.get(m + "nbooks", 0) >= 1:
+        ev, ev_med = r.get(m + "ev"), r.get(m + "ev_med")
+        if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
-                              best=int(r[m + "best"]), book=r[m + "book"], ev=ev))
+                              best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
+                              nbooks=int(r[m + "nbooks"])))
 clean = lambda d: d.replace({np.nan: None})
 data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
