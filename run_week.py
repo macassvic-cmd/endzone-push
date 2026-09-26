@@ -7,7 +7,7 @@ Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 import sys, os, json, numpy as np, pandas as pd
 import model as M, odds as O, weather as W
 
-DATA, OUT = "data", "../docs/data"
+DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
 p, s = M.load()
 now_et = pd.Timestamp.now(tz="America/New_York").tz_localize(None)

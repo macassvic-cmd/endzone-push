@@ -207,7 +207,7 @@ function render(){
   V.querySelectorAll('.rv select').forEach(x=>x.onchange=()=>{st.recv[x.dataset.g]=x.value;render()});
 }
 document.getElementById('q').oninput=render;document.getElementById('posf').onchange=render;
-async function boot(){ if(!D){ try{ D = await (await fetch('data/latest.json',{cache:'no-store'})).json(); }catch(e){ document.getElementById('view').innerHTML='<p class="note">Could not load data/latest.json. The weekly job may not have run yet.</p>'; return; } }
+async function boot(){ if(!D){ try{ D = await (await fetch('latest.json',{cache:'no-store'})).json(); }catch(e){ document.getElementById('view').innerHTML='<p class="note">Could not load latest.json. The weekly job may not have run yet.</p>'; return; } }
   setMeta(); render(); }
 boot();
 </script>
