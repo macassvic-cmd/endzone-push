@@ -8,7 +8,9 @@ from collections import defaultdict
 import numpy as np
 
 BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
-PROP_MARKETS = ["player_anytime_td", "player_first_td", "player_pass_tds"]
+PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds"]
+# The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
+MARKET_ALIAS = {"player_1st_td": "player_first_td"}
 TEAM_ABBR = {
     "Arizona Cardinals": "ARI", "Atlanta Falcons": "ATL", "Baltimore Ravens": "BAL", "Buffalo Bills": "BUF",
     "Carolina Panthers": "CAR", "Chicago Bears": "CHI", "Cincinnati Bengals": "CIN", "Cleveland Browns": "CLE",
@@ -96,7 +98,7 @@ def prop_board(events):
                     player = o.get("description") or o.get("name")
                     side = o["name"].lower()
                     side = "yes" if side in ("yes", "over") else "no" if side in ("no", "under") else "yes"
-                    key = (m["key"], norm_name(player), o.get("point"))
+                    key = (MARKET_ALIAS.get(m["key"], m["key"]), norm_name(player), o.get("point"))
                     board[key][b["title"]][side] = o["price"]
     return board
 
