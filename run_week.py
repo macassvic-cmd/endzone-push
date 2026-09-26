@@ -70,7 +70,18 @@ for t, g in dc[dc.pos_abb.isin(limits)].groupby("team"):
     if len(qb): qbo[t] = (qb.gsis_id.iloc[0], qb.player_name.iloc[0])
     active[t] = {i for i in ids if pos.get(i) != "QB" or i == qbo.get(t, (None,))[0]}
 
-teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind)
+# depth-chart slot for the share prior, and recent snap share for the bit-part cap
+depth = {r.gsis_id: (r.pos_abb, r.pos_rank) for r in dc.dropna(subset=["gsis_id"]).sort_values("pos_rank").drop_duplicates("gsis_id").itertuples()}
+snaps3 = None
+try:
+    _sn = pd.read_parquet(f"{DATA}/snaps.parquet")
+    _sn = _sn[(_sn.season == season) & (_sn.game_type == "REG") & (_sn.week < week)]
+    _idmap = ros.dropna(subset=["pfr_id"]).set_index("pfr_id").gsis_id.to_dict()
+    _sn = _sn.assign(gsis_id=_sn.pfr_player_id.map(_idmap)).dropna(subset=["gsis_id"])
+    snaps3 = _sn.sort_values("week").groupby("gsis_id").tail(3).groupby("gsis_id").offense_pct.mean().to_dict()
+except Exception as e:
+    print("snaps unavailable for cap:", e)
+teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3)
 pl.loc[pl.pid.isin(q_ids), "share"] *= 0.85
 sim = M.simulate(teams, pl, qbs, n=60000)
 df = M.summarize(teams, pl, qbs, sim, names)
@@ -106,15 +117,20 @@ for c in ["p_any", "p_first", "p_2plus", "first_if_recv", "first_if_kick"]:
 
 # ---------- book prices + edge ----------
 BLEND_W = 0.5   # weight on model vs market consensus for EV
+BLEND_W_THIN, THIN_GAMES, THIN_RATIO = 0.25, 4, 3.0   # safety net: thin sample + model odds > 3x market -> lean on the market
+odds_ratio = lambda a, b: (a / (1 - a)) / (b / (1 - b)) if 0 < a < 1 and 0 < b < 1 else 1.0
 def attach(row, market, prob, point=None, prefix=""):
     ps = O.price_summary(board, market, row["name"], point, hold) if board else None
     if not ps: return {}
     ev = prob * O.decimal(ps["best"]) - 1
-    blend = BLEND_W * prob + (1 - BLEND_W) * ps["market_p"]      # meet the market halfway
+    w = BLEND_W
+    if row.get("games", 99) < THIN_GAMES and odds_ratio(prob, ps["market_p"]) > THIN_RATIO:
+        w = BLEND_W_THIN
+    blend = w * prob + (1 - w) * ps["market_p"]      # meet the market halfway (or lean on it for thin outliers)
     return {f"{prefix}best": ps["best"], f"{prefix}book": ps["book"], f"{prefix}mkt_p": round(ps["market_p"], 4),
             f"{prefix}ev": round(blend * O.decimal(ps["best"]) - 1, 4), f"{prefix}model_ev": round(ev, 4),
             f"{prefix}med": ps["median"], f"{prefix}ev_med": round(blend * O.decimal(ps["median"]) - 1, 4),
-            f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"]}
+            f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w}
 
 ext = [dict(**attach(r, "player_anytime_td", r.p_any, prefix="any_"),
             **attach(r, "player_first_td", r.p_first, prefix="first_")) for _, r in df.iterrows()]
@@ -177,7 +193,7 @@ for _, r in df.iterrows():
         if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
-                              nbooks=int(r[m + "nbooks"])))
+                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"]))
 clean = lambda d: d.replace({np.nan: None})
 data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
