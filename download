@@ -1,4 +1,0 @@
-nfl/data/
-*.parquet
-__pycache__/
-nfl/mock_odds.json

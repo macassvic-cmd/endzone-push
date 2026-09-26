@@ -170,24 +170,40 @@ for _, r in df.iterrows():
     for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first)]:
         ev = r.get(m + "ev")
         if pd.notna(ev) and ev >= 0.05 and r.get(m + "nbooks", 0) >= 1:
-            edges.append(dict(bet=f"{r['name']} {lbl}", team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
+            edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev))
-for q in qrows:
-    for pt in (0.5, 1.5, 2.5):
-        o = q.get(f"o{pt}")
-        if o and o["ev"] >= 0.05:
-            edges.append(dict(bet=f"{q['qb']} over {pt} pass TD", team=q["team"],
-                              model_p=q[{0.5: "p1", 1.5: "p2", 2.5: "p3"}[pt]], mkt_p=o["mkt_p"], blend_p=o["blend_p"],
-                              best=o["best"], book=o["book"], ev=o["ev"]))
-
 clean = lambda d: d.replace({np.nan: None})
 data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
-            players=clean(df.drop(columns=["pid"]).round(4)).to_dict("records"),
+            players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),
             bring=pd.DataFrame(bring).round(4).to_dict("records"), games=games,
             vacated=vac.round(3).to_dict("records"),
             edges=sorted(edges, key=lambda e: -e["ev"]))
+# ---------- lock in games that already kicked off (keeps pre-game projections for grading) ----------
+slate_fn = f"{OUT}/slate_{season}_w{week}.json"
+if os.path.exists(slate_fn):
+    old = json.load(open(slate_fn))
+    live = {g["game_id"] for g in games}
+    keep = lambda rows, key="game_id": [r for r in rows if r.get(key) not in live and r.get(key) in set(done)]
+    locked_games = keep(old.get("games", []))
+    lg = {g["game_id"] for g in locked_games}
+    for g in locked_games: g["locked"] = True
+    data["games"] = locked_games + data["games"]
+    data["players"] = [r for r in old.get("players", []) if r.get("game_id") in lg] + data["players"]
+    lteams = {t for g in locked_games for t in (g["home"], g["away"])}
+    data["edges"] = [e for e in old.get("edges", []) if e.get("team") in lteams] + data["edges"]
+    data["bring"] = [b for b in old.get("bring", []) if b.get("a_team") in lteams] + data["bring"]
+
+# ---------- red zone / end zone usage (2025 + current season) ----------
+import redzone
+rz = redzone.table(p, season)
+_r = pd.read_parquet(f"{DATA}/rosters.parquet").drop_duplicates("gsis_id", keep="last").set_index("gsis_id")
+for row in rz:
+    if row["pid"] in _r.index:
+        row["name"] = _r.at[row["pid"], "full_name"]; row["pos"] = _r.at[row["pid"], "position"]
+data["redzone"] = rz
+
 enc = lambda o: o.item() if hasattr(o, "item") else (None if o != o else str(o))
 txt = json.dumps(data, default=enc).replace("NaN", "null")
 for fn in [f"{OUT}/slate_{season}_w{week}.json", f"{OUT}/latest.json"]:

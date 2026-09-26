@@ -1,0 +1,5 @@
+data/
+__pycache__/
+*.parquet
+endzone_lab.html
+HANDOFF.md
