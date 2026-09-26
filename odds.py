@@ -66,6 +66,8 @@ def fetch_all(api_key=None, fetch=None, markets=PROP_MARKETS):
         except Exception as e:
             print("props fail", ev.get("id"), e); ev["props"] = {"bookmakers": []}
         time.sleep(0.2)
+    if os.environ.get("ODDS_SAVE"):                    # keep the raw response so reruns can use ODDS_MOCK
+        json.dump(events, open(os.environ["ODDS_SAVE"], "w"))
     return events
 
 

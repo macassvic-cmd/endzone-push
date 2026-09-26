@@ -3,3 +3,4 @@ __pycache__/
 *.parquet
 endzone_lab.html
 HANDOFF.md
+odds_raw.json

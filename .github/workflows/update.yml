@@ -34,9 +34,18 @@ jobs:
       - name: Run model
         env:
           ODDS_API_KEY: ${{ (github.event.schedule == '0 17 * * 6' || github.event.schedule == '45 16 * * 0' || inputs.use_odds) && secrets.ODDS_API_KEY || '' }}
+          ODDS_SAVE: odds_raw.json
         run: |
           python refresh.py
           python results.py
+      - name: Save raw odds (download from the run's Artifacts to rerun locally with ODDS_MOCK)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: odds-raw
+          path: odds_raw.json
+          if-no-files-found: ignore
+          retention-days: 30
       - name: Publish
         run: |
           git config user.name "endzone-bot"
