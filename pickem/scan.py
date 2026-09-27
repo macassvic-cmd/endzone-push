@@ -38,8 +38,10 @@ SIMS = int(os.environ.get("PICKEM_SIMS", 120_000))
 MIN_BOOKS = int(os.environ.get("PICKEM_MIN_BOOKS", 2))
 
 # a fantasy leg is only priced when the components that drive it are priced
-FANTASY_NEEDS = {"QB": {"pass_yds", "pass_tds"}, "RB": {"rush_yds", "anytime_td"},
-                 "WR": {"rec_yds", "anytime_td"}, "TE": {"rec_yds", "anytime_td"}}
+# (a missing component counts as zero, which would make every under look like free money)
+FANTASY_NEEDS = {"QB": {"pass_yds", "pass_tds", "rush_yds"},
+                 "RB": {"rush_yds", "rec_yds", "receptions", "anytime_td"},
+                 "WR": {"rec_yds", "receptions", "anytime_td"}, "TE": {"rec_yds", "receptions", "anytime_td"}}
 
 
 def base_table():
@@ -104,7 +106,8 @@ def price_legs(ud_legs, players, rng):
                "edge_vs_ud": round(p * american_to_decimal(ud_price) - 1, 4) if ud_price else None,
                "book_line": pl.props.get(l["stat"], {}).get("line") if l["stat"] != "fantasy" else None,
                "model_median": round(float(np.median(leg.samples)), 2) if leg.samples is not None else None,
-               "line_match": line_match}
+               "line_match": line_match,
+               "components": {c: round(float(pl.fits[c].mean()), 2) for c in (leg.comps or [])} or None}
         priced.append((row, leg))
     return priced
 
