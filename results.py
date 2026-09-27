@@ -1,5 +1,6 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
 import glob, json, os, numpy as np, pandas as pd
+import clv as C
 
 CAL_EDGES = [i / 100 for i in range(0, 75, 5)] + [1.0]     # 0–5, 5–10, …, 65–70, 70+
 CAL_MIN_N = 10
@@ -116,21 +117,35 @@ def main():
     by_market = {k: tally(g) for k, g in b.groupby("market")} if len(b) else {}
 
     # ---- market Brier: score the no-vig median-book probability the same way as the model, where a price existed ----
+    def mb(m, mk):
+        mp = m["any_mkt_p" if mk == "any" else "first_mkt_p"].astype(float)
+        y = m["hit" if mk == "any" else "first_hit"].astype(float); pm = m["p_any" if mk == "any" else "p_first"].astype(float)
+        return dict(n=int(len(m)), model=round(float(((pm - y) ** 2).mean()), 4), market=round(float(((mp - y) ** 2).mean()), 4),
+                    blend=round(float(((0.5 * pm + 0.5 * mp - y) ** 2).mean()), 4))
     market_brier = {}
-    for mk, pcol, ycol in [("any", "any_mkt_p", "hit"), ("first", "first_mkt_p", "first_hit")]:
+    for mk, pcol in [("any", "any_mkt_p"), ("first", "first_mkt_p")]:
         if pcol in allp:
             m = allp[allp[pcol].notna()]
             if len(m):
-                mp = m[pcol].astype(float); y = m[ycol].astype(float); pm = m["p_any" if mk == "any" else "p_first"].astype(float)
-                market_brier[mk] = dict(n=int(len(m)), weeks=int(m[["season", "week"]].drop_duplicates().shape[0]),
-                                        model=round(float(((pm - y) ** 2).mean()), 4), market=round(float(((mp - y) ** 2).mean()), 4),
-                                        blend=round(float(((0.5 * pm + 0.5 * mp - y) ** 2).mean()), 4))
+                market_brier[mk] = dict(**mb(m, mk), weeks=int(m[["season", "week"]].drop_duplicates().shape[0]),
+                                        by_week=[dict(season=int(sn), week=int(wk), **mb(g, mk)) for (sn, wk), g in m.groupby(["season", "week"])])
+
+    # ---- closing line value for logged edges (flag-time vs last pull before kickoff) ----
+    clv_rows = []
+    for fn in sorted(glob.glob(f"{C.EDGE_DIR}/*_w*.json")):
+        sn, wk = map(int, os.path.basename(fn)[:-5].split("_w"))
+        if not any(w["season"] == sn and w["week"] == wk for w in weeks):
+            continue                                             # only graded weeks
+        log = C.closing_summary(sn, wk)
+        clv_rows += [dict(season=sn, week=wk, **e) for e in log.values()]
+    clv_summary = C.aggregate(clv_rows) if clv_rows else None
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
     out = dict(weeks=weeks, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market), market_brier=market_brier,
+               clv=clv_summary, clv_rows=[{k: v for k, v in r.items() if k in ("season", "week", "bet", "role", "market", "book", "best", "mkt_p", "close_best", "close_mkt_p", "clv", "beat_close")} for r in clv_rows if "clv" in r],
                backtest_2025=backtest)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),

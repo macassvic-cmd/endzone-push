@@ -5,7 +5,7 @@
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
-import model as M, odds as O, weather as W
+import model as M, odds as O, weather as W, kalshi as K, clv as C
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -35,6 +35,16 @@ sched = s2[(s2.season == season) & (s2.week == week)]
 
 # ---------- live lines (Odds API) ----------
 events = O.fetch_all()
+if events and os.environ.get("KALSHI", "on") != "off":
+    try:
+        print("kalshi markets attached:", K.attach(events))          # Kalshi joins the board as one more book (fee-adjusted prices)
+    except Exception as e:
+        print("kalshi unavailable:", e)
+if events and not os.environ.get("ODDS_MOCK"):
+    # keep every real pull: odds_history/<season>_w<week>_<UTC stamp>.json (committed by the workflow) for blend fitting and closing-line value
+    os.makedirs("odds_history", exist_ok=True)
+    _fn = f"odds_history/{season}_w{week}_{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z.json"
+    json.dump(events, open(_fn, "w")); print("saved odds pull to", _fn)
 lines = O.game_lines(events)
 board = O.prop_board(events)
 hold = O.measure_hold(events)          # per-book overround measured from this week's boards
@@ -210,6 +220,8 @@ for _, r in df.iterrows():
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
                               nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role))
 clean = lambda d: d.replace({np.nan: None})
+if edges and not os.environ.get("ODDS_MOCK"):
+    print("edges newly logged for CLV:", C.log_edges(edges, season, week, f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"))
 data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),

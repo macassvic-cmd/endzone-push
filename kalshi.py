@@ -1,0 +1,126 @@
+"""Kalshi as a price source: player anytime-TD (series KXNFLTD, markets "Player: 1+") and first-TD (KXNFLFIRSTTD).
+
+Public market-data API, no auth: GET https://api.elections.kalshi.com/trade-api/v2/events?series_ticker=...&status=open
+&with_nested_markets=true. Prices are yes/no bid/ask in dollars (0.56 = 56% implied, no vig on a single price). Kalshi's
+fee is charged on the trade, not on winnings: taker fee = 0.07 * C * P * (1 - P) per contract, rounded up to the cent
+(fee schedule, July 2026), maker fee = 0.0175 * C * P * (1 - P). We price as a taker at the yes ask and put the
+fee-adjusted price on the board so EV is net of fees; the raw quotes are kept in odds_history.
+"""
+import json, math, re, time, urllib.request, urllib.parse
+from odds import TEAM_ABBR, norm_name
+
+BASE = "https://api.elections.kalshi.com/trade-api/v2"
+SERIES = {"player_anytime_td": "KXNFLTD", "player_1st_td": "KXNFLFIRSTTD"}
+TAKER_FEE, MAKER_FEE = 0.07, 0.0175
+BOOK = "Kalshi"
+# Kalshi event tickers end in <AWAY><HOME> with its own 3-letter codes; map the ones that differ from nflverse
+KALSHI_ABBR = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "ARZ": "ARI", "BLT": "BAL", "CLV": "CLE", "HST": "HOU", "SL": "LA"}
+CODES = sorted({v for v in TEAM_ABBR.values()} | set(KALSHI_ABBR), key=len, reverse=True)
+
+
+def _get(path, params):
+    q = urllib.parse.urlencode(params)
+    req = urllib.request.Request(f"{BASE}{path}?{q}", headers={"User-Agent": "endzone-lab/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def fetch_events(series, status="open"):
+    """All events of a series with nested markets (paginated)."""
+    out, cursor = [], None
+    for _ in range(20):
+        params = dict(series_ticker=series, status=status, with_nested_markets="true", limit=200)
+        if cursor: params["cursor"] = cursor
+        d = _get("/events", params)
+        out += d.get("events", [])
+        cursor = d.get("cursor")
+        if not cursor: break
+        time.sleep(0.2)
+    return out
+
+
+def taker_fee(p, c=1):
+    """Fee in dollars for c contracts at price p (dollars), rounded up to the cent."""
+    return math.ceil(TAKER_FEE * c * p * (1 - p) * 100) / 100
+
+
+def fee_adjusted_american(p):
+    """American price whose payout equals Kalshi's net payout after the taker fee: stake p, win 1 - p - fee."""
+    fee = TAKER_FEE * p * (1 - p)                       # per contract, before the per-order cent rounding
+    net = (1 - p - fee) / p                             # profit per dollar staked
+    dec = 1 + net
+    return int(round((dec - 1) * 100)) if dec >= 2 else int(round(-100 / (dec - 1)))
+
+
+def split_ticker(event_ticker):
+    """KXNFLTD-26SEP27CARCLE -> ('CAR', 'CLE') in nflverse codes, or None."""
+    m = re.search(r"-\d{2}[A-Z]{3}\d{2}([A-Z]+)$", event_ticker)
+    if not m: return None
+    tail = m.group(1)
+    for a in CODES:
+        if tail.startswith(a) and tail[len(a):] in CODES:
+            f = lambda x: KALSHI_ABBR.get(x, x)
+            return f(a), f(tail[len(a):])
+    return None
+
+
+def player_from(market, series_key):
+    sub = market.get("yes_sub_title") or market.get("title") or ""
+    if series_key == "player_anytime_td":
+        m = re.match(r"^(.*?):\s*1\+$", sub)
+        return m.group(1).strip() if m else None
+    if "D/ST" in sub or sub.lower().startswith("no touchdown"): return None
+    return sub.strip() or None
+
+
+def fetch_board():
+    """{(away, home): {market_key: [dict(player, yes_ask, yes_bid, last, volume, ticker, close)]}} plus raw events."""
+    board, raw = {}, {}
+    for key, series in SERIES.items():
+        evs = fetch_events(series)
+        raw[series] = evs
+        for e in evs:
+            g = split_ticker(e["event_ticker"])
+            if not g: continue
+            rows = []
+            for m in e.get("markets", []):
+                player = player_from(m, key)
+                ask = m.get("yes_ask_dollars"); bid = m.get("yes_bid_dollars"); last = m.get("last_price_dollars")
+                if not player or ask is None: continue
+                ask, bid = float(ask), float(bid) if bid is not None else None
+                if ask <= 0 or ask >= 1: continue
+                rows.append(dict(player=player, yes_ask=ask, yes_bid=bid, last=float(last) if last is not None else None,
+                                 volume=float(m.get("volume_fp") or 0), ticker=m["ticker"], close=m.get("close_time")))
+            board.setdefault(g, {})[key] = rows
+    return board, raw
+
+
+def attach(events, board=None, min_volume=0.0):
+    """Add Kalshi as a bookmaker on each Odds API event's props (same shape as the Odds API books).
+       Price = fee-adjusted American price of the yes ask; description = player name. Returns count added."""
+    if board is None:
+        board, _ = fetch_board()
+    n = 0
+    for ev in events or []:
+        g = (TEAM_ABBR.get(ev["away_team"]), TEAM_ABBR.get(ev["home_team"]))
+        k = board.get(g)
+        if not k: continue
+        markets = []
+        for key, rows in k.items():
+            oc = [dict(name="Yes", description=r["player"], price=fee_adjusted_american(r["yes_ask"]),
+                       kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_volume=r["volume"], kalshi_ticker=r["ticker"])
+                  for r in rows if r["volume"] >= min_volume]
+            if oc: markets.append(dict(key=key, outcomes=oc))
+        if markets:
+            ev.setdefault("props", {}).setdefault("bookmakers", []).append(dict(key="kalshi", title=BOOK, markets=markets))
+            n += sum(len(m["outcomes"]) for m in markets)
+    return n
+
+
+if __name__ == "__main__":
+    board, raw = fetch_board()
+    games = sorted(board)
+    print("games:", len(games), games[:6])
+    for g in games[:2]:
+        for key, rows in board[g].items():
+            print(g, key, len(rows), [(r["player"], r["yes_ask"], fee_adjusted_american(r["yes_ask"])) for r in rows[:4]])
