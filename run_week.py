@@ -101,6 +101,21 @@ try:
 except Exception as e:
     print("snaps unavailable:", e)
 
+# ---------- role: Starter / Rotational / Bench (last-3-game snap % first, depth-chart slot when snaps are unknown) ----------
+ROLE_STARTER_SNAPS, ROLE_BENCH_SNAPS = 0.60, 0.30
+def role_of(pid, snap3):
+    d = depth.get(pid); pos = M.POS_MAP.get(d[0], d[0]) if d else None
+    top = d is not None and pos in M.RANK_CAP and d[1] <= 1
+    deep = d is None or pos not in M.RANK_CAP or d[1] >= M.RANK_CAP[pos]
+    known = snap3 is not None and snap3 == snap3
+    if top or (known and snap3 >= ROLE_STARTER_SNAPS):
+        return "Starter"
+    if deep or (known and snap3 < ROLE_BENCH_SNAPS):
+        return "Bench"
+    return "Rotational"
+df["role"] = [role_of(r.pid, getattr(r, "snap_3", None)) for r in df.itertuples()]
+print("roles:", df.role.value_counts().to_dict())
+
 # ---------- first TD: conditional on who receives the opening kickoff ----------
 fmult = {}
 for t, info in teams.items():
@@ -193,7 +208,7 @@ for _, r in df.iterrows():
         if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
-                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"]))
+                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role))
 clean = lambda d: d.replace({np.nan: None})
 data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),

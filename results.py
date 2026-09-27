@@ -76,7 +76,8 @@ def main():
             won = bool(row.first_hit.iloc[0] if e.get("market") == "first" else row.hit.iloc[0])
             dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"],
-                             ev=e["ev"], won=won, profit=round(dec - 1 if won else -1.0, 3)))
+                             ev=e["ev"], won=won, profit=round(dec - 1 if won else -1.0, 3),
+                             role=e.get("role", "Unknown"), market=e.get("market", "any")))
 
     allp = pd.concat(players_all) if players_all else pd.DataFrame(columns=["p_any", "hit", "season", "week"])
 
@@ -106,14 +107,30 @@ def main():
         lp = allp[(allp.season == last["season"]) & (allp.week == last["week"])].nlargest(40, "p_any")
         detail = lp[["name", "team", "pos", "p_any", "hit", "p_first", "first_hit"]].to_dict("records")
     b = pd.DataFrame(bets)
+
+    def tally(g):
+        return dict(n=int(len(g)), won=int(g.won.sum()) if len(g) else 0,
+                    units=round(float(g.profit.sum()), 2) if len(g) else 0.0,
+                    roi=round(float(g.profit.mean()), 4) if len(g) else None)
+    by_role = {k: tally(g) for k, g in b.groupby("role")} if len(b) else {}
+    by_market = {k: tally(g) for k, g in b.groupby("market")} if len(b) else {}
+
+    # ---- market Brier: score the no-vig median-book probability the same way as the model, where a price existed ----
+    market_brier = {}
+    for mk, pcol, ycol in [("any", "any_mkt_p", "hit"), ("first", "first_mkt_p", "first_hit")]:
+        if pcol in allp:
+            m = allp[allp[pcol].notna()]
+            if len(m):
+                mp = m[pcol].astype(float); y = m[ycol].astype(float); pm = m["p_any" if mk == "any" else "p_first"].astype(float)
+                market_brier[mk] = dict(n=int(len(m)), weeks=int(m[["season", "week"]].drop_duplicates().shape[0]),
+                                        model=round(float(((pm - y) ** 2).mean()), 4), market=round(float(((mp - y) ** 2).mean()), 4),
+                                        blend=round(float(((0.5 * pm + 0.5 * mp - y) ** 2).mean()), 4))
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
     out = dict(weeks=weeks, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
-               bet_summary=dict(n=len(b), won=int(b.won.sum()) if len(b) else 0,
-                                units=round(float(b.profit.sum()), 2) if len(b) else 0.0,
-                                roi=round(float(b.profit.mean()), 4) if len(b) else None),
+               bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market), market_brier=market_brier,
                backtest_2025=backtest)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),

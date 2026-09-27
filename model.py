@@ -34,7 +34,8 @@ SHARE_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1):
 # 0.1316 (tie) with better 5-35% calibration and top-15 hits 7.60 -> 7.73/wk. Turning the pool inflation off
 # under-predicts total scorers by ~10% (Brier 0.1527 vs 0.1514 in the touch-based run), so it stays on.
 INFLATE_POOL = True                      # scale listed shares up to >= 92% of team xTD (False leaves the rest as "other")
-SNAP_CAP, SNAP_CAP_SHARE, SNAP_CAP_MIN_RZ = 0.25, 0.04, 2   # <25% snaps over last 3 games -> rush+rec share <= 4% combined, unless 2+ i10 carries / EZ targets
+SNAP_CAP, SNAP_CAP_SHARE, SNAP_CAP_MIN_RZ = 0.25, 0.04, 2   # <25% snaps over last 3 games -> rush+rec share <= 4% combined ...
+SNAP_CAP_EXEMPT_SNAPS = 0.15             # ... unless 2+ inside-10 carries / end-zone targets AND at least 15% snaps
 SNAP_CAP_AFTER_RESCALE = False           # False: the capped mass is redistributed to teammates (True sends it to "other": total scorers -6%)
 
 
@@ -193,7 +194,9 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
             low = None
             if snaps is not None and SNAP_CAP > 0:
                 # bit-part players: under 25% of snaps lately and no real goal-line role -> tiny share
-                low = (k.pid.map(snaps) < SNAP_CAP) & (k.pid.map(rz3).fillna(0) < SNAP_CAP_MIN_RZ)
+                sn = k.pid.map(snaps)
+                exempt = (k.pid.map(rz3).fillna(0) >= SNAP_CAP_MIN_RZ) & (sn >= SNAP_CAP_EXEMPT_SNAPS)
+                low = (sn < SNAP_CAP) & ~exempt
             cap = lambda: k.share.where(~low, k.share.clip(upper=SNAP_CAP_SHARE / 2))   # half per kind -> combined cap
             if low is not None and not SNAP_CAP_AFTER_RESCALE:
                 k["share"] = cap()
