@@ -31,6 +31,7 @@ def prep(p, s, weeks, season=2025):
         sc = act[(act.touchdown == 1) & act.td_player_id.notna()]
         out[wk] = dict(cache=M.prep_week(p, s, season, wk), depth=depth, snaps=snaps, active=active, qbo=qbo,
                        ytd=set(sc.td_player_id), qb_ids=set(q[0] for q in qbo.values()))
+    out["_rookies"] = B.rookie_map(season)
     return out
 
 
@@ -42,8 +43,9 @@ def evaluate(p, s, pre, params, n=3000, season=2025, seed=7):
     rows = []
     try:
         for wk, w in pre.items():
+            if wk == "_rookies": continue
             teams, pl, qbs, sh = M.build_slate(p, s, season, wk, active=w["active"], qb_override=w["qbo"],
-                                               depth=w["depth"], snaps=w["snaps"], cache=w["cache"])
+                                               depth=w["depth"], snaps=w["snaps"], cache=w["cache"], rookies=pre.get("_rookies"))
             sim = M.simulate(teams, pl, qbs, n=n)
             out = M.summarize(teams, pl, qbs, sim, {})
             out["y_any"] = out.pid.isin(w["ytd"]); out["week"] = wk

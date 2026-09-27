@@ -37,6 +37,15 @@ def week_snaps(season, wk):
     return sn.groupby("gsis_id").offense_pct.max().to_dict()
 
 
+def rookie_map(season):
+    """pid -> draft bucket for first-year players (data/rosters_seasonal.parquet or data/rosters.parquet)."""
+    for fn in ("data/rosters_seasonal.parquet", "data/rosters.parquet"):
+        if os.path.exists(fn):
+            r = pd.read_parquet(fn); r = r[(r.season == season) & (r.rookie_year == season)].drop_duplicates("gsis_id")
+            if len(r): return {g: M.draft_bucket(d) for g, d in zip(r.gsis_id, r.draft_number)}
+    return {}
+
+
 def week_inputs(season, wk, sched):
     """depth: pid -> (pos, rank); snaps: pid -> mean offensive snap % over the last 3 games before this week."""
     depth, snaps = None, None
@@ -92,7 +101,7 @@ if __name__ == "__main__":
         if active_mode == "depth":
             dc = pd.read_parquet("data/dc_hist.parquet")
             active = depth_active(depth_for_week(dc, s, 2025, wk), week_snaps(2025, wk))
-        teams, pl, qbs, sh = M.build_slate(p, s, 2025, wk, active=active, qb_override=qbo, depth=depth, snaps=snaps)
+        teams, pl, qbs, sh = M.build_slate(p, s, 2025, wk, active=active, qb_override=qbo, depth=depth, snaps=snaps, rookies=rookie_map(2025))
         sim = M.simulate(teams, pl, qbs, n=8000)
         out = M.summarize(teams, pl, qbs, sim, {})
         # actual

@@ -91,3 +91,34 @@ Judge: 2025 walk-forward, depth-chart active set, n=3000 sims (`search.py`), Bri
    Pass-share adjustment hurts; the lambda tweak's 0.00014 gain is inside noise and costs top-15 hits. Both stay off
    (weights 0 in model.py), code kept for re-testing with more 2026 data.
 3. **Odds history**: every real pull is saved and committed (`odds_history/`), see the market data round above.
+
+## 2026-09-27 — Round 2: fitted xTD, redistribution, rookies and new arrivals
+
+Judge as in round 1; Brier on the rows shared by all variants (base 4945 rows). Base: Brier 0.13194, top-15 7.87
+hits vs 7.63 expected per week.
+
+1. **Fitted xTD** (`fit_xtd.py`, coefficients in `xtd_model.json`, applied by `model.fitted_xtd`). Logistic models on
+   2022–2024 regular season: rush on yardline (plus log and goal-line indicators), down, distance, goal-to-go,
+   shotgun and the QB-carry flag; targets on yardline, air yards, end-zone flag, pass location, down, distance,
+   goal-to-go. The xTD models themselves are better out of sample on 2025 (log-loss rush 0.0972 vs 0.1001 for the
+   bucket tables, targets 0.1152 vs 0.1266; gradient boosting no better than logistic) and calibrate well by
+   bucket. Plugged into the share model they worsen player Brier to 0.13214 and cut top-15 hits to 7.47, although
+   the 30–35% bucket improves (32.4/34.0 vs 38.8 actual). **Off** (`XTD_FITTED = False`), kept for re-testing.
+2. **Redistribution when a regular is out** (`REDIST`). Measured on 2023–2026 single-absence cases (1,024): when a
+   player with ≥8% share misses a game, his listed same-position teammates take only about a third of his share,
+   the next man up (least-sampled same-position player) about a fifth, other positions about 15%, and the rest is not
+   replaced, whereas proportional stretching hands all of it to the listed players. The model now computes the
+   stretch as if the absent player were playing and then splits his share 35% same position (proportional), 20% next
+   man up, 15% other positions, 30% unreplaced. Brier 0.13194 → **0.13170** (beyond the ±0.0001 seed noise), top-15
+   7.67 / 7.46 (−3 hits over 225 picks, inside noise). **Kept.** Team-specific shrinkage toward the default (K≈4) is
+   not implemented: with 1–3 prior absences per player the estimate returns the league fractions anyway.
+3. **Rookies and new arrivals** (`NEW_PLAYERS`, `ROOKIE_W`, `MOVER_W`). Depth-listed active players with no history
+   get a row at their slot prior, rookies' priors are nudged by draft round (2022–25 rookie-season shares: RB rush
+   R1 0.35 / R2–3 0.22 / R4–7 0.11 / UDFA 0.03; WR rec 0.21 / 0.084 / 0.043 / 0.015; TE rec 0.12 / 0.09 / 0.05 /
+   0.015, blended 50/50 with the slot prior), and veterans on a new team keep half their sample weight. On top of
+   redistribution: Brier 0.13168 (no change), top-15 hits 7.47; the 184 added no-history players hit 2.2% against
+   4.9% predicted, and halving their prior only lowered top-15 hits further (7.27). **Off** (code kept; the rookie
+   table is in `ROOKIE_PRIOR`).
+
+Week 3 rerun from saved odds with redistribution on: 47 edges (38 bench, 7 starters, 2 rotational), 9 shown by
+default. QB edges: Stafford anytime and first TD, Goff anytime, Winston anytime.
