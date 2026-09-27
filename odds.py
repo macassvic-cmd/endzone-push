@@ -61,10 +61,12 @@ def fetch_all(api_key=None, fetch=None, markets=PROP_MARKETS):
         return None
     base = dict(apiKey=api_key or "x", regions="us", oddsFormat="american")
     events = _get(f"{BASE}/odds", {**base, "markets": "spreads,totals"}, fetch)
-    # only this week's games: props cost credits per event
+    # only this week's games that have not kicked off: props cost credits per event, and in-game boards are partial
     import datetime as dt
-    cutoff = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=6)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    events = [e for e in events if e["commence_time"] <= cutoff]
+    now = dt.datetime.now(dt.timezone.utc)
+    cutoff = (now + dt.timedelta(days=6)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    started = (now - dt.timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    events = [e for e in events if started <= e["commence_time"] <= cutoff]
     for ev in events:
         try:
             ev["props"] = _get(f"{BASE}/events/{ev['id']}/odds", {**base, "markets": ",".join(markets)}, fetch)
@@ -118,8 +120,13 @@ def prop_board(events):
     return board
 
 
+HOLD_MIN_OUTCOMES, HOLD_RANGE = 8, (1.0, 2.0)   # a board with fewer listed players is partial (in-game): skip it; a book's overround is never below 1
+
+
 def measure_hold(events, min_games=3):
     """Measured overround per (market, book): median over games of sum(implied Yes) / ANCHOR[market].
+    Partial boards (fewer than HOLD_MIN_OUTCOMES priced players, typical once a game has started) are skipped and
+    the result is clamped to HOLD_RANGE, so an in-game pull cannot inflate every market probability.
     Falls back to the pooled market figure, then DEFAULT_OVERROUND, when a book prices too few games."""
     sums = defaultdict(list)
     for ev in events or []:
@@ -128,16 +135,20 @@ def measure_hold(events, min_games=3):
                 mk = MARKET_ALIAS.get(m["key"], m["key"])
                 if mk not in ANCHOR:
                     continue
-                s = sum(implied(o["price"]) for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference"))
+                yes = [o for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference")]
+                if len(yes) < HOLD_MIN_OUTCOMES:
+                    continue
+                s = sum(implied(o["price"]) for o in yes)
                 if s > 0:
                     sums[(mk, b["title"])].append(s / ANCHOR[mk])
+    clamp = lambda x: float(min(max(x, HOLD_RANGE[0]), HOLD_RANGE[1]))
     out = dict(DEFAULT_OVERROUND)
     for mk in ANCHOR:
         pooled = [x for (m, _), v in sums.items() if m == mk for x in v]
         if pooled:
-            out[mk] = float(np.median(pooled))
+            out[mk] = clamp(np.median(pooled))
     for (mk, bk), v in sums.items():
-        out[(mk, bk)] = float(np.median(v)) if len(v) >= min_games else out[mk]
+        out[(mk, bk)] = clamp(np.median(v)) if len(v) >= min_games else out[mk]
     return out
 
 

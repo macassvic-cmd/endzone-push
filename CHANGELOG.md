@@ -154,3 +154,13 @@ QB-specific TD-rate table for designed runs and scrambles only. Judged on pick w
 **Decision:** nothing kept. The aggregate under-prediction of mobile QBs is real in both seasons, but every tier is
 15–30 QB-games of 3–5 quarterbacks and flips sign between halves, so no tested adjustment improves the mid tier on
 held-out weeks without hurting overall or QB Brier. Revisit with 2026 data, smooth-slope test first.
+
+## 2026-09-27 — Fix: in-game odds pulls inflated every market probability
+
+The delayed Sunday run pulled odds at 12:52 PT, after the early games had kicked off. Books strip an in-game board
+down to a few players, so the per-game overround measurement (sum of implied Yes prices ÷ the 4.1-scorer anchor)
+collapsed to ~0.07 and every no-vig market probability was divided by it: the live board showed 166 edges with
+market probabilities summing to 7.3 per team. Fixes in `odds.py`: `fetch_all` skips games that have already
+started (also saves credits); `measure_hold` ignores boards with fewer than 8 priced players and clamps the
+overround to [1.0, 2.0]. Regenerated from the same pull: 33 fresh edges for the six late games plus 25 locked from
+earlier kickoffs.
