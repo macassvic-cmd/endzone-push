@@ -95,7 +95,7 @@ def price_legs(ud_legs, players, rng):
             leg = Leg(pl, "fantasy", l["line"], l["side"], samples=samples, comps=comps)
             line_match = True
         else:
-            if l["stat"] not in pl.fits:
+            if l["stat"] not in pl.props:      # imputed components (QB INTs) aren't priced as legs
                 continue
             prop = pl.props[l["stat"]]
             exact = {x: p for x, p in prop["fair_points"]}

@@ -61,7 +61,10 @@ jobs:
           PICKEM_ALTS: ${{ inputs.alts && '1' || '0' }}
           PICKEM_FULL: ${{ inputs.full && '1' || '0' }}
           PYTHONUNBUFFERED: "1"
-        run: python -m pickem.scan | tee pickem_summary.txt
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pickem.scan | tee pickem_summary.txt
       - name: Keep raw inputs (rerun offline with ODDS_MOCK)
         uses: actions/upload-artifact@v4
         if: always()

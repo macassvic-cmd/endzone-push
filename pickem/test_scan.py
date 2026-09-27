@@ -86,3 +86,16 @@ def test_scan_end_to_end(mocks):
     assert abs(six["payout"] - 31.45) < 0.05             # 29.39 x 1.07 reproduces the app's slip
     assert six["p_all"] > six["p_all_independent"]
     assert json.loads((mocks / "out.json").read_text())["counts"]["legs_priced"] >= 12
+
+
+def test_qb_with_imputed_ints_and_ud_int_line(mocks, monkeypatch):
+    """A QB with pass props but no INT market still prices fantasy; an Underdog INT line is skipped, not a crash."""
+    import json
+    raw = json.loads((mocks / "ud.json").read_text())
+    raw["over_under_lines"].append({"id": "lint", "status": "active", "stat_value": "0.5",
+        "over_under": {"appearance_stat": {"appearance_id": "aJosh Allen", "display_stat": "INTs Thrown"}},
+        "options": [{"choice": "higher", "status": "active", "payout_multiplier": "1", "american_price": "-112"}]})
+    (mocks / "ud.json").write_text(json.dumps(raw))
+    from pickem import scan
+    res = scan.run()
+    assert not any(r["ud_stat"] == "INTs Thrown" for r in res["legs"])
