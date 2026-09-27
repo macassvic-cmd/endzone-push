@@ -162,5 +162,5 @@ down to a few players, so the per-game overround measurement (sum of implied Yes
 collapsed to ~0.07 and every no-vig market probability was divided by it: the live board showed 166 edges with
 market probabilities summing to 7.3 per team. Fixes in `odds.py`: `fetch_all` skips games that have already
 started (also saves credits); `measure_hold` ignores boards with fewer than 8 priced players and clamps the
-overround to [1.0, 2.0]. Regenerated from the same pull: 33 fresh edges for the six late games plus 25 locked from
+overround to [1.0, 2.0]. Regenerated from the same pull: 22 fresh edges for the six late games plus 25 locked from
 earlier kickoffs.
