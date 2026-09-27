@@ -1,48 +1,48 @@
-Pickem scan 2026-09-27T08:39:45Z  {'ud_legs': 2098, 'players_priced': 360, 'legs_priced': 1906, 'positive_legs': 129, 'skipped_markets': 1}
+Pickem scan 2026-09-27T08:42:52Z  {'ud_legs': 2098, 'players_priced': 352, 'legs_priced': 1898, 'positive_legs': 118, 'skipped_markets': 9}
 
 Top legs (model vs Underdog price):
-  +27.6%  Kyle Monangai          under   7.15 Fantasy Points   model 67.4%  UD -112 x1.0  [PHI @ CHI]
-  +27.0%  Kenneth Walker III     under    0.5 Rush + Rec TDs   model 44.6%  UD +185 x1.41  [KC @ MIA]
-  +23.8%  RJ Harvey              under   7.45 Fantasy Points   model 65.4%  UD -112 x1.0  [LAR @ DEN]
-  +22.1%  Kaelon Black           under   4.95 Fantasy Points   model 64.5%  UD -112 x1.0  [ARI @ SF]
-  +20.4%  Jonathan Taylor        under    0.5 Rush + Rec TDs   model 50.6%  UD +138 x1.16  [HOU @ IND]
-  +18.5%  Matthew Stafford       under  17.45 Fantasy Points   model 62.6%  UD -112 x1.0  [LAR @ DEN]
-  +18.1%  Derrick Henry          under    0.5 Rush + Rec TDs   model 42.2%  UD +180 x1.38  [BAL @ DAL]
+  +24.3%  Kaelon Black           under   4.95 Fantasy Points   model 65.7%  UD -112 x1.0  [ARI @ SF]
+  +23.9%  Kyle Monangai          under   7.15 Fantasy Points   model 65.5%  UD -112 x1.0  [PHI @ CHI]
+  +23.7%  RJ Harvey              under   7.45 Fantasy Points   model 65.4%  UD -112 x1.0  [LAR @ DEN]
+  +19.1%  Matthew Stafford       under  17.45 Fantasy Points   model 62.9%  UD -112 x1.0  [LAR @ DEN]
+  +17.8%  Jared Goff             under  20.35 Fantasy Points   model 62.3%  UD -112 x1.0  [NYJ @ DET]
   +17.2%  Tyjae Spears           over     1.5 Receptions       model 71.6%  UD -157 x0.83  [TEN @ NYG]
-  +17.1%  Sam Darnold            under  17.25 Fantasy Points   model 61.8%  UD -112 x1.0  [SEA @ WAS]
-  +16.9%  Jared Goff             under  20.35 Fantasy Points   model 61.7%  UD -112 x1.0  [NYJ @ DET]
-  +16.4%  Aaron Rodgers          under  14.85 Fantasy Points   model 61.5%  UD -112 x1.0  [CIN @ PIT]
-  +16.2%  Christian McCaffrey    under    0.5 Rush + Rec TDs   model 40.3%  UD +188 x1.42  [ARI @ SF]
-  +14.2%  D'Andre Swift          under  12.15 Fantasy Points   model 60.4%  UD -112 x1.0  [PHI @ CHI]
-  +12.2%  Tyler Allgeier         under   6.55 Fantasy Points   model 59.3%  UD -112 x1.0  [ARI @ SF]
-  +12.1%  Jacory Croskey-Merritt under   5.65 Fantasy Points   model 59.2%  UD -112 x1.0  [SEA @ WAS]
+  +16.9%  Sam Darnold            under  17.25 Fantasy Points   model 61.8%  UD -112 x1.0  [SEA @ WAS]
+  +16.6%  Aaron Rodgers          under  14.85 Fantasy Points   model 61.6%  UD -112 x1.0  [CIN @ PIT]
+  +15.5%  Tyjae Spears           over     0.5 Rush + Rec TDs   model 23.5%  UD +391 x2.88  [TEN @ NYG]
+  +13.4%  Tony Pollard           over    8.35 Fantasy Points   model 59.9%  UD -112 x1.0  [TEN @ NYG]
+  +13.1%  Tyler Allgeier         under   6.55 Fantasy Points   model 59.7%  UD -112 x1.0  [ARI @ SF]
+  +12.2%  Jahmyr Gibbs           over   20.35 Fantasy Points   model 59.3%  UD -112 x1.0  [NYJ @ DET]
+  +9.8%  Kenny Gainwell         under   5.05 Fantasy Points   model 58.0%  UD -112 x1.0  [MIN @ TB]
+  +9.2%  D'Andre Swift          under  12.15 Fantasy Points   model 57.7%  UD -112 x1.0  [PHI @ CHI]
+  +8.7%  Jacory Croskey-Merritt under   5.65 Fantasy Points   model 57.4%  UD -112 x1.0  [SEA @ WAS]
 
-Best 2-pick: EV +32.0%  hit 44.0%  pays 3.0x
-    Kyle Monangai Lower 7.15 Fantasy Points
-    RJ Harvey Lower 7.45 Fantasy Points
-
-Best 3-pick: EV +69.8%  hit 28.3%  pays 6.0x
-    Kyle Monangai Lower 7.15 Fantasy Points
-    RJ Harvey Lower 7.45 Fantasy Points
+Best 2-pick: EV +34.0%  hit 15.5%  pays 8.64x
     Kaelon Black Lower 4.95 Fantasy Points
+    Tyjae Spears Higher 0.5 Rush + Rec TDs
 
-Best 4-pick: EV +81.5%  hit 18.2%  pays 10.0x  (same game - confirm payout in app)
+Best 3-pick: EV +75.5%  hit 10.2%  pays 17.28x
+    Kaelon Black Lower 4.95 Fantasy Points
+    Kyle Monangai Lower 7.15 Fantasy Points
+    Tyjae Spears Higher 0.5 Rush + Rec TDs
+
+Best 4-pick: EV +92.4%  hit 6.7%  pays 28.8x
+    Kaelon Black Lower 4.95 Fantasy Points
     Kyle Monangai Lower 7.15 Fantasy Points
     RJ Harvey Lower 7.45 Fantasy Points
+    Tyjae Spears Higher 0.5 Rush + Rec TDs
+
+Best 5-pick: EV +145.7%  hit 4.3%  pays 57.6x  (same game - confirm payout in app)
     Kaelon Black Lower 4.95 Fantasy Points
+    Kyle Monangai Lower 7.15 Fantasy Points
+    RJ Harvey Lower 7.45 Fantasy Points
     Matthew Stafford Lower 17.45 Fantasy Points
+    Tyjae Spears Higher 0.5 Rush + Rec TDs
 
-Best 5-pick: EV +130.8%  hit 8.2%  pays 28.2x  (same game - confirm payout in app)
-    Kyle Monangai Lower 7.15 Fantasy Points
-    Kenneth Walker III Lower 0.5 Rush + Rec TDs
-    RJ Harvey Lower 7.45 Fantasy Points
+Best 6-pick: EV +125.2%  hit 2.7%  pays 84.64x  (same game - confirm payout in app)
     Kaelon Black Lower 4.95 Fantasy Points
-    Matthew Stafford Lower 17.45 Fantasy Points
-
-Best 6-pick: EV +113.4%  hit 7.3%  pays 29.39x  (same game - confirm payout in app)
     Kyle Monangai Lower 7.15 Fantasy Points
     RJ Harvey Lower 7.45 Fantasy Points
-    Kaelon Black Lower 4.95 Fantasy Points
     Matthew Stafford Lower 17.45 Fantasy Points
     Sam Darnold Lower 17.25 Fantasy Points
-    Jaxon Smith-Njigba Lower 0.5 Rush + Rec TDs
+    Tyjae Spears Higher 0.5 Rush + Rec TDs
