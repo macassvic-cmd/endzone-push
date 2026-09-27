@@ -2,15 +2,18 @@ name: Pick'em scanner
 
 # Prices every Underdog NFL line off devigged sportsbook props and ranks the best entries.
 # Output: pickem_latest.json (read by pickem.html) + the summary in the run log.
-# Odds API cost: ~10 credits per game per run (~150 for a full Sunday slate) on top of update.yml.
+# Odds API cost: 7 credits per game (~105 for a full Sunday slate) on top of update.yml's ~95/week.
+# One scheduled run a week; kick extra runs from the Actions tab (Run workflow) when you want them.
 
 on:
   schedule:
-    - cron: "30 17 * * 6"   # Sat 10:30 PT
-    - cron: "40 15 * * 0"   # Sun  8:40 PT, after inactives, before the 10:00 PT games
-    - cron: "40 19 * * 0"   # Sun 12:40 PT, late window
+    - cron: "40 15 * * 0"   # Sun 8:40 PT, after inactives, before the 10:00 PT games
   workflow_dispatch:
     inputs:
+      full:
+        description: "Also price rush attempts / completions / INT lines (+3 credits per game)"
+        type: boolean
+        default: false
       alts:
         description: "Also pull alternate yardage/reception ladders (+~40% credits)"
         type: boolean
@@ -56,6 +59,7 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           ODDS_SAVE: pickem_odds_raw.json
           PICKEM_ALTS: ${{ inputs.alts && '1' || '0' }}
+          PICKEM_FULL: ${{ inputs.full && '1' || '0' }}
           PYTHONUNBUFFERED: "1"
         run: python -m pickem.scan | tee pickem_summary.txt
       - name: Keep raw inputs (rerun offline with ODDS_MOCK)

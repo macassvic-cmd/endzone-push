@@ -28,7 +28,7 @@ sportsbook props from The Odds API, then searches every 2–6 pick combo of the 
 Fantasy legs are simulated from each player's component props (Underdog half-PPR); same-game legs are correlated
 (scale calibrated to DraftKings SGP prices, `PICKEM_CORR_SCALE`), different games independent.
 Payout = Underdog base table × each pick's `payout_multiplier` (`PICKEM_BASE` to override).
-Runs from `.github/workflows/pickem.yml` Sat 10:30 PT and Sun 8:40 / 12:40 PT (~150 Odds API credits per run).
+Runs from `.github/workflows/pickem.yml` Sun 8:40 PT (~105 Odds API credits); extra runs via Actions → Run workflow.
 
     python -m pickem.scan            # needs ODDS_API_KEY; UD_MOCK / ODDS_MOCK for offline reruns
     python -m pytest pickem

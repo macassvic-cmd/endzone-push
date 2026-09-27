@@ -4,8 +4,8 @@ Reuses the lab's odds.py client (same ODDS_API_KEY / ODDS_MOCK / ODDS_SAVE conve
 Per-book two-way markets are devigged per book and the median fair P(over) across books is used;
 one-way markets (anytime TD) are divided by the book's measured overround (odds.measure_hold).
 
-CREDIT COST: 1 credit per market per event (one region). The default 10 markets over a
-15-game slate is ~150 credits per run, +40% with PICKEM_ALTS=1.
+CREDIT COST: 1 credit per market per event (one region). The default 7 markets over a
+15-game slate is ~105 credits per run; PICKEM_FULL=1 adds 3/game, PICKEM_ALTS=1 adds 4/game.
 """
 from __future__ import annotations
 
@@ -14,18 +14,21 @@ from collections import defaultdict
 
 import odds as lab_odds  # endzone-push/odds.py
 
-# Odds API market -> our stat key
+# Odds API market -> our stat key. Core = what fantasy legs need (+ pass attempts), 7 credits/game.
 MARKETS = {
     "player_reception_yds": "rec_yds",
     "player_receptions": "receptions",
     "player_rush_yds": "rush_yds",
-    "player_rush_attempts": "rush_att",
     "player_pass_yds": "pass_yds",
-    "player_pass_attempts": "pass_att",
-    "player_pass_completions": "pass_cmp",
     "player_pass_tds": "pass_tds",
-    "player_pass_interceptions": "ints",
+    "player_pass_attempts": "pass_att",
     "player_anytime_td": "anytime_td",
+}
+# PICKEM_FULL=1: price Underdog's rush-attempt / completion / INT lines directly too (+3 credits/game)
+FULL_MARKETS = {
+    "player_rush_attempts": "rush_att",
+    "player_pass_completions": "pass_cmp",
+    "player_pass_interceptions": "ints",
 }
 ALT_MARKETS = {
     "player_reception_yds_alternate": "rec_yds",
@@ -37,6 +40,8 @@ ALT_MARKETS = {
 
 def market_map():
     m = dict(MARKETS)
+    if os.environ.get("PICKEM_FULL") == "1":
+        m.update(FULL_MARKETS)
     if os.environ.get("PICKEM_ALTS") == "1":
         m.update(ALT_MARKETS)
     return m

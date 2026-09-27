@@ -68,6 +68,9 @@ def build_players(ud_legs, cons, method="multiplicative"):
                 pl.props[stat] = prop
             except Exception as e:                       # unfittable market: skip, don't guess
                 skipped.append(f"{name} {stat}: {e}")
+        if pl.pos.upper() == "QB" and "ints" not in pl.fits and "pass_yds" in pl.fits:
+            from .dists import Fitted
+            pl.fits["ints"] = Fitted("poisson", {"lam": 0.7})   # league-typical INTs when not priced
         if pl.fits:
             players[name] = pl
     return players, skipped
