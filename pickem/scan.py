@@ -84,6 +84,9 @@ def price_legs(ud_legs, players, rng):
             if pl.name not in fantasy_cache:
                 fantasy_cache[pl.name] = simulate_fantasy(pl, SCORING["underdog"], SIMS, rng)
             samples, comps = fantasy_cache[pl.name]
+            med = float(np.median(samples))
+            if not (0.4 * l["line"] <= med <= 2.5 * l["line"]):     # a component fit went wrong: don't guess
+                continue
             leg = Leg(pl, "fantasy", l["line"], l["side"], samples=samples, comps=comps)
         else:
             if l["stat"] not in pl.fits:

@@ -147,15 +147,30 @@ def prop_points(stat: str, prop: dict, method: str, td_juice: float):
 
 
 def fit_stat(stat: str, prop: dict, method: str = "multiplicative", td_juice: float = 0.136) -> Fitted:
+    """Anchor on the main line. Only a real alt ladder (3+ rungs spanning a meaningful range) is
+    allowed to move the spread, and then only within sane bounds; several books posting a point
+    or two apart is noise, and fitting a spread to it blows the distribution up."""
     family, shape = STAT_FAMILY.get(stat, ("normal", None))
     shape = prop.get("shape", shape)
     pts = prop_points(stat, prop, method, td_juice)
     if not pts:
         raise ValueError(f"no usable prices for {stat}")
+    main = prop.get("line")
+    anchor = min(pts, key=lambda lp: abs(lp[0] - main)) if main is not None else pts[len(pts) // 2]
+    span = pts[-1][0] - pts[0][0]
+    ladder = len(pts) >= 3 and span >= max(3.0, 0.25 * abs(anchor[0]))
+    use = pts if ladder else [anchor]
     if family == "gamma":
-        return Fitted("gamma", _fit_gamma(pts, shape))
+        f = Fitted("gamma", _fit_gamma(use, shape))
+        cv = 1 / np.sqrt(f.params["k"])
+        if not (0.35 <= cv <= 1.4):                      # ladder fit went somewhere silly
+            f = Fitted("gamma", _fit_gamma([anchor], shape))
+        return f
     if family == "poisson":
-        return Fitted("poisson", _fit_poisson(pts))
+        return Fitted("poisson", _fit_poisson(use))
     if shape is None:
-        shape = max(1.0, 0.2 * pts[0][0])
-    return Fitted("normal", _fit_normal(pts, shape))
+        shape = max(1.0, 0.2 * anchor[0])
+    f = Fitted("normal", _fit_normal(use, shape))
+    if not (0.5 * shape <= f.params["sd"] <= 2 * shape):
+        f = Fitted("normal", _fit_normal([anchor], shape))
+    return f
