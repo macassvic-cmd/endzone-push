@@ -1,0 +1,65 @@
+odds api credits remaining: 351
+odds api credits remaining: 341
+odds api credits remaining: 331
+odds api credits remaining: 321
+odds api credits remaining: 311
+odds api credits remaining: 301
+odds api credits remaining: 291
+odds api credits remaining: 281
+odds api credits remaining: 271
+odds api credits remaining: 261
+odds api credits remaining: 251
+odds api credits remaining: 241
+odds api credits remaining: 231
+odds api credits remaining: 221
+odds api credits remaining: 211
+odds api credits remaining: 201
+odds api credits remaining: 201
+Pickem scan 2026-09-27T08:31:24Z  {'ud_legs': 2097, 'players_priced': 359, 'legs_priced': 1905, 'positive_legs': 178, 'skipped_markets': 1}
+
+Top legs (model vs Underdog price):
+  +36.0%  Jalen Hurts            over   18.85 Fantasy Points   model 71.8%  UD -112 x1.0  [PHI @ CHI]
+  +32.5%  Cam Ward               over   13.15 Fantasy Points   model 70.0%  UD -112 x1.0  [TEN @ NYG]
+  +32.5%  Trevor Lawrence        over   17.65 Fantasy Points   model 70.0%  UD -112 x1.0  [NE @ JAX]
+  +32.2%  Justin Herbert         over   17.05 Fantasy Points   model 69.8%  UD -112 x1.0  [LAC @ BUF]
+  +31.6%  Drake Maye             over   16.95 Fantasy Points   model 69.5%  UD -112 x1.0  [NE @ JAX]
+  +31.4%  Rachaad White          over    5.85 Fantasy Points   model 69.4%  UD -112 x1.0  [SEA @ WAS]
+  +31.3%  Baker Mayfield         over   16.25 Fantasy Points   model 69.4%  UD -112 x1.0  [MIN @ TB]
+  +30.1%  Daniel Jones           over   14.55 Fantasy Points   model 68.7%  UD -112 x1.0  [HOU @ IND]
+  +29.8%  Jaylen Warren          over   13.35 Fantasy Points   model 68.6%  UD -112 x1.0  [CIN @ PIT]
+  +29.4%  Quinshon Judkins       over   10.85 Fantasy Points   model 68.4%  UD -112 x1.0  [CAR @ CLE]
+  +28.8%  Christian McCaffrey    over   17.15 Fantasy Points   model 68.0%  UD -112 x1.0  [ARI @ SF]
+  +28.7%  Patrick Mahomes        over   19.85 Fantasy Points   model 68.0%  UD -112 x1.0  [KC @ MIA]
+  +27.7%  Jonathan Taylor        over   16.15 Fantasy Points   model 67.5%  UD -112 x1.0  [HOU @ IND]
+  +27.5%  C.J. Stroud            over   16.65 Fantasy Points   model 67.3%  UD -112 x1.0  [HOU @ IND]
+  +27.2%  Rhamondre Stevenson    over    8.25 Fantasy Points   model 67.2%  UD -112 x1.0  [NE @ JAX]
+
+Best 2-pick: EV +51.1%  hit 50.4%  pays 3.0x
+    Jalen Hurts Higher 18.85 Fantasy Points
+    Cam Ward Higher 13.15 Fantasy Points
+
+Best 3-pick: EV +111.4%  hit 35.2%  pays 6.0x
+    Jalen Hurts Higher 18.85 Fantasy Points
+    Cam Ward Higher 13.15 Fantasy Points
+    Trevor Lawrence Higher 17.65 Fantasy Points
+
+Best 4-pick: EV +150.9%  hit 25.1%  pays 10.0x  (same game - confirm payout in app)
+    Jalen Hurts Higher 18.85 Fantasy Points
+    Trevor Lawrence Higher 17.65 Fantasy Points
+    Drake Maye Higher 16.95 Fantasy Points
+    Rhamondre Stevenson Higher 8.25 Fantasy Points
+
+Best 5-pick: EV +251.6%  hit 17.6%  pays 20.0x  (same game - confirm payout in app)
+    Jalen Hurts Higher 18.85 Fantasy Points
+    Cam Ward Higher 13.15 Fantasy Points
+    Trevor Lawrence Higher 17.65 Fantasy Points
+    Drake Maye Higher 16.95 Fantasy Points
+    Rhamondre Stevenson Higher 8.25 Fantasy Points
+
+Best 6-pick: EV +260.6%  hit 12.3%  pays 29.39x  (same game - confirm payout in app)
+    Jalen Hurts Higher 18.85 Fantasy Points
+    Trevor Lawrence Higher 17.65 Fantasy Points
+    Drake Maye Higher 16.95 Fantasy Points
+    Daniel Jones Higher 14.55 Fantasy Points
+    Jonathan Taylor Higher 16.15 Fantasy Points
+    Rhamondre Stevenson Higher 8.25 Fantasy Points
