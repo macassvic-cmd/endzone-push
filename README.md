@@ -21,3 +21,14 @@ A scheduled GitHub Action (`.github/workflows/update.yml`) reruns everything Tue
 ## Local run
     pip install -r requirements.txt
     python refresh.py && python results.py
+
+## Pick'em scanner (`pickem/`, `pickem.html`)
+Prices every Underdog NFL line (fantasy points, yards, receptions, attempts, completions, TDs) off devigged
+sportsbook props from The Odds API, then searches every 2–6 pick combo of the best legs for the highest-EV entries.
+Fantasy legs are simulated from each player's component props (Underdog half-PPR); same-game legs are correlated
+(scale calibrated to DraftKings SGP prices, `PICKEM_CORR_SCALE`), different games independent.
+Payout = Underdog base table × each pick's `payout_multiplier` (`PICKEM_BASE` to override).
+Runs from `.github/workflows/pickem.yml` Sat 10:30 PT and Sun 8:40 / 12:40 PT (~150 Odds API credits per run).
+
+    python -m pickem.scan            # needs ODDS_API_KEY; UD_MOCK / ODDS_MOCK for offline reruns
+    python -m pytest pickem

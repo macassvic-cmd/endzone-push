@@ -3,3 +3,4 @@ polars
 pyarrow
 pandas
 numpy
+scipy

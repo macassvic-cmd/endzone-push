@@ -1,0 +1,66 @@
+name: Pick'em scanner
+
+# Prices every Underdog NFL line off devigged sportsbook props and ranks the best entries.
+# Output: pickem_latest.json (read by pickem.html) + the summary in the run log.
+# Odds API cost: ~10 credits per game per run (~150 for a full Sunday slate) on top of update.yml.
+
+on:
+  schedule:
+    - cron: "30 17 * * 6"   # Sat 10:30 PT
+    - cron: "40 15 * * 0"   # Sun  8:40 PT, after inactives, before the 10:00 PT games
+    - cron: "40 19 * * 0"   # Sun 12:40 PT, late window
+  workflow_dispatch:
+    inputs:
+      alts:
+        description: "Also pull alternate yardage/reception ladders (+~40% credits)"
+        type: boolean
+        default: false
+  push:
+    branches: [pickem-scanner]
+    paths: ["pickem/**", ".github/workflows/pickem.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pickem
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy scipy pytest
+      - name: Offline test
+        run: python -m pytest -q pickem
+      - name: Scan
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          ODDS_SAVE: pickem_odds_raw.json
+          PICKEM_ALTS: ${{ inputs.alts && '1' || '0' }}
+          PYTHONUNBUFFERED: "1"
+        run: python -m pickem.scan | tee pickem_summary.txt
+      - name: Keep raw inputs (rerun offline with ODDS_MOCK)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pickem-raw
+          path: pickem_odds_raw.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Publish
+        env:
+          GIT_EDITOR: "true"
+        run: |
+          git config user.name "endzone-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add pickem_latest.json pickem_summary.txt
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "Pick'em scan $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push origin "HEAD:${GITHUB_REF_NAME}"
