@@ -88,12 +88,14 @@ def price_legs(ud_legs, players, rng):
             if not (0.4 * l["line"] <= med <= 2.5 * l["line"]):     # a component fit went wrong: don't guess
                 continue
             leg = Leg(pl, "fantasy", l["line"], l["side"], samples=samples, comps=comps)
+            line_match = True
         else:
             if l["stat"] not in pl.fits:
                 continue
             prop = pl.props[l["stat"]]
             exact = {x: p for x, p in prop["fair_points"]}
             p_over = exact.get(l["line"], float(pl.fits[l["stat"]].sf(l["line"])))
+            line_match = l["line"] in exact
             leg = Leg(pl, l["stat"], l["line"], l["side"], p_over=p_over)
         p = leg.p_hit
         ud_price = l["ud_price"]
@@ -101,7 +103,8 @@ def price_legs(ud_legs, players, rng):
                "ud_implied": round(american_to_implied(ud_price), 4) if ud_price else None,
                "edge_vs_ud": round(p * american_to_decimal(ud_price) - 1, 4) if ud_price else None,
                "book_line": pl.props.get(l["stat"], {}).get("line") if l["stat"] != "fantasy" else None,
-               "model_median": round(float(np.median(leg.samples)), 2) if leg.samples is not None else None}
+               "model_median": round(float(np.median(leg.samples)), 2) if leg.samples is not None else None,
+               "line_match": line_match}
         priced.append((row, leg))
     return priced
 
@@ -170,7 +173,10 @@ def run(now=None):
     pos = [x for x in priced if (x[0]["edge_vs_ud"] or -1) > 0]
     pos.sort(key=lambda x: -x[0]["edge_vs_ud"])
     # best TOP_K legs by edge (one side per line; a slightly negative leg can still complete a good entry)
-    ranked = sorted([x for x in priced if x[0]["edge_vs_ud"] is not None], key=lambda x: -x[0]["edge_vs_ud"])
+    # stat legs whose Underdog line isn't a line the books price are extrapolated through a fitted
+    # distribution - shown in the table, but kept out of entries (fantasy legs are always modeled)
+    ranked = sorted([x for x in priced if x[0]["edge_vs_ud"] is not None and x[0]["line_match"]],
+                    key=lambda x: -x[0]["edge_vs_ud"])
     seen, cands = set(), []
     for x in ranked:
         if x[0]["line_id"] in seen:

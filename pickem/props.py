@@ -46,6 +46,52 @@ def fetch_events(api_key=None, fetch=None):
     return lab_odds.fetch_all(api_key=api_key, fetch=fetch, markets=list(market_map()))
 
 
+def anytime_td_power(events, anchor=None):
+    """Fair anytime-TD probabilities with the power method, per game and book.
+
+    Dividing every Yes price by one overround (multiplicative) over-shades favourites: books load
+    most of the margin onto longshots. Instead solve sum_i implied_i ** k = expected distinct TD
+    scorers per game (the lab's ANCHOR, 4.10) for each book's full game market, then p_i = implied_i ** k.
+    Returns {norm_player: median fair P(>=1 TD) across books}."""
+    from scipy import optimize
+    anchor = anchor or lab_odds.ANCHOR["player_anytime_td"]
+    per_player = defaultdict(list)
+    ks = []
+    for ev in events or []:
+        for b in ev.get("props", {}).get("bookmakers", []):
+            for m in b["markets"]:
+                if m["key"] != "player_anytime_td":
+                    continue
+                imp = {}
+                for o in m["outcomes"]:
+                    if o["name"].lower() in ("yes", "over"):
+                        imp[lab_odds.norm_name(o.get("description") or o["name"])] = lab_odds.implied(o["price"])
+                if len(imp) < 12 or sum(imp.values()) <= anchor:      # partial market: can't anchor it
+                    continue
+                vals = list(imp.values())
+                k = optimize.brentq(lambda k: sum(v ** k for v in vals) - anchor, 1.0, 5.0)
+                ks.append(k)
+                for pl, v in imp.items():
+                    per_player[pl].append(v ** k)
+    k_default = float(sorted(ks)[len(ks) // 2]) if ks else 1.25
+    # players only priced in partial markets: use the typical exponent
+    for ev in events or []:
+        for b in ev.get("props", {}).get("bookmakers", []):
+            for m in b["markets"]:
+                if m["key"] != "player_anytime_td":
+                    continue
+                for o in m["outcomes"]:
+                    pl = lab_odds.norm_name(o.get("description") or o["name"])
+                    if o["name"].lower() in ("yes", "over") and pl not in per_player:
+                        per_player.setdefault(pl + "#fallback", []).append(lab_odds.implied(o["price"]) ** k_default)
+    out = {}
+    for pl, v in per_player.items():
+        name = pl.replace("#fallback", "")
+        if name not in out or not pl.endswith("#fallback"):
+            out[name] = float(sorted(v)[len(v) // 2])
+    return out
+
+
 def consensus(events) -> dict:
     """{norm_player: {stat: {"line": main_line, "fair_points": [(line, p_over)], "n_books": n}}}"""
     mm = market_map()
@@ -72,6 +118,9 @@ def consensus(events) -> dict:
         n = s["n_books"]
         if prev is None or n > prev[1]:
             per[player][stat][pt] = (s["market_p"], n)
+    td = anytime_td_power(events)
+    for player, p in td.items():
+        per[player]["anytime_td"] = {0.5: (p, 2)}
     out = {}
     for player, stats in per.items():
         out[player] = {}
