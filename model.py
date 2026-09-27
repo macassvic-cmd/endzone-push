@@ -33,25 +33,52 @@ SHARE_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1):
 # 2025 walk-forward backtest (depth-chart active set, 4956 props): Brier old 0.1329 -> prior 0.1314 -> prior+snap cap
 # 0.1316 (tie) with better 5-35% calibration and top-15 hits 7.60 -> 7.73/wk. Turning the pool inflation off
 # under-predicts total scorers by ~10% (Brier 0.1527 vs 0.1514 in the touch-based run), so it stays on.
+# QB rushing: QB carries get their own TD-rate tables (sneak / designed / scramble by yardline, qb_xtd_tables), QBs
+# are excluded from the pool stretch, and the QB1 rush prior depends on type: mobile = 2+ designed runs per game over
+# the window (2025 QB1 mean share 0.22 mobile vs 0.11 pocket).
+# 2025 backtest (depth-chart regime, n=3000): before Brier 0.1315 / QB Brier 0.1322 / pocket QBs 10.5% pred vs 10.7%
+# actual, mobile 24.2 vs 28.9 / top-15 7.60 hits per week. After (QBs out of the pool, priors below, generic rush
+# table): 0.1316 / 0.1302 / pocket 9.7 vs 10.7, mobile 25.5 vs 28.9 / 7.93. The QB-specific sneak/designed/scramble
+# TD table (QB_OWN_XTD) over-predicted pocket QBs (12.2 vs 10.8) and worsened Brier to 0.1317, so it stays off.
+QB_MIN_ATT, QB_MOBILE_RUNS = 20, 2.0                  # QB = 20+ attempts in a season; "mobile" label = 2+ designed runs/game
+QB_PRIOR_A, QB_PRIOR_B, QB_PRIOR_DR_CAP = 0.068, 0.054, 4.0   # QB1 rush-share prior = A + B * designed runs per game (2025 fit, kneels excluded)
+QB_PRIOR_K = 3.0                                     # prior weight (games) for QB rush shares; one sneak at the 1 is a third of a team's weekly rush xTD
+QB_OWN_XTD, QB_OUT_OF_POOL = False, True
+KNEELS_ARE_CARRIES = False                           # True reproduces the old behaviour (kneels credited as rush attempts) for A/B tests
 INFLATE_POOL = True                      # scale listed shares up to >= 92% of team xTD (False leaves the rest as "other")
 SNAP_CAP, SNAP_CAP_SHARE, SNAP_CAP_MIN_RZ = 0.25, 0.04, 2   # <25% snaps over last 3 games -> rush+rec share <= 4% combined ...
 SNAP_CAP_EXEMPT_SNAPS = 0.15             # ... unless 2+ inside-10 carries / end-zone targets AND at least 15% snaps
 SNAP_CAP_AFTER_RESCALE = False           # False: the capped mass is redistributed to teammates (True sends it to "other": total scorers -6%)
 
 
-def share_prior(kind, d):
-    """d = (pos, rank) from the depth chart, or None."""
+def qb_types(past):
+    """pid -> designed runs per game played (kneels excluded) for every QB in the window."""
+    if "qb_rush" not in past:
+        return {}
+    games = past[past.pass_attempt == 1].groupby("passer_player_id").game_id.nunique()
+    runs = past[past.qb_rush & (past.rush_typ == "designed")].groupby("rusher_player_id").size()
+    return {pid: runs.get(pid, 0) / max(g, 1) for pid, g in games.items()}
+
+
+def qb_label(dr):
+    return None if dr is None or dr != dr else ("mobile" if dr >= QB_MOBILE_RUNS else "pocket")
+
+
+def share_prior(kind, d, qb_dr=None):
+    """d = (pos, rank) from the depth chart, or None. qb_dr = designed runs per game sets the QB1 rush prior."""
     if not d or d[1] is None or d[1] != d[1]:
         return PRIOR_DEFAULT
     pos = POS_MAP.get(d[0], d[0])
     if pos not in RANK_CAP:
         return PRIOR_DEFAULT
+    if kind == "rush" and pos == "QB" and d[1] <= 1 and qb_dr is not None and qb_dr == qb_dr:
+        return QB_PRIOR_A + QB_PRIOR_B * min(qb_dr, QB_PRIOR_DR_CAP)
     return SHARE_PRIOR.get((kind, pos, int(min(d[1], RANK_CAP[pos]))), PRIOR_DEFAULT)
 
 
 def rz_recent(past, n=3):
     """pid -> inside-10 carries + end-zone targets over the player's last n games in `past`."""
-    ru = past[(past.rush_attempt == 1) & past.rusher_player_id.notna()]
+    ru = past[(past.rush_attempt == 1) & (past.qb_kneel != 1) & past.rusher_player_id.notna()]
     pa = past[(past.pass_attempt == 1) & past.receiver_player_id.notna()]
     d = pd.concat([pd.DataFrame(dict(pid=ru.rusher_player_id, ord=ru.season * 100 + ru.week, hot=(ru.yardline_100 <= 10).astype(int))),
                    pd.DataFrame(dict(pid=pa.receiver_player_id, ord=pa.season * 100 + pa.week,
@@ -68,20 +95,50 @@ def load():
 
 
 # ---------- expected-TD tables by field position ----------
+QB_YB = [0, 1, 2, 3, 5, 10, 20, 50, 100]          # yardline bins for the QB rush tables
+
+
+def qb_ids(p):
+    """(season, pid) pairs with QB_MIN_ATT+ pass attempts: how we recognise a QB carry in play-by-play."""
+    att = p[p.pass_attempt == 1].groupby(["season", "passer_player_id"]).size()
+    return set(att[att >= QB_MIN_ATT].index)
+
+
+def tag_qb_rush(p):
+    q = qb_ids(p)
+    p = p.copy()
+    p["is_rush"] = (p.rush_attempt == 1) & ((p.qb_kneel != 1) | KNEELS_ARE_CARRIES)   # kneel-downs are not carries (a kneel at the 1 is not a 45% TD chance)
+    p["qb_rush"] = p.is_rush & pd.Series([(a, b) in q for a, b in zip(p.season, p.rusher_player_id)], index=p.index)
+    p["rush_typ"] = np.where(~p.qb_rush, "", np.where(p.qb_scramble == 1, "scramble",
+                             np.where((p.ydstogo <= 1) & (p.yardline_100 <= 3), "sneak", "designed")))
+    return p
+
+
 def xtd_tables(p):
-    ru = p[(p.rush_attempt == 1) & p.yardline_100.notna()]
+    p = tag_qb_rush(p)
+    ru = p[p.is_rush & p.yardline_100.notna()]
     ru_b = ru.assign(b=ru.yardline_100.clip(1, 99).astype(int)).groupby("b").rush_touchdown.mean()
     pa = p[(p.pass_attempt == 1) & (p.sack == 0) & p.receiver_player_id.notna() & p.yardline_100.notna()].copy()
     pa["ez"] = (pa.air_yards.fillna(0) >= pa.yardline_100).astype(int)
     pa["b"] = pa.yardline_100.clip(1, 99).astype(int) // 5
     tg_b = pa.groupby(["b", "ez"]).pass_touchdown.mean()
-    return ru_b.rolling(3, center=True, min_periods=1).mean(), tg_b
+    # QB carries by type x yardline bin, backed off to the generic rate where a cell has < 20 carries
+    q = ru[ru.qb_rush].assign(yb=pd.cut(ru[ru.qb_rush].yardline_100, QB_YB, labels=False))
+    qb_b = q.groupby(["rush_typ", "yb"]).rush_touchdown.agg(["mean", "size"])   # index (typ, bin) -> mean, n
+    return ru_b.rolling(3, center=True, min_periods=1).mean(), tg_b, qb_b
 
 
-def add_xtd(p, ru_b, tg_b):
-    p = p.copy()
+def add_xtd(p, ru_b, tg_b, qb_b=None):
+    p = tag_qb_rush(p)
     yl = p.yardline_100.clip(1, 99).fillna(50).astype(int)
-    p["rush_xtd"] = np.where(p.rush_attempt == 1, ru_b.reindex(yl).values, 0.0)
+    p["rush_xtd"] = np.where(p.is_rush, ru_b.reindex(yl).values, 0.0)
+    if QB_OWN_XTD and qb_b is not None and p.qb_rush.any():
+        tbl = {(t, int(b)): (m, n) for (t, b), (m, n) in zip(qb_b.index, qb_b.values) if b == b}
+        q = p[p.qb_rush]
+        yb = pd.cut(q.yardline_100.fillna(50), QB_YB, labels=False).fillna(-1).astype(int)
+        cells = [tbl.get((t, b)) for t, b in zip(q.rush_typ, yb)]
+        new = [c[0] if c and c[1] >= 20 else x for c, x in zip(cells, q.rush_xtd)]
+        p.loc[q.index, "rush_xtd"] = new
     ez = (p.air_yards.fillna(0) >= p.yardline_100).astype(int)
     key = pd.MultiIndex.from_arrays([yl // 5, ez])
     p["rec_xtd"] = np.where((p.pass_attempt == 1) & p.receiver_player_id.notna(),
@@ -96,9 +153,8 @@ def game_index(p, season, week):
     return past
 
 
-def shares(past, season, depth=None):
-    """Recency-weighted per-player share of team rush/rec xTD, plus 1st-quarter share.
-       depth: pid -> (pos, rank) from the depth chart; enables the position/rank prior."""
+def player_games(past):
+    """Per player-game rows: share of team rush/rec xTD and 1st-quarter share. Hyperparameter-free (cache it)."""
     rows = []
     for kind, pid, name in [("rush", "rusher_player_id", "rusher_player_name"),
                             ("rec", "receiver_player_id", "receiver_player_name")]:
@@ -117,21 +173,34 @@ def shares(past, season, depth=None):
     pg["xtd"] = pg["rush_xtd"].fillna(0) + pg["rec_xtd"].fillna(0)
     pg["share"] = pg.xtd / pg.team
     pg["q1share"] = np.where(pg.teamq1 > 0, pg.q1 / pg.teamq1.replace(0, np.nan), np.nan)
-    # recency weights: order player's games newest->oldest
     pg["ord"] = pg.season * 100 + pg.week
-    out = []
-    for (pid, kind), g in pg.groupby(["pid", "kind"]):
-        g = g.sort_values("ord", ascending=False)
-        w = DECAY ** np.arange(len(g)) * np.where(g.season < season, PRIOR_SEASON_W, 1.0)
-        q = g.q1share.notna()
-        out.append(dict(pid=pid, kind=kind, name=g.name.iloc[0], last_team=g.posteam.iloc[0],
-                        share=np.average(g.share, weights=w), n=len(g), wsum=w.sum(), last_ord=g.ord.iloc[0],
-                        q1share=np.average(g.q1share[q], weights=w[q]) if q.any() else np.nan))
-    sh = pd.DataFrame(out)
+    return pg
+
+
+def shares(past, season, depth=None, pg=None, qb_type=None):
+    """Recency-weighted per-player share of team rush/rec xTD, plus 1st-quarter share.
+       depth: pid -> (pos, rank) from the depth chart; enables the position/rank prior.
+       pg: precomputed player_games(past)."""
+    g = (player_games(past) if pg is None else pg).sort_values("ord", ascending=False).copy()
+    g["rank"] = g.groupby(["pid", "kind"]).cumcount()                  # 0 = newest game
+    g["w"] = DECAY ** g["rank"] * np.where(g.season < season, PRIOR_SEASON_W, 1.0)
+    g["ws"] = g.w * g.share
+    q = g.q1share.notna()
+    g["wq"] = np.where(q, g.w, 0.0); g["wqs"] = np.where(q, g.w * g.q1share.fillna(0), 0.0)
+    sh = g.groupby(["pid", "kind"]).agg(name=("name", "first"), last_team=("posteam", "first"), share=("ws", "sum"),
+                                        wsum=("w", "sum"), n=("w", "size"), last_ord=("ord", "first"),
+                                        wq=("wq", "sum"), wqs=("wqs", "sum")).reset_index()
+    sh["share"] = sh.share / sh.wsum
+    sh["q1share"] = np.where(sh.wq > 0, sh.wqs / sh.wq.replace(0, np.nan), np.nan)
+    sh = sh.drop(columns=["wq", "wqs"])
+    qb_type = qb_types(past) if qb_type is None else qb_type
+    sh["qb_dr"] = sh.pid.map(qb_type)
+    sh["qb_type"] = sh.qb_dr.map(qb_label)
     if PRIOR_K > 0 and depth is not None:
-        # shrink toward the position/rank baseline: PRIOR_K games' worth of prior vs the player's weighted sample
-        sh["prior"] = [share_prior(k, depth.get(pid)) for pid, k in zip(sh.pid, sh.kind)]
-        sh["share"] = (sh.wsum * sh.share + PRIOR_K * sh.prior) / (sh.wsum + PRIOR_K)
+        # shrink toward the position/rank baseline: K games' worth of prior vs the player's weighted sample (QBs: QB_PRIOR_K)
+        sh["prior"] = [share_prior(k, depth.get(pid), dr) for pid, k, dr in zip(sh.pid, sh.kind, sh.qb_dr)]
+        K = np.where(sh.qb_dr.notna() & (sh.kind == "rush"), QB_PRIOR_K, PRIOR_K)
+        sh["share"] = (sh.wsum * sh.share + K * sh.prior) / (sh.wsum + K)
     else:
         # shrink toward 0 for small samples (a 1-game outlier shouldn't own the red zone)
         sh["share"] = sh.share * sh.wsum / (sh.wsum + 0.5)
@@ -154,6 +223,41 @@ def team_pass_frac(past, season):
     return out
 
 
+DEF_K = 6.0                  # games of league-average shrinkage for defensive tendencies
+DEF_PF_W, DEF_LAM_W = 0.0, 0.0   # weights on the opponent's pass-share-allowed deviation and RZ-TD-rate-allowed ratio
+
+
+def defense_table(past, season):
+    """Per defense: recency-weighted pass share of offensive TDs allowed (deviation from league) and
+       red-zone TD rate allowed (ratio to league), each shrunk to league average with DEF_K games."""
+    d = past[past.defteam.notna()]
+    td = d[(d.touchdown == 1) & ((d.rush_touchdown == 1) | (d.pass_touchdown == 1))]
+    g = td.groupby(["season", "week", "defteam"]).agg(pass_td=("pass_touchdown", "sum"), td=("touchdown", "size"))
+    rz = d[d.yardline_100 <= 20].drop_duplicates(["game_id", "drive"]).groupby(["season", "week", "defteam"]).size().rename("rz_trips")
+    g = g.join(rz, how="outer").fillna(0).reset_index()
+    g["ord"] = g.season * 100 + g.week
+    lg_pf = g.pass_td.sum() / max(g.td.sum(), 1)
+    lg_rz = g.td.sum() / max(g.rz_trips.sum(), 1)
+    out = {}
+    for t, x in g.groupby("defteam"):
+        x = x.sort_values("ord", ascending=False)
+        w = DECAY ** np.arange(len(x)) * np.where(x.season < season, PRIOR_SEASON_W, 1.0)
+        ws = w.sum()
+        pf = (w * x.pass_td).sum() / max((w * x.td).sum(), 1e-9)
+        rzr = (w * x.td).sum() / max((w * x.rz_trips).sum(), 1e-9)
+        pf = (ws * pf + DEF_K * lg_pf) / (ws + DEF_K)
+        rzr = (ws * rzr + DEF_K * lg_rz) / (ws + DEF_K)
+        out[t] = dict(pf_dev=pf - lg_pf, rz_ratio=rzr / lg_rz if lg_rz > 0 else 1.0)
+    return out
+
+
+def prep_week(p, s, season, week):
+    """Everything build_slate needs that does not depend on hyperparameters (for repeated evaluation)."""
+    ru_b, tg_b, qb_b = xtd_tables(p[p.season < season] if season > 2023 else p)
+    past = add_xtd(game_index(p, season, week), ru_b, tg_b, qb_b)
+    return dict(past=past, pg=player_games(past), qb_type=qb_types(past))
+
+
 def passer_share(past):
     """Share of team pass TDs thrown by each QB (for starter lookup)."""
     d = past[past.pass_attempt == 1]
@@ -161,13 +265,15 @@ def passer_share(past):
 
 
 # ---------- slate build ----------
-def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, depth=None, snaps=None):
+def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, depth=None, snaps=None, cache=None):
     """active: dict team -> set(pid) allowed (None = anyone whose last team matches).
        qb_override: dict team -> (pid, name).
-       depth: pid -> (pos, rank) before this week (share prior). snaps: pid -> offensive snap % over his last 3 games."""
-    ru_b, tg_b = xtd_tables(p[p.season < season] if season > 2023 else p)
-    past = add_xtd(game_index(p, season, week), ru_b, tg_b)
-    sh = shares(past, season, depth)
+       depth: pid -> (pos, rank) before this week (share prior). snaps: pid -> offensive snap % over his last 3 games.
+       cache: prep_week() output, to skip the hyperparameter-free work."""
+    cache = cache or prep_week(p, s, season, week)
+    past = cache["past"]
+    sh = shares(past, season, depth, pg=cache["pg"], qb_type=cache.get("qb_type"))
+    dfn = defense_table(past, season) if (DEF_PF_W or DEF_LAM_W) else {}
     rz3 = rz_recent(past) if snaps is not None and SNAP_CAP > 0 else {}
     pf = team_pass_frac(past, season)
     games = s[(s.season == season) & (s.week == week) & (s.game_type == "REG")].dropna(subset=["total_line"])
@@ -180,7 +286,9 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
             lam = max(0.4, 0.1517 * imp - 0.973)
             w = (wind or {}).get(g.game_id)
             wadj = WIND_SLOPE * max(0.0, (w or 0) - WIND_FLOOR)
-            pfr = float(np.clip(pf.get(t, 0.615) - 0.0027 * fav - wadj, 0.35, 0.85))
+            od = dfn.get(g[f"{opp}_team"], {})                      # opponent's defensive tendencies
+            lam *= 1 + DEF_LAM_W * (od.get("rz_ratio", 1.0) - 1)
+            pfr = float(np.clip(pf.get(t, 0.615) - 0.0027 * fav - wadj + DEF_PF_W * od.get("pf_dev", 0.0), 0.35, 0.85))
             teams[t] = dict(game_id=g.game_id, opp=g[f"{opp}_team"], implied=imp, lam=lam, pass_frac=pfr,
                             home=side == "home", gametime=g.gameday + " " + str(g.gametime), spread=g.spread_line,
                             wind=w, wind_adj=wadj)
@@ -200,13 +308,16 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
             cap = lambda: k.share.where(~low, k.share.clip(upper=SNAP_CAP_SHARE / 2))   # half per kind -> combined cap
             if low is not None and not SNAP_CAP_AFTER_RESCALE:
                 k["share"] = cap()
-            tot = k.share.sum()
+            tot = float(k.share.sum())
             # cap the pool; what is left is "other/unlisted" in the sim
             if allow is not None:
                 target = min(0.98, max(tot, 0.92)) if INFLATE_POOL else min(tot, 0.98)
             else:
                 target = min(tot, 0.95)
-            k["share"] = k.share * (target / tot if tot > 0 else 0)
+            f = target / tot if tot > 0 else 0
+            isqb = k.qb_type.notna() if QB_OUT_OF_POOL else pd.Series(False, index=k.index)
+            # QBs keep their own share (never stretched); everyone else gets the same factor as before, the rest is "other"
+            k.loc[~isqb, "share"] = k.share[~isqb] * f
             if low is not None and SNAP_CAP_AFTER_RESCALE:
                 k["share"] = cap()
             k["team"] = t
@@ -298,20 +409,23 @@ def fair_american(p):
 
 def summarize(teams, pl, qbs, sim, names):
     tds, pix = sim["tds"], sim["pix"]
-    rows = []
     meta = pl.groupby("pid").agg(team=("team", "first")).team.to_dict()
     for t, (qid, qn) in qbs.items():
         if qid: meta.setdefault(qid, t)
-    for pid, i in pix.items():
-        t = meta.get(pid)
-        if t is None: continue
-        rs = pl[(pl.pid == pid) & (pl.kind == "rush")].share.sum()
-        rc = pl[(pl.pid == pid) & (pl.kind == "rec")].share.sum()
-        q1 = pl[pl.pid == pid].q1share.mean()
-        games = int(pl[pl.pid == pid].n.max()) if (pl.pid == pid).any() else 0
+    rs = pl[pl.kind == "rush"].groupby("pid").share.sum().to_dict()
+    rc = pl[pl.kind == "rec"].groupby("pid").share.sum().to_dict()
+    q1 = pl.groupby("pid").q1share.mean().to_dict()
+    gm = pl.groupby("pid").n.max().to_dict()
+    pids = [pid for pid in pix if pid in meta]
+    idx = [pix[pid] for pid in pids]
+    T = tds[:, idx]
+    p_any, p2, xtd = (T > 0).mean(0), (T > 1).mean(0), T.mean(0)
+    pf, ptf = sim["first_game"][:, idx].mean(0), sim["first_team"][:, idx].mean(0)
+    rows = []
+    for i, pid in enumerate(pids):
+        t = meta[pid]
         rows.append(dict(pid=pid, name=names.get(pid, pid), team=t, opp=teams[t]["opp"],
-                         game_id=teams[t]["game_id"], rush_share=rs, rec_share=rc, games=games,
-                         xtd=tds[:, i].mean(), p_any=(tds[:, i] > 0).mean(), p_2plus=(tds[:, i] > 1).mean(),
-                         p_first=sim["first_game"][:, i].mean(), p_team_first=sim["first_team"][:, i].mean(),
-                         q1_share=q1))
+                         game_id=teams[t]["game_id"], rush_share=float(rs.get(pid, 0.0)), rec_share=float(rc.get(pid, 0.0)),
+                         games=int(gm.get(pid, 0)), xtd=float(xtd[i]), p_any=float(p_any[i]), p_2plus=float(p2[i]),
+                         p_first=float(pf[i]), p_team_first=float(ptf[i]), q1_share=float(q1.get(pid, np.nan))))
     return pd.DataFrame(rows)

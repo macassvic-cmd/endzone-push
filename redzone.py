@@ -4,7 +4,7 @@ import numpy as np, pandas as pd
 
 def _season(p, season):
     d = p[(p.season == season) & (p.season_type == "REG")]
-    ru = d[(d.rush_attempt == 1) & d.rusher_player_id.notna()]
+    ru = d[(d.rush_attempt == 1) & (d.qb_kneel != 1) & d.rusher_player_id.notna()]
     pa = d[(d.pass_attempt == 1) & (d.sack == 0) & d.receiver_player_id.notna()]
     ez = pa.air_yards.fillna(-99) >= pa.yardline_100
     team_rz_ru = ru[ru.yardline_100 <= 20].groupby("posteam").size()
