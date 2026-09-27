@@ -37,7 +37,8 @@ sched = s2[(s2.season == season) & (s2.week == week)]
 events = O.fetch_all()
 if events and os.environ.get("KALSHI", "on") != "off":
     try:
-        print("kalshi markets attached:", K.attach(events))          # Kalshi joins the board as one more book (fee-adjusted prices)
+        _n, _liq = K.attach(events)                                  # Kalshi joins the board as one more book (fee-adjusted prices)
+        print(f"kalshi markets attached: {_n} ({_liq} with >= ${K.MIN_DOLLARS_AT_ASK:.0f} at the ask; the rest are reference-only)")
     except Exception as e:
         print("kalshi unavailable:", e)
 if events and not os.environ.get("ODDS_MOCK"):
@@ -91,7 +92,9 @@ try:
     snaps3 = _sn.sort_values("week").groupby("gsis_id").tail(3).groupby("gsis_id").offense_pct.mean().to_dict()
 except Exception as e:
     print("snaps unavailable for cap:", e)
-teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3)
+_rk = ros[ros.rookie_year == season].drop_duplicates("gsis_id")
+rookies = {g: M.draft_bucket(d) for g, d in zip(_rk.gsis_id, _rk.draft_number)}
+teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3, rookies=rookies)
 pl.loc[pl.pid.isin(q_ids), "share"] *= 0.85
 sim = M.simulate(teams, pl, qbs, n=60000)
 df = M.summarize(teams, pl, qbs, sim, names)
@@ -152,7 +155,10 @@ def attach(row, market, prob, point=None, prefix=""):
     if row.get("games", 99) < THIN_GAMES and odds_ratio(prob, ps["market_p"]) > THIN_RATIO:
         w = BLEND_W_THIN
     blend = w * prob + (1 - w) * ps["market_p"]      # meet the market halfway (or lean on it for thin outliers)
+    kal = board.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK, {}).get("yes")
+    kref = O.REFERENCE.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK)
     return {f"{prefix}best": ps["best"], f"{prefix}book": ps["book"], f"{prefix}mkt_p": round(ps["market_p"], 4),
+            f"{prefix}kalshi": kal if kal is not None else kref, f"{prefix}kalshi_liquid": kal is not None,
             f"{prefix}ev": round(blend * O.decimal(ps["best"]) - 1, 4), f"{prefix}model_ev": round(ev, 4),
             f"{prefix}med": ps["median"], f"{prefix}ev_med": round(blend * O.decimal(ps["median"]) - 1, 4),
             f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w}
@@ -218,7 +224,8 @@ for _, r in df.iterrows():
         if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
-                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role))
+                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role,
+                              kalshi=None if pd.isna(r.get(m + "kalshi")) else int(r[m + "kalshi"]), kalshi_liquid=bool(r.get(m + "kalshi_liquid", False))))
 clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"))

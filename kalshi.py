@@ -13,6 +13,7 @@ BASE = "https://api.elections.kalshi.com/trade-api/v2"
 SERIES = {"player_anytime_td": "KXNFLTD", "player_1st_td": "KXNFLFIRSTTD"}
 TAKER_FEE, MAKER_FEE = 0.07, 0.0175
 BOOK = "Kalshi"
+MIN_DOLLARS_AT_ASK = 100.0      # Kalshi counts as a real price (best/median/EV) only with >= $100 available at the ask; else reference only
 # Kalshi event tickers end in <AWAY><HOME> with its own 3-letter codes; map the ones that differ from nflverse
 KALSHI_ABBR = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "ARZ": "ARI", "BLT": "BAL", "CLV": "CLE", "HST": "HOU", "SL": "LA"}
 CODES = sorted({v for v in TEAM_ABBR.values()} | set(KALSHI_ABBR), key=len, reverse=True)
@@ -89,18 +90,22 @@ def fetch_board():
                 if not player or ask is None: continue
                 ask, bid = float(ask), float(bid) if bid is not None else None
                 if ask <= 0 or ask >= 1: continue
+                size = float(m.get("yes_ask_size_fp") or 0)          # contracts available at the ask
                 rows.append(dict(player=player, yes_ask=ask, yes_bid=bid, last=float(last) if last is not None else None,
-                                 volume=float(m.get("volume_fp") or 0), ticker=m["ticker"], close=m.get("close_time")))
+                                 volume=float(m.get("volume_fp") or 0), volume_24h=float(m.get("volume_24h_fp") or 0),
+                                 ask_size=size, dollars_at_ask=round(size * ask, 2), ticker=m["ticker"], close=m.get("close_time")))
             board.setdefault(g, {})[key] = rows
     return board, raw
 
 
 def attach(events, board=None, min_volume=0.0):
     """Add Kalshi as a bookmaker on each Odds API event's props (same shape as the Odds API books).
-       Price = fee-adjusted American price of the yes ask; description = player name. Returns count added."""
+       Price = fee-adjusted American price of the yes ask; description = player name. Outcomes with less than
+       MIN_DOLLARS_AT_ASK available at the ask carry reference=True: shown on the board, excluded from best/median/EV.
+       Returns (attached, liquid) counts."""
     if board is None:
         board, _ = fetch_board()
-    n = 0
+    n = liquid = 0
     for ev in events or []:
         g = (TEAM_ABBR.get(ev["away_team"]), TEAM_ABBR.get(ev["home_team"]))
         k = board.get(g)
@@ -108,13 +113,16 @@ def attach(events, board=None, min_volume=0.0):
         markets = []
         for key, rows in k.items():
             oc = [dict(name="Yes", description=r["player"], price=fee_adjusted_american(r["yes_ask"]),
-                       kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_volume=r["volume"], kalshi_ticker=r["ticker"])
+                       reference=r["dollars_at_ask"] < MIN_DOLLARS_AT_ASK,
+                       kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_ask_size=r["ask_size"],
+                       kalshi_dollars_at_ask=r["dollars_at_ask"], kalshi_volume=r["volume"], kalshi_volume_24h=r["volume_24h"],
+                       kalshi_ticker=r["ticker"])
                   for r in rows if r["volume"] >= min_volume]
             if oc: markets.append(dict(key=key, outcomes=oc))
         if markets:
             ev.setdefault("props", {}).setdefault("bookmakers", []).append(dict(key="kalshi", title=BOOK, markets=markets))
-            n += sum(len(m["outcomes"]) for m in markets)
-    return n
+            n += sum(len(m["outcomes"]) for m in markets); liquid += sum(1 for m in markets for o in m["outcomes"] if not o["reference"])
+    return n, liquid
 
 
 if __name__ == "__main__":

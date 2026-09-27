@@ -95,9 +95,14 @@ def game_lines(events):
     return out
 
 
+REFERENCE = {}     # (market, norm_player, point) -> {book: price} for quotes shown but not priced (e.g. illiquid Kalshi)
+
+
 def prop_board(events):
-    """Returns {(market, norm_player, point): {book: {"yes": price, "no": price}}}"""
+    """Returns {(market, norm_player, point): {book: {"yes": price, "no": price}}}.
+       Outcomes flagged reference=True go to REFERENCE instead (displayed, never used for best/median/EV)."""
     board = defaultdict(lambda: defaultdict(dict))
+    REFERENCE.clear()
     for ev in events or []:
         for b in ev.get("props", {}).get("bookmakers", []):
             for m in b["markets"]:
@@ -106,6 +111,9 @@ def prop_board(events):
                     side = o["name"].lower()
                     side = "yes" if side in ("yes", "over") else "no" if side in ("no", "under") else "yes"
                     key = (MARKET_ALIAS.get(m["key"], m["key"]), norm_name(player), o.get("point"))
+                    if o.get("reference"):
+                        if side == "yes": REFERENCE.setdefault(key, {})[b["title"]] = o["price"]
+                        continue
                     board[key][b["title"]][side] = o["price"]
     return board
 
@@ -120,7 +128,7 @@ def measure_hold(events, min_games=3):
                 mk = MARKET_ALIAS.get(m["key"], m["key"])
                 if mk not in ANCHOR:
                     continue
-                s = sum(implied(o["price"]) for o in m["outcomes"] if o["name"].lower() in ("yes", "over"))
+                s = sum(implied(o["price"]) for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference"))
                 if s > 0:
                     sums[(mk, b["title"])].append(s / ANCHOR[mk])
     out = dict(DEFAULT_OVERROUND)
