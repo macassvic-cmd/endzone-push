@@ -122,3 +122,35 @@ hits vs 7.63 expected per week.
 
 Week 3 rerun from saved odds with redistribution on: 47 edges (38 bench, 7 starters, 2 rotational), 9 shown by
 default. QB edges: Stafford anytime and first TD, Goff anytime, Winston anytime.
+
+## 2026-09-27 — Mobile-QB under-prediction: diagnosed, no change kept
+
+**Diagnosis** (2025 weeks 4–18, model lambdas and pass fractions vs actual, by QB1 designed runs per game):
+
+| Tier | QB-games | Team rush TDs proj / act | Pass frac proj / act | QB share of rush TDs proj / act | P(QB rush TD) proj / act |
+|---|---|---|---|---|---|
+| <0.75 | 226 | 0.89 / 0.85 | 0.64 / 0.65 | 0.105 / 0.094 | 8.5% / 8.0% |
+| 0.75–1.5 | 115 | 0.87 / 0.93 | 0.64 / 0.62 | 0.163 / 0.215 | 13.2% / 15.7% |
+| 1.5–2.5 | 55 | 1.06 / 1.38 | 0.60 / 0.50 | 0.235 / 0.342 | 21.8% / 32.7% |
+| 2.5+ | 52 | 1.00 / 0.98 | 0.60 / 0.58 | 0.326 / 0.353 | 27.0% / 28.8% |
+
+For the mid tier it is both parts: the team's rushing TDs run 30% above projection (pass fraction 0.60 vs 0.50) and
+the QB's share of them is 0.34 vs 0.24. The 2.5+ tier is calibrated on both in 2025.
+
+**Variants tested** (`model.py` hooks, all off): (a) lighter prior for QBs with 20+ games (K 1.5); (b) pass_frac −=
+0.03 / 0.06 × (designed runs − 1); (c) separate prior line above 1.5 designed runs (0.12 + 0.08 × dr); (d) the
+QB-specific TD-rate table for designed runs and scrambles only. Judged on pick weeks 4–11 and confirm weeks 12–18 in
+2025 and again in 2024.
+
+- 2025 confirm weeks, mid tier projected / actual: base 21.5 / 34.6; (a) 21.7; (b 0.03) 22.7; (c) 23.3; (d) 25.0.
+  Overall Brier moved by 0.00002–0.0003 (worse in every case but within noise for a–c), QB Brier worse for b–d
+  because the 2.5+ tier scored 15.0% in those weeks against 30–39% projected; top-15 hits 7.71 → 7.71 (a, c), 7.57
+  (b 0.03), 7.29 (b 0.06).
+- 2024: the mid tier is 16 / 15 QB-games and scored 37.5% then 6.7%; the 2.5+ tier scored 36% then 59% against 25%
+  projected. (b) and (c) help QB Brier in 2024 and hurt it in 2025 for the same reason: they move the 2.5+ tier.
+- A steeper single prior slope (smooth: QB_PRIOR_B 0.08 and 0.10) was the remaining candidate; its runs were stopped
+  by a low-memory event and are untested.
+
+**Decision:** nothing kept. The aggregate under-prediction of mobile QBs is real in both seasons, but every tier is
+15–30 QB-games of 3–5 quarterbacks and flips sign between halves, so no tested adjustment improves the mid tier on
+held-out weeks without hurting overall or QB Brier. Revisit with 2026 data, smooth-slope test first.

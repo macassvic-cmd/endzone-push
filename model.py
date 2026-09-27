@@ -47,6 +47,16 @@ SHARE_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1):
 QB_MIN_ATT, QB_MOBILE_RUNS = 20, 2.0                  # QB = 20+ attempts in a season; "mobile" label = 2+ designed runs/game
 QB_PRIOR_A, QB_PRIOR_B, QB_PRIOR_DR_CAP = 0.068, 0.054, 4.0   # QB1 rush-share prior = A + B * designed runs per game (2025 fit, kneels excluded)
 QB_PRIOR_K = 3.0                                     # prior weight (games) for QB rush shares; one sneak at the 1 is a third of a team's weekly rush xTD
+# Mobile-QB round (2025 + 2024 backtests, pick weeks 4-11 / confirm 12-18, shared rows): mobile QBs are under-predicted
+# in aggregate (2025 designed-runs >= 1.5: ~25% projected vs ~31% actual; 2024: ~22% vs ~41%) but the tiers are 15-30
+# QB-games each and flip between halves (2025 2.5+ tier: 37.5% actual in weeks 4-11, 15.0% in 12-18; 2024 mid tier:
+# 37.5% then 6.7%). None of (a)-(d) below improved the mid tier on held-out weeks without hurting overall or QB Brier,
+# so all four stay off. A steeper single prior slope (QB_PRIOR_B 0.08 / 0.10) was queued but the runs were stopped
+# by a low-memory event before finishing; untested.
+QB_PRIOR_K_VET, QB_VET_GAMES = 3.0, 20               # (a) lighter prior for QBs with 2+ seasons of games in the window (tested: 1.5)
+MOBILE_PF_SLOPE, MOBILE_PF_KNEE = 0.0, 1.0           # (b) pass_frac -= slope * max(0, designed runs/game - knee) for the team's QB1
+QB_PRIOR_HI = None                                   # (c) (A, B, split): separate prior line A + B*dr for dr >= split
+QB_OWN_XTD_TYPES = ("sneak", "designed", "scramble") # (d) which QB carry types use the QB-specific TD-rate table when QB_OWN_XTD
 QB_OWN_XTD, QB_OUT_OF_POOL = False, True
 # Round 2 (2025 backtest, shared rows, n=3000; base Brier 0.13194, top-15 7.87 hits/wk):
 #   redistribution alone 0.13170 (kept); fitted xTD 0.13214 (off); no-history players + rookie/mover priors add nothing
@@ -95,6 +105,8 @@ def share_prior(kind, d, qb_dr=None, rookie=None):
     if pos not in RANK_CAP:
         return PRIOR_DEFAULT
     if kind == "rush" and pos == "QB" and d[1] <= 1 and qb_dr is not None and qb_dr == qb_dr:
+        if QB_PRIOR_HI and qb_dr >= QB_PRIOR_HI[2]:
+            return QB_PRIOR_HI[0] + QB_PRIOR_HI[1] * min(qb_dr, QB_PRIOR_DR_CAP)
         return QB_PRIOR_A + QB_PRIOR_B * min(qb_dr, QB_PRIOR_DR_CAP)
     prior = SHARE_PRIOR.get((kind, pos, int(min(d[1], RANK_CAP[pos]))), PRIOR_DEFAULT)
     if rookie and (kind, pos) in ROOKIE_PRIOR:
@@ -203,7 +215,7 @@ def add_xtd(p, ru_b, tg_b, qb_b=None):
         q = p[p.qb_rush]
         yb = pd.cut(q.yardline_100.fillna(50), QB_YB, labels=False).fillna(-1).astype(int)
         cells = [tbl.get((t, b)) for t, b in zip(q.rush_typ, yb)]
-        new = [c[0] if c and c[1] >= 20 else x for c, x in zip(cells, q.rush_xtd)]
+        new = [c[0] if c and c[1] >= 20 and t in QB_OWN_XTD_TYPES else x for c, x, t in zip(cells, q.rush_xtd, q.rush_typ)]
         p.loc[q.index, "rush_xtd"] = new
     ez = (p.air_yards.fillna(0) >= p.yardline_100).astype(int)
     key = pd.MultiIndex.from_arrays([yl // 5, ez])
@@ -292,7 +304,7 @@ def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookie
     if PRIOR_K > 0 and depth is not None:
         # shrink toward the position/rank baseline: K games' worth of prior vs the player's weighted sample (QBs: QB_PRIOR_K)
         sh["prior"] = [share_prior(k, depth.get(pid), dr, rookies.get(pid)) for pid, k, dr in zip(sh.pid, sh.kind, sh.qb_dr)]
-        K = np.where(sh.qb_dr.notna() & (sh.kind == "rush"), QB_PRIOR_K, PRIOR_K)
+        K = np.where(sh.qb_dr.notna() & (sh.kind == "rush"), np.where(sh.n >= QB_VET_GAMES, QB_PRIOR_K_VET, QB_PRIOR_K), PRIOR_K)
         sh.loc[sh.n == 0, "prior"] = sh.prior[sh.n == 0] * NEW_PLAYER_W
         sh["share"] = (sh.wsum * sh.share + K * sh.prior) / (sh.wsum + K)
     else:
@@ -376,6 +388,14 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
     rz3 = rz_recent(past) if snaps is not None and SNAP_CAP > 0 else {}
     pf = team_pass_frac(past, season)
     games = s[(s.season == season) & (s.week == week) & (s.game_type == "REG")].dropna(subset=["total_line"])
+    ps = passer_share(past); qbs = {}
+    for t in set(games.home_team) | set(games.away_team):
+        if qb_override and t in qb_override:
+            qbs[t] = qb_override[t]
+        else:
+            q = ps[ps.posteam == t].sort_values("att", ascending=False)
+            qbs[t] = (q.passer_player_id.iloc[0], q.passer_player_name.iloc[0]) if len(q) else (None, "?")
+    qdr = cache.get("qb_type") or qb_types(past)
     teams = {}
     for _, g in games.iterrows():
         for side, opp, sgn in [("home", "away", 1), ("away", "home", -1)]:
@@ -387,7 +407,8 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
             wadj = WIND_SLOPE * max(0.0, (w or 0) - WIND_FLOOR)
             od = dfn.get(g[f"{opp}_team"], {})                      # opponent's defensive tendencies
             lam *= 1 + DEF_LAM_W * (od.get("rz_ratio", 1.0) - 1)
-            pfr = float(np.clip(pf.get(t, 0.615) - 0.0027 * fav - wadj + DEF_PF_W * od.get("pf_dev", 0.0), 0.35, 0.85))
+            mob = MOBILE_PF_SLOPE * max(0.0, qdr.get(qbs.get(t, (None,))[0], 0.0) - MOBILE_PF_KNEE)   # mobile QB1: TDs skew to the run
+            pfr = float(np.clip(pf.get(t, 0.615) - 0.0027 * fav - wadj + DEF_PF_W * od.get("pf_dev", 0.0) - mob, 0.35, 0.85))
             teams[t] = dict(game_id=g.game_id, opp=g[f"{opp}_team"], implied=imp, lam=lam, pass_frac=pfr,
                             home=side == "home", gametime=g.gameday + " " + str(g.gametime), spread=g.spread_line,
                             wind=w, wind_adj=wadj)
@@ -443,14 +464,7 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
             k["team"] = t
             players.append(k)
     pl = pd.concat(players)
-    qbs = {}
-    ps = passer_share(past)
-    for t in teams:
-        if qb_override and t in qb_override:
-            qbs[t] = qb_override[t]
-        else:
-            q = ps[ps.posteam == t].sort_values("att", ascending=False)
-            qbs[t] = (q.passer_player_id.iloc[0], q.passer_player_name.iloc[0]) if len(q) else (None, "?")
+    qbs = {t: qbs.get(t, (None, "?")) for t in teams}
     return teams, pl, qbs, sh
 
 

@@ -3,6 +3,7 @@
     python search.py --weeks 4-11 --n 3000 --grid --out runs/grid_pick.csv [--shard 0/3]
     python search.py --weeks 12-18 --params '[{"DECAY":0.9,"PRIOR_K":3}, {...}]' --out runs/confirm.csv
     python search.py --weeks 4-18 --params '[{}]' --tag base          # baseline with current model.py values
+    python search.py --season 2024 --weeks 4-18 --params '[{}]' --tag base24   # second season (2024 depth charts are week-based)
     python search.py --pre '{"QB_OWN_XTD": false}' ...               # settings that must apply before the cache is built
 
 Caches the hyperparameter-free work per week (prep_week, depth, snaps, active) once, then evaluates each
@@ -82,6 +83,7 @@ def main():
     args = sys.argv[1:]
     get = lambda k, d=None: args[args.index(k) + 1] if k in args else d
     lo, hi = map(int, get("--weeks", "4-18").split("-")); weeks = list(range(lo, hi + 1))
+    season = int(get("--season", 2025))
     n = int(get("--n", 3000)); out = get("--out"); tag = get("--tag")
     if "--grid" in args:
         keys = list(GRID); sets = [dict(zip(keys, v)) for v in itertools.product(*GRID.values())]
@@ -92,13 +94,13 @@ def main():
     for k, v in json.loads(get("--pre", "{}")).items():        # applied BEFORE prep: for things baked into the cache (xTD tables)
         setattr(M, k, v); print("pre-set", k, "=", v)
     p, s = M.load()
-    t0 = time.time(); pre = prep(p, s, weeks); print(f"prepared {len(weeks)} weeks in {time.time() - t0:.0f}s; {len(sets)} parameter sets", flush=True)
+    t0 = time.time(); pre = prep(p, s, weeks, season); print(f"prepared {len(weeks)} weeks of {season} in {time.time() - t0:.0f}s; {len(sets)} parameter sets", flush=True)
     rows = []
     for i, ps in enumerate(sets):
-        t0 = time.time(); r = evaluate(p, s, pre, ps, n=n)
+        t0 = time.time(); r = evaluate(p, s, pre, ps, n=n, season=season)
         row = dict(**{k: ps[k] for k in ps}, **score(r)); rows.append(row)
         print(f"[{i + 1}/{len(sets)}] {ps} brier={row['brier']} top15={row['top15_hit']}/{row['top15_exp']} ({time.time() - t0:.0f}s)", flush=True)
-        if tag: r.to_parquet(f"bt2025_{tag}.parquet")
+        if tag: r.to_parquet(f"bt{season}_{tag}.parquet")
         if out:
             os.makedirs(os.path.dirname(out) or ".", exist_ok=True); pd.DataFrame(rows).to_csv(out, index=False)
     pd.set_option("display.width", 250); print(pd.DataFrame(rows).to_string(index=False))
