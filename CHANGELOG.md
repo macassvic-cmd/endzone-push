@@ -180,3 +180,21 @@ earlier kickoffs.
 - **Weak-spot tag.** QBs with 1.5+ designed runs per game (the under-predicted tiers from the mobile-QB round) are
   tagged "weak spot" on the Anytime and First TD tabs and kept off the Edge Board until that fix lands. Week 3:
   Daniels, Jackson, Allen, Hurts, Murray, Nix, Lawrence, Watson, Willis, Shough.
+
+## 2026-09-28 — Grading fixes from week 3
+
+- **Grading runs.** New no-odds slots Sun 9:07 PM, Mon 7:13 AM and Tue 7:13 AM PT; results.py regrades on every
+  run until all games are final, and the scorecard shows "14 of 15 graded" with a partial tag until then.
+- **Label.** "Last graded week" is now "<season> Week N top 40 · graded of total games graded".
+- **CLV repaired.** The 12:52 PT in-game pull had logged 127 edges with inflated market probabilities (the 166-edge
+  board), which made average CLV −34 points. Those entries are purged from `edge_log/2026_w3.json`; the 8 legitimate
+  fresh edges from the corrected board are re-logged with that pull's stamp. The closing pull must now be strictly
+  before kickoff and hold a complete board for that game (a book pricing 8+ players in the market); otherwise the
+  previous pull is used. Week 3 recomputed: 50 edges, average CLV +0.2 pts, 66% beat the close (anytime 74%, first
+  TD 42%; starters 44%, bench 71%). The slate's bet record was already clean (37 bets, max market probability 0.26).
+- **Honest bet reporting.** Expected units (sum of EV at the prices taken) next to units won, a variance note under
+  100 graded bets, and record/units/expected excluding +1000 or longer. Week 3: 5-32 for +75.4u against +13.2u
+  expected; excluding +1000 or longer, 2-9 for −1.2u against +2.9u expected.
+- **TNF.** The Thursday 12:07 PT run projects the week with the Thursday game (kickoff is after noon) and the
+  Saturday run locks it with its pre-game projections; week 3 lacked it only because the workflow did not exist
+  that Thursday.

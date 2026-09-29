@@ -40,11 +40,30 @@ def pulls(season, week):
     return sorted(out)
 
 
-def closing_pull(season, week, commence_iso):
-    """Path of the last pull strictly before kickoff (ISO 8601 Z), or None."""
+MIN_BOARD = 8      # a game's board counts as complete when some book prices at least this many players in the market
+
+
+def board_complete(events, team, market_key):
+    """Does this pull hold a complete (pre-kickoff) board for the game with this team, in this market?"""
+    for ev in events:
+        if team in (O.TEAM_ABBR.get(ev["home_team"]), O.TEAM_ABBR.get(ev["away_team"])):
+            for b in ev.get("props", {}).get("bookmakers", []):
+                for m in b["markets"]:
+                    if O.MARKET_ALIAS.get(m["key"], m["key"]) == market_key:
+                        if sum(1 for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference")) >= MIN_BOARD:
+                            return True
+    return False
+
+
+def closing_pull(season, week, commence_iso, team=None, market_key=None, cache=None):
+    """Path of the last pull strictly before kickoff (ISO 8601 Z) whose board for this game is complete, or None.
+       A pull taken after kickoff, or one where the books had already stripped the board, is never the close."""
     kick = commence_iso.replace("-", "").replace(":", "")[:13]      # YYYYMMDDTHHMM
     before = [(st, fn) for st, fn in pulls(season, week) if st < kick]
-    return before[-1][1] if before else None
+    for st, fn in reversed(before):
+        if team is None or board_complete(_load(fn, cache if cache is not None else {}), team, market_key):
+            return fn
+    return None
 
 
 def closing_summary(season, week, log=None):
@@ -63,12 +82,12 @@ def closing_summary(season, week, log=None):
         ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
         if not ev:
             continue
-        cp = closing_pull(season, week, ev["commence_time"])
+        market = "player_anytime_td" if e["market"] == "any" else "player_first_td"
+        cp = closing_pull(season, week, ev["commence_time"], e["team"], market, cache)
         if not cp:
             continue
         cev = _load(cp, cache)
         board = cache.setdefault(("board", cp), O.prop_board(cev)); hold = cache.setdefault(("hold", cp), O.measure_hold(cev))
-        market = "player_anytime_td" if e["market"] == "any" else "player_first_td"
         ps = O.price_summary(board, market, e["bet"].rsplit(" Anytime TD", 1)[0].rsplit(" First TD", 1)[0], None, hold)
         if not ps:
             continue

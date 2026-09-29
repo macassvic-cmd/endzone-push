@@ -14,6 +14,9 @@ on:
     - cron: "23 16 * * 0"   # Sun  9:23 PT (on) after inactives
     - cron: "52 16 * * 0"   # Sun  9:52 PT (cond)
     - cron: "15 20 * * 0"   # Sun  1:15 PT late games (off: reuses the last saved pull for games not yet kicked off)
+    - cron: "7 4 * * 1"     # Sun  9:07 PM PT grading after the late games (off)
+    - cron: "13 14 * * 1"   # Mon  7:13 AM PT grading after SNF once nflverse pbp updates (off)
+    - cron: "13 14 * * 2"   # Tue  7:13 AM PT grading after MNF (off)
   repository_dispatch:
     types: [update]         # external scheduler (see README); client_payload.use_odds: on | cond | off (default on)
   workflow_dispatch:

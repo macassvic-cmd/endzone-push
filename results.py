@@ -39,6 +39,7 @@ def main():
         pl = pd.DataFrame(d["players"])
         if "pid" not in pl or pl.empty:
             continue
+        total_games = len(d.get("games", [])) or int(pl.game_id.nunique())
         pl = pl[pl.game_id.isin(final)].copy()
         if pl.empty:
             continue
@@ -58,6 +59,7 @@ def main():
         top = pl.nlargest(15, "p_any")
         strong = pl[pl.p_any >= 0.40]
         weeks.append(dict(season=d["season"], week=d["week"], backfill=d.get("backfill", False), games=len(games),
+                          games_total=total_games, partial=len(games) < total_games,
                           players=len(pl), exp_scorers=round(pl.p_any.sum(), 1), act_scorers=int(pl.hit.sum()),
                           brier=round(float(((pl.p_any - pl.hit) ** 2).mean()), 4),
                           top15_exp=round(top.p_any.sum(), 1), top15_hit=int(top.hit.sum()),
@@ -78,7 +80,7 @@ def main():
             dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"],
                              ev=e["ev"], won=won, profit=round(dec - 1 if won else -1.0, 3),
-                             role=e.get("role", "Unknown"), market=e.get("market", "any")))
+                             role=e.get("role", "Unknown"), market=e.get("market", "any"), longshot=e["best"] >= 1000))
 
     allp = pd.concat(players_all) if players_all else pd.DataFrame(columns=["p_any", "hit", "season", "week"])
 
@@ -112,9 +114,11 @@ def main():
     def tally(g):
         return dict(n=int(len(g)), won=int(g.won.sum()) if len(g) else 0,
                     units=round(float(g.profit.sum()), 2) if len(g) else 0.0,
+                    expected_units=round(float(g.ev.sum()), 2) if len(g) else 0.0,     # sum of EV at the price taken
                     roi=round(float(g.profit.mean()), 4) if len(g) else None)
     by_role = {k: tally(g) for k, g in b.groupby("role")} if len(b) else {}
     by_market = {k: tally(g) for k, g in b.groupby("market")} if len(b) else {}
+    by_price = {"under_1000": tally(b[~b.longshot]), "1000_plus": tally(b[b.longshot])} if len(b) else {}
 
     # ---- market Brier: score the no-vig median-book probability the same way as the model, where a price existed ----
     def mb(m, mk):
@@ -144,7 +148,8 @@ def main():
     out = dict(weeks=weeks, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
-               bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market), market_brier=market_brier,
+               bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,
+               last_week_meta=dict(season=last["season"], week=last["week"], graded=last["games"], total=last["games_total"]) if last else None,
                clv=clv_summary, clv_rows=[{k: v for k, v in r.items() if k in ("season", "week", "bet", "role", "market", "book", "best", "mkt_p", "close_best", "close_mkt_p", "clv", "beat_close")} for r in clv_rows if "clv" in r],
                backtest_2025=backtest)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
