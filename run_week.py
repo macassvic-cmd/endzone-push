@@ -32,16 +32,28 @@ wk = s[(s.season == season) & (s.week == week)]
 done = wk[wk.home_score.notna() | (wk.kick <= now_et)].game_id     # played or already kicked off
 s2 = s[~s.game_id.isin(done)].copy()
 sched = s2[(s2.season == season) & (s2.week == week)]
+if sched.empty:
+    print(f"nothing to project: every {season} week {week} game has kicked off; keeping the existing files"); sys.exit(0)
 
 # ---------- live lines (Odds API) ----------
 events = O.fetch_all()
+odds_asof = None
+if events is None:
+    # live odds off: reuse the newest saved pull for games that have not kicked off, and say so on the board
+    _pulls = C.pulls(season, week)
+    if _pulls:
+        _stamp, _fn = _pulls[-1]
+        _now = pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
+        events = [e for e in json.load(open(_fn)) if e["commence_time"] > _now]
+        odds_asof = pd.Timestamp(f"{_stamp[:4]}-{_stamp[4:6]}-{_stamp[6:8]}T{_stamp[9:11]}:{_stamp[11:13]}Z").tz_convert("America/Los_Angeles").strftime("%a %b %d %I:%M %p PT")
+        print(f"live odds off: reusing {_fn} ({odds_asof}) for {len(events)} games not yet kicked off")
 if events and os.environ.get("KALSHI", "on") != "off":
     try:
         _n, _liq = K.attach(events)                                  # Kalshi joins the board as one more book (fee-adjusted prices)
         print(f"kalshi markets attached: {_n} ({_liq} with >= ${K.MIN_DOLLARS_AT_ASK:.0f} at the ask; the rest are reference-only)")
     except Exception as e:
         print("kalshi unavailable:", e)
-if events and not os.environ.get("ODDS_MOCK"):
+if events and not os.environ.get("ODDS_MOCK") and not odds_asof:
     # keep every real pull: odds_history/<season>_w<week>_<UTC stamp>.json (committed by the workflow) for blend fitting and closing-line value
     os.makedirs("odds_history", exist_ok=True)
     _fn = f"odds_history/{season}_w{week}_{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z.json"
@@ -128,6 +140,11 @@ def role_of(pid, snap3):
     return "Rotational"
 df["role"] = [role_of(r.pid, getattr(r, "snap_3", None)) for r in df.itertuples()]
 print("roles:", df.role.value_counts().to_dict())
+# model weak spot: mobile QBs are under-predicted (CHANGELOG, mobile-QB round); tag them and keep them off the Edge Board
+WEAK_QB_DR = 1.5
+df["qb_dr"] = df.pid.map(sh.drop_duplicates("pid").set_index("pid").qb_dr)
+df["weak_spot"] = np.where(df.qb_dr.fillna(0) >= WEAK_QB_DR, "mobile-qb", None)
+print("weak-spot QBs (off the edge board):", df[df.weak_spot.notna()].name.tolist())
 
 # ---------- first TD: conditional on who receives the opening kickoff ----------
 fmult = {}
@@ -221,6 +238,8 @@ edges = []
 for _, r in df.iterrows():
     for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first)]:
         ev, ev_med = r.get(m + "ev"), r.get(m + "ev_med")
+        if r.get("weak_spot"):
+            continue
         if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
@@ -228,8 +247,9 @@ for _, r in df.iterrows():
                               kalshi=None if pd.isna(r.get(m + "kalshi")) else int(r[m + "kalshi"]), kalshi_liquid=bool(r.get(m + "kalshi_liquid", False))))
 clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):
-    print("edges newly logged for CLV:", C.log_edges(edges, season, week, f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"))
-data = dict(season=season, week=week, odds_live=bool(board), n_events=len(events or []),
+    _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
+    print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),

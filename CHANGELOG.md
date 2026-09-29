@@ -164,3 +164,19 @@ market probabilities summing to 7.3 per team. Fixes in `odds.py`: `fetch_all` sk
 started (also saves credits); `measure_hold` ignores boards with fewer than 8 priced players and clamps the
 overround to [1.0, 2.0]. Regenerated from the same pull: 22 fresh edges for the six late games plus 25 locked from
 earlier kickoffs.
+
+## 2026-09-28 — Never blank prices, reliable Sunday timing, mobile-QB weak-spot tag
+
+- **Saved-pull reuse.** A run without live odds reuses the newest `odds_history` file for the week for games that
+  have not kicked off; the header and Edge Board say "odds as of <time>" and edges are logged for CLV with that
+  pull's stamp. Locked games keep their pre-kickoff prices as before. An explicit past week whose games have all
+  kicked off now exits without rewriting anything (it used to crash).
+- **Scheduling.** Cron slots moved off round minutes with redundancy: Sun and Sat 8:37 (cond), 9:23 (on), 9:52
+  (cond) PT, Tue 10:07 and Thu 12:07 (off), Sun 1:15 (off, reuses the saved pull). `decide_odds.py` sets the mode:
+  on = pull unless a pull happened in the last 45 minutes; cond = pull only if the newest saved pull is older than
+  60 minutes. `repository_dispatch` (`event_type: update`, `client_payload.use_odds`) lets an external scheduler
+  kick the run; README has the cron-job.org steps (fine-grained token, this repo only; GitHub gates the dispatches
+  endpoint on Contents: write). Times are PDT; they shift an hour when PST starts in November.
+- **Weak-spot tag.** QBs with 1.5+ designed runs per game (the under-predicted tiers from the mobile-QB round) are
+  tagged "weak spot" on the Anytime and First TD tabs and kept off the Edge Board until that fix lands. Week 3:
+  Daniels, Jackson, Allen, Hurts, Murray, Nix, Lawrence, Watson, Willis, Shough.

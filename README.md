@@ -16,7 +16,24 @@ A scheduled GitHub Action (`.github/workflows/update.yml`) reruns everything Tue
 - `backtest.py` – 2025 walk-forward calibration
 
 ## Secrets
-`ODDS_API_KEY` (the-odds-api.com). Odds are pulled Sat 10am PT and Sun 9:45am PT only (~95 credits/week).
+`ODDS_API_KEY` (the-odds-api.com). Odds are pulled around Sat 9:23am and Sun 9:23am PT (~95 credits/week); the
+8:37 and 9:52 slots only pull if the newest saved pull is older than 60 minutes, and any run skips the pull if one
+happened in the last 45 minutes (`decide_odds.py`). A run without a fresh pull reuses the newest file in
+`odds_history/` for games that have not kicked off and labels the board "odds as of <time>".
+
+## Scheduling and an external kick (cron-job.org)
+GitHub cron can fire late (the Sunday 9:45 run went off at 12:51 PT once), so the workflow has three Sunday and
+three Saturday slots and also accepts a `repository_dispatch` event. To add an external scheduler:
+1. GitHub → Settings → Developer settings → Fine-grained personal access tokens → Generate. Repository access: only
+   `endzone-push`. Permissions: **Contents: Read and write** (the `dispatches` endpoint is gated on Contents for
+   fine-grained tokens; Actions: write is not enough on its own). Copy the token.
+2. cron-job.org → Create cronjob. URL `https://api.github.com/repos/macassvic-cmd/endzone-push/dispatches`,
+   method POST. Headers: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`,
+   `X-GitHub-Api-Version: 2022-11-28`, `Content-Type: application/json`.
+   Body: `{"event_type":"update","client_payload":{"use_odds":"on"}}` (`"cond"` to pull only if the newest saved
+   pull is older than 60 minutes, `"off"` for no pull). Schedule e.g. Sundays 09:25 America/Los_Angeles.
+3. Save. A 204 response means the workflow was queued; check Actions → Update projections.
+The idempotence rule above means an external kick and a GitHub cron minutes apart cost one pull, not two.
 
 ## Local run
     pip install -r requirements.txt

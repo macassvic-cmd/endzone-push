@@ -1,12 +1,21 @@
 name: Update projections
 
+# Times are PDT (UTC-7); GitHub cron often fires late at round minutes, so slots are off-minute and redundant.
+# Odds mode per slot: on = pull unless a pull happened in the last 45 min; cond = pull only if the newest saved
+# pull is older than 60 min (protects credits); off = never. See decide_odds.py.
 on:
   schedule:
-    - cron: "0 17 * * 2"    # Tue 10:00 PT (no odds)
-    - cron: "0 19 * * 4"    # Thu 12:00 PT (no odds)
-    - cron: "0 17 * * 6"    # Sat 10:00 PT + live odds
-    - cron: "45 16 * * 0"   # Sun  9:45 PT after inactives + live odds
-    - cron: "15 20 * * 0"   # Sun  1:15 PT late games (no odds)
+    - cron: "7 17 * * 2"    # Tue 10:07 PT (off)
+    - cron: "7 19 * * 4"    # Thu 12:07 PT (off)
+    - cron: "37 15 * * 6"   # Sat  8:37 PT (cond)
+    - cron: "23 16 * * 6"   # Sat  9:23 PT (on)
+    - cron: "52 16 * * 6"   # Sat  9:52 PT (cond)
+    - cron: "37 15 * * 0"   # Sun  8:37 PT (cond)
+    - cron: "23 16 * * 0"   # Sun  9:23 PT (on) after inactives
+    - cron: "52 16 * * 0"   # Sun  9:52 PT (cond)
+    - cron: "15 20 * * 0"   # Sun  1:15 PT late games (off: reuses the last saved pull for games not yet kicked off)
+  repository_dispatch:
+    types: [update]         # external scheduler (see README); client_payload.use_odds: on | cond | off (default on)
   workflow_dispatch:
     inputs:
       use_odds:
@@ -31,9 +40,24 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - name: Decide whether to pull odds
+        id: odds
+        run: |
+          case "${{ github.event_name }}" in
+            schedule)
+              case "${{ github.event.schedule }}" in
+                "23 16 * * 6"|"23 16 * * 0") MODE=on ;;
+                "37 15 * * 6"|"52 16 * * 6"|"37 15 * * 0"|"52 16 * * 0") MODE=cond ;;
+                *) MODE=off ;;
+              esac ;;
+            repository_dispatch) MODE="${{ github.event.client_payload.use_odds || 'on' }}" ;;
+            workflow_dispatch) MODE="${{ inputs.use_odds && 'on' || 'off' }}" ;;
+            *) MODE=off ;;
+          esac
+          python decide_odds.py "$MODE"
       - name: Run model
         env:
-          ODDS_API_KEY: ${{ (github.event.schedule == '0 17 * * 6' || github.event.schedule == '45 16 * * 0' || inputs.use_odds) && secrets.ODDS_API_KEY || '' }}
+          ODDS_API_KEY: ${{ steps.odds.outputs.use_odds == 'true' && secrets.ODDS_API_KEY || '' }}
           ODDS_SAVE: odds_raw.json
         run: |
           python refresh.py
