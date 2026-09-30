@@ -26,6 +26,11 @@ FIRST_A, FIRST_RECV, FIRST_SPREAD = 0.0131, 0.3828, 0.0868
 # Share prior by (kind, position, depth-chart rank), estimated by priors.py from 2025 (mean share of team xTD for
 # every listed player, zero when unused). Shrinkage: share = (wsum*share + PRIOR_K*prior) / (wsum + PRIOR_K).
 PRIOR_K, PRIOR_DEFAULT = 3.0, 0.02       # prior weight in games; prior for players not at a listed skill slot
+# Early season: a player with fewer than EARLY_MIN_GAMES current-season games gets K * (1 + EARLY_K_EXTRA * (5 - week) / 4)
+# in weeks 1-4 (full extra in week 1, none from week 5). 0 = off.
+# Tested on 2024+2025 weeks 1-4 (pooled 2,684 rows): EARLY_K_EXTRA 0 / 1 / 2 / 3 -> Brier 0.13655 / 0.13680 / 0.13727 /
+# 0.13774, top-15 hits 8.00 / 7.88 / 7.75 / 7.62 per week, and the low buckets stay under-projected, so it is off.
+EARLY_K_EXTRA, EARLY_MIN_GAMES = 0.0, 3
 RANK_CAP = {"RB": 3, "WR": 4, "TE": 2, "QB": 2}
 POS_MAP = {"FB": "RB", "HB": "RB"}
 SHARE_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1): 0.056, ('rec', 'RB', 2): 0.033,
@@ -262,7 +267,7 @@ def player_games(past):
     return pg
 
 
-def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookies=None):
+def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookies=None, week=None):
     """Recency-weighted per-player share of team rush/rec xTD, plus 1st-quarter share.
        depth: pid -> (pos, rank) from the depth chart; enables the position/rank prior.
        pg: precomputed player_games(past).
@@ -275,9 +280,10 @@ def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookie
     g["ws"] = g.w * g.share
     q = g.q1share.notna()
     g["wq"] = np.where(q, g.w, 0.0); g["wqs"] = np.where(q, g.w * g.q1share.fillna(0), 0.0)
+    g["cur"] = (g.season == season).astype(int)
     sh = g.groupby(["pid", "kind"]).agg(name=("name", "first"), last_team=("posteam", "first"), share=("ws", "sum"),
                                         wsum=("w", "sum"), n=("w", "size"), last_ord=("ord", "first"),
-                                        wq=("wq", "sum"), wqs=("wqs", "sum")).reset_index()
+                                        n_cur=("cur", "sum"), wq=("wq", "sum"), wqs=("wqs", "sum")).reset_index()
     sh["share"] = sh.share / sh.wsum
     sh["q1share"] = np.where(sh.wq > 0, sh.wqs / sh.wq.replace(0, np.nan), np.nan)
     sh = sh.drop(columns=["wq", "wqs"])
@@ -291,7 +297,7 @@ def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookie
             if not d or POS_MAP.get(d[0], d[0]) not in RANK_CAP: continue
             for k in ("rush", "rec"):
                 if (pid, k) not in have:
-                    add.append(dict(pid=pid, kind=k, name=pid, last_team=t, share=0.0, wsum=0.0, n=0, last_ord=season * 100, q1share=np.nan))
+                    add.append(dict(pid=pid, kind=k, name=pid, last_team=t, share=0.0, wsum=0.0, n=0, n_cur=0, last_ord=season * 100, q1share=np.nan))
         if add: sh = pd.concat([sh, pd.DataFrame(add)], ignore_index=True)
     sh["qb_dr"] = sh.pid.map(qb_type)
     sh["qb_type"] = sh.qb_dr.map(qb_label)
@@ -305,6 +311,8 @@ def shares(past, season, depth=None, pg=None, qb_type=None, team_of=None, rookie
         # shrink toward the position/rank baseline: K games' worth of prior vs the player's weighted sample (QBs: QB_PRIOR_K)
         sh["prior"] = [share_prior(k, depth.get(pid), dr, rookies.get(pid)) for pid, k, dr in zip(sh.pid, sh.kind, sh.qb_dr)]
         K = np.where(sh.qb_dr.notna() & (sh.kind == "rush"), np.where(sh.n >= QB_VET_GAMES, QB_PRIOR_K_VET, QB_PRIOR_K), PRIOR_K)
+        if EARLY_K_EXTRA > 0 and week is not None and week < 5:
+            K = K * np.where(sh.n_cur < EARLY_MIN_GAMES, 1 + EARLY_K_EXTRA * (5 - week) / 4, 1.0)
         sh.loc[sh.n == 0, "prior"] = sh.prior[sh.n == 0] * NEW_PLAYER_W
         sh["share"] = (sh.wsum * sh.share + K * sh.prior) / (sh.wsum + K)
     else:
@@ -381,7 +389,7 @@ def build_slate(p, s, season, week, active=None, qb_override=None, wind=None, de
     cache = cache or prep_week(p, s, season, week)
     past = cache["past"]
     team_of = {pid: t for t, ids in (active or {}).items() for pid in ids} if active else None
-    sh = shares(past, season, depth, pg=cache["pg"], qb_type=cache.get("qb_type"), team_of=team_of, rookies=rookies)
+    sh = shares(past, season, depth, pg=cache["pg"], qb_type=cache.get("qb_type"), team_of=team_of, rookies=rookies, week=week)
     all_active = set(team_of) if team_of else set()
     posof = lambda pid: POS_MAP.get(depth[pid][0], depth[pid][0]) if depth and pid in depth else None
     dfn = defense_table(past, season) if (DEF_PF_W or DEF_LAM_W) else {}

@@ -213,3 +213,29 @@ earlier kickoffs.
   19 / 46 (exp 13.5), Brier 0.1278.
 - **Overflow**: flex children could not shrink, so wide tables widened the page instead of scrolling; `#view` and
   the wrapper's children now have `min-width:0` and `.tbl` a max width, so the table scrolls inside itself.
+
+## 2026-09-29 — Early-season calibration: pattern confirmed in 2024 and 2025, prior-shrinkage fix rejected
+
+The 2026 calibration table (which now includes the re-backfilled weeks 1–2; with them the spread shrank but
+remained: 0–5% bucket 3.4% projected vs 5.9% actual, 20–25% 22.3% vs 18.4%) prompted a look at weeks 1–3 in the
+2025 and 2024 walk-forward backtests, same depth-chart regime, current model.
+
+| | 0–5% | 5–10% | 10–15% | 15–20% | 20–25% | Brier |
+|---|---|---|---|---|---|---|
+| 2025 weeks 1–3 (984 rows) | 3.3 / 10.2 | 7.3 / 10.5 | 12.2 / 9.5 | 17.3 / 12.0 | 22.5 / 19.1 | 0.1443 |
+| 2025 weeks 4–18 | 3.3 / 7.0 | 7.2 / 5.8 | 12.4 / 11.2 | 17.4 / 17.2 | 22.5 / 22.4 | 0.1317 |
+| 2024 weeks 1–3 (1,004 rows) | 3.3 / 5.2 | 7.2 / 10.1 | 12.4 / 6.7 | 17.5 / 9.7 | 22.5 / 20.0 | 0.1247 |
+| 2024 weeks 4–18 | 3.2 / 6.3 | 7.2 / 8.1 | 12.5 / 11.8 | 17.4 / 16.2 | 22.4 / 24.5 | 0.1346 |
+
+Same shape in both seasons: the 15–20% bucket scores 10–12% early and 16–17% later; the 5–10% bucket scores about
+10% early and 6–8% later. Not 2026 noise.
+
+Fix tested (`EARLY_K_EXTRA`): players with fewer than 3 current-season games get a prior weight of
+K × (1 + extra × (5 − week) / 4), fading to normal by week 5, so weeks 5–18 are untouched by construction. On
+2024+2025 weeks 1–4 pooled (2,684 shared rows) it makes things worse at every strength: Brier 0.13655 (off) →
+0.13680 / 0.13727 / 0.13774 for extra 1 / 2 / 3, top-15 hits 8.00 → 7.88 / 7.75 / 7.62 per week, and the 0–5% and
+5–10% buckets stay under-projected (about 7% and 11–12% actual against 3% and 7%). Leaning harder on the
+position/slot prior does not fix it: the early-season error is that shares are too concentrated relative to how
+teams actually spread touches in September, which a slot-mean prior does not change. **Nothing changed.** Next
+candidate: regress each team's share vector toward uniform (not toward slot means) in weeks 1–3, or a smaller
+first-season weight on last year's shares.
