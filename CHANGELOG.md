@@ -198,3 +198,18 @@ earlier kickoffs.
 - **TNF.** The Thursday 12:07 PT run projects the week with the Thursday game (kickoff is after noon) and the
   Saturday run locks it with its pre-game projections; week 3 lacked it only because the workflow did not exist
   that Thursday.
+
+## 2026-09-29 — Scorecard fixes
+
+- **Weeks 1–2 re-backfilled with the current model** (`backfill.py` rewritten): walk-forward, pre-game data only,
+  same active-player rules as the live run (last depth chart before the week, Out/Doubtful and inactive-roster
+  players removed, snap share over the previous 3 games, rookies' draft buckets, redistribution, role tags). Lines
+  are the nflverse schedule lines; no odds or weather. Still tagged "backfill". Week 1 Brier 0.1372, week 2 0.1089.
+- **1st TD in our top 3** now shows the expected count (sum of each game's top-3 first-TD probabilities), e.g.
+  "2 / 14 exp 4.2". Week 3's 2 of 14 against 4.2 expected is the weak spot of the season so far.
+- **"40%+ picks" → "40%+ scored–missed"** with the expected count.
+- **Season-total row** at the bottom of the scorecard (Brier weighted by players): 2026 through week 3, 46 of 47
+  games graded, scorers 172 / 174.7 expected, top-15 26 / 45 (exp 22.4), 40%+ 30–31 (exp 28.9), first TD top-3
+  19 / 46 (exp 13.5), Brier 0.1278.
+- **Overflow**: flex children could not shrink, so wide tables widened the page instead of scrolling; `#view` and
+  the wrapper's children now have `min-width:0` and `.tbl` a max width, so the table scrolls inside itself.

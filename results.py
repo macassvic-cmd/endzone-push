@@ -55,7 +55,7 @@ def main():
             who = first_scorer.get(g)
             hit = gp.index[gp.pid == who]
             ft.append(dict(game=g, scorer=first_name.get(g), model_p=float(gp.p_first[hit[0]]) if len(hit) else 0.0,
-                           rank=int(hit[0]) + 1 if len(hit) else None))
+                           rank=int(hit[0]) + 1 if len(hit) else None, top3_p=round(float(gp.p_first.head(3).sum()), 4)))
         top = pl.nlargest(15, "p_any")
         strong = pl[pl.p_any >= 0.40]
         weeks.append(dict(season=d["season"], week=d["week"], backfill=d.get("backfill", False), games=len(games),
@@ -65,6 +65,7 @@ def main():
                           top15_exp=round(top.p_any.sum(), 1), top15_hit=int(top.hit.sum()),
                           strong_n=len(strong), strong_hit=int(strong.hit.sum()), strong_exp=round(strong.p_any.sum(), 1),
                           first_top3=sum(1 for f in ft if f["rank"] and f["rank"] <= 3), first_games=len(ft),
+                          first_top3_exp=round(sum(f["top3_p"] for f in ft), 1),
                           first_detail=ft))
         top15_weeks.append(dict(season=d["season"], week=d["week"], backfill=d.get("backfill", False),
                                 hit=int(top.hit.sum()), exp=round(float(top.p_any.sum()), 1),
@@ -104,6 +105,17 @@ def main():
         cur = allp[allp.season == cal_season]
         cal = calib_buckets(cur.p_any, cur.hit)
 
+    # season total across graded weeks (Brier weighted by players)
+    season_total = None
+    if weeks:
+        cur = [w for w in weeks if w["season"] == max(x["season"] for x in weeks)]
+        n_pl = sum(w["players"] for w in cur)
+        season_total = dict(season=cur[0]["season"], weeks=len(cur), games=sum(w["games"] for w in cur), games_total=sum(w["games_total"] for w in cur),
+                            exp_scorers=round(sum(w["exp_scorers"] for w in cur), 1), act_scorers=sum(w["act_scorers"] for w in cur),
+                            top15_hit=sum(w["top15_hit"] for w in cur), top15_n=15 * len(cur), top15_exp=round(sum(w["top15_exp"] for w in cur), 1),
+                            strong_hit=sum(w["strong_hit"] for w in cur), strong_n=sum(w["strong_n"] for w in cur), strong_exp=round(sum(w["strong_exp"] for w in cur), 1),
+                            first_top3=sum(w["first_top3"] for w in cur), first_games=sum(w["first_games"] for w in cur), first_top3_exp=round(sum(w["first_top3_exp"] for w in cur), 1),
+                            brier=round(sum(w["brier"] * w["players"] for w in cur) / n_pl, 4) if n_pl else None)
     last = weeks[-1] if weeks else None
     detail = []
     if last:
@@ -145,7 +157,7 @@ def main():
     clv_summary = C.aggregate(clv_rows) if clv_rows else None
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
-    out = dict(weeks=weeks, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
+    out = dict(weeks=weeks, season_total=season_total, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,
