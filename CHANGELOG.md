@@ -340,3 +340,36 @@ The books beat the model slightly overall (anytime 0.1261 vs 0.1275), the model 
 Shorter than +1000 the board is 11–53 for −8.9 units against +12.9 expected; the overall plus comes from seven
 long-shot hits. With 64 priced-under-+1000 picks the variance note still applies, but the model's "edges" at closing
 prices have not beaten the books so far.
+
+## 2026-10-01 — Fitted model+market blend (gated), edges re-scored on real prices
+
+`blend.py`: logistic regression of outcome on logit(model) and logit(no-vig market), one fit per market, refit by
+results.py on every graded priced row each run (`blend_model.json`); run_week.py uses it for every EV on the Edge
+Board and in the parlay builder, replacing the fixed 50/50 and the thin-sample 25/75 rule. Numpy IRLS, no new
+dependency. The fit is **used only when it beats 50/50 on leave-one-week-out Brier**; otherwise 50/50 stays in
+force. An edge needs EV ≥ 5% at the median book and at the best book, 2+ books, no weak-spot players.
+
+Fit on weeks 1–3 (836 anytime rows, 835 first-TD rows):
+
+| | Coefficients a / b·logit(model) / c·logit(market) | Brier model / market / 50-50 / fitted (in-sample) | Held-out week: fitted vs 50/50 |
+|---|---|---|---|
+| Anytime | −0.02 / 0.25 / 0.80 | 0.1275 / 0.1261 / 0.1259 / 0.1255 | 0.1272 vs 0.1259 |
+| First TD | 1.40 / 0.85 / 0.68 | 0.0369 / 0.0364 / 0.0366 / 0.0360 | 0.0374 vs 0.0366 |
+
+The fit leans about 3:1 on the market for anytime TD and improves in-sample Brier, but with three weeks it loses
+to 50/50 on every held-out week (each fold trains on two weeks), so **50/50 remains in use for both markets** and
+the gate re-checks weekly as rows accumulate.
+
+Re-score of weeks 1–3 under the live rule from stored prices (closing prices for weeks 1–2, flag time for week 3):
+
+| Blend | Edges | Won | Units | Expected | Excl. +1000: edges / won / units / expected |
+|---|---|---|---|---|---|
+| Fitted (not in use) | 31 | 3 | −18.1 | +6.7 | 16 / 3 / −3.1 / +3.5 |
+| 50/50 (in use) | 210 | 18 | +43.7 | +82.6 | 64 / 11 / −8.9 / +12.9 |
+
+The market-heavy fit cuts the board from 210 to 31 edges and removes nearly all +1000 plays (15 left, 0 won); the
+non-longshot subset is still negative under either blend. The bet record now comes from this re-scoring rather
+than from the slate's edge list, so backfilled and live weeks are judged by one rule.
+
+OddsPapi name gaps (DJ Moore, Breece Hall, Caleb Williams, Achane): a second name map cannot fill them because the
+first run did not keep raw ids; a re-pull with raw saving (about 49 requests) would.

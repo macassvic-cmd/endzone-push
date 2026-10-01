@@ -5,7 +5,7 @@
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
-import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL
+import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -161,17 +161,15 @@ for c in ["p_any", "p_first", "p_2plus", "first_if_recv", "first_if_kick"]:
 
 
 # ---------- book prices + edge ----------
-BLEND_W = 0.5   # weight on model vs market consensus for EV
-BLEND_W_THIN, THIN_GAMES, THIN_RATIO = 0.25, 4, 3.0   # safety net: thin sample + model odds > 3x market -> lean on the market
-odds_ratio = lambda a, b: (a / (1 - a)) / (b / (1 - b)) if 0 < a < 1 and 0 < b < 1 else 1.0
+BLENDS = BL.load()                                   # fitted model+market blend per market (results.py refits weekly); 50/50 when not in use
+BLEND_COEF = {pre: BL.coef_for(BLENDS, mk) for pre, mk in (("any_", "any"), ("first_", "first"), ("two_", "two"))}
+print("blend in use:", {k[:-1]: ("fitted " + str(v) if v else "50/50") for k, v in BLEND_COEF.items()})
 def attach(row, market, prob, point=None, prefix=""):
     ps = O.price_summary(board, market, row["name"], point, hold) if board else None
     if not ps: return {}
     ev = prob * O.decimal(ps["best"]) - 1
-    w = BLEND_W
-    if row.get("games", 99) < THIN_GAMES and odds_ratio(prob, ps["market_p"]) > THIN_RATIO:
-        w = BLEND_W_THIN
-    blend = w * prob + (1 - w) * ps["market_p"]      # meet the market halfway (or lean on it for thin outliers)
+    coef = BLEND_COEF.get(prefix); w = 0.5 if coef is None else None
+    blend = float(BL.predict(coef, [prob], [ps["market_p"]])[0])   # fitted blend when validated, else 50/50
     kal = board.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK, {}).get("yes")
     kref = O.REFERENCE.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK)
     return {f"{prefix}best": ps["best"], f"{prefix}book": ps["book"], f"{prefix}mkt_p": round(ps["market_p"], 4),
