@@ -250,9 +250,8 @@ clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
-_pl = PL.build(clean(df.round(4)).to_dict("records")) if board else dict(pool=[], parlays=[], rules={})
-for i, c in enumerate(sorted(_pl["parlays"], key=lambda c: -c["ev"])): c["paper"] = i < 3        # top 3 by EV are paper-traded at 1 unit
-print("parlay legs:", len(_pl["pool"]), "| parlays:", len(_pl["parlays"]))
+_pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
+print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
@@ -274,7 +273,8 @@ if os.path.exists(slate_fn):
     lteams = {t for g in locked_games for t in (g["home"], g["away"])}
     data["edges"] = [e for e in old.get("edges", []) if e.get("team") in lteams] + data["edges"]
     # parlays whose legs have all kicked off are locked with their flag-time prices
-    data["parlays"]["parlays"] = [c for c in old.get("parlays", {}).get("parlays", []) if all(l["team"] in lteams for l in c["legs"])] + data["parlays"]["parlays"]
+    for m, v in data["parlays"]["modes"].items():
+        v["parlays"] = [c for c in old.get("parlays", {}).get("modes", {}).get(m, {}).get("parlays", []) if all(l["team"] in lteams for l in c["legs"])] + v["parlays"]
     data["bring"] = [b for b in old.get("bring", []) if b.get("a_team") in lteams] + data["bring"]
 
 # ---------- red zone / end zone usage (2025 + current season) ----------

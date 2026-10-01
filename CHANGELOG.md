@@ -281,3 +281,19 @@ hit 6.7% (2 of 30, ± 8.9); 4-leg predicted 0.17% hit 0 of 30. Legs: 21.4% proje
 30 parlays per size is a weak test and the top legs so far run above projection rather than below.
 
 Week 4 has no saved odds pull yet, so the 2+ tab and parlays show prices only after Saturday's first pull.
+
+## 2026-09-30 — Parlays tab reworked into two modes; free odds sources evaluated
+
+- **Most likely** (default): Starter legs ranked by the model's 2+ TD probability regardless of market disagreement,
+  parlays ranked by joint probability. Works without prices (week 4 shows 15 parlays before Saturday's pull).
+- **Best value**: the EV-ranked builder (legs at 10%+ EV with real liquidity).
+- Both: every leg from a different game, no weak-spot QBs. Per leg: model and market probability, best price and
+  book, leg EV (red when negative) and the break-even price ("needs +X+") to shop books or Kalshi for. Per parlay:
+  joint probability, fair odds, offered odds (best-book product or a typed book/SGP price), EV, "hits about 1 in N",
+  1/8-Kelly stake capped at 0.25%, shown as "no bet, needs +X+" when EV is not positive at the price.
+- Results paper-trades the top 3 priced parlays of each mode separately (1 unit each) with record, units, expected
+  units and legs hit vs projected, so the two approaches can be compared.
+- `ODDS_SOURCES.md`: SharpAPI, OddsPapi and SportsGameOdds free tiers evaluated from their public docs, with a
+  recommended free combination. Headline: OddsPapi's archive starts January 2026, so no 2024–25 prop prices exist
+  for a real-price backtest; SportsGameOdds counts one game as one object, so a full Sunday pull is 16 of the 2,500
+  monthly objects. Nothing in the pipeline changed.

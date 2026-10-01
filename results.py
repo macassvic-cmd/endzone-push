@@ -74,11 +74,12 @@ def main():
                                 hit=int(top.hit.sum()), exp=round(float(top.p_any.sum()), 1),
                                 rows=top[["pid", "name", "team", "pos", "p_any", "hit"]].round(4).to_dict("records")))
         top15_frames.append(top[["pid", "name", "team", "pos", "p_any", "hit", "season", "week"]])
-        paper = [c for c in d.get("parlays", {}).get("parlays", []) if c.get("paper")]
-        if paper and all(any(l["team"] == t for t in set(pl.team)) for c in paper for l in c["legs"]):
-            th = {r.pid: bool(r.two_hit) for r in pl.itertuples()}
-            graded, legs = PL.grade(paper, th)
-            parlays.append(dict(season=d["season"], week=d["week"], parlays=graded, **legs))
+        th = {r.pid: bool(r.two_hit) for r in pl.itertuples()}
+        for mode, v in d.get("parlays", {}).get("modes", {}).items():
+            paper = [c for c in v.get("parlays", []) if c.get("paper")]
+            if paper and all(any(l["team"] == t for t in set(pl.team)) for c in paper for l in c["legs"]):
+                graded, legs = PL.grade(paper, th)
+                parlays.append(dict(season=d["season"], week=d["week"], mode=mode, parlays=graded, **legs))
         for e in d.get("edges", []):
             if e.get("pid") is None:
                 continue
@@ -165,11 +166,14 @@ def main():
     clv_summary = C.aggregate(clv_rows) if clv_rows else None
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
-    allp_ = [c for w in parlays for c in w["parlays"]]
-    parlay_summary = dict(weeks=len(parlays), n=len(allp_), won=sum(c["won"] for c in allp_), units=round(sum(c["profit"] for c in allp_), 2),
-                          expected_units=round(sum(c["ev"] for c in allp_), 2), expected_wins=round(sum(c["prob"] for c in allp_), 2),
-                          legs=sum(w["legs"] for w in parlays), legs_hit=sum(w["legs_hit"] for w in parlays),
-                          legs_expected=round(sum(w["legs_expected"] for w in parlays), 2), by_week=parlays) if parlays else None
+    def psum(ws):
+        allp_ = [c for w in ws for c in w["parlays"]]
+        return dict(weeks=len({(w["season"], w["week"]) for w in ws}), n=len(allp_), won=sum(c["won"] for c in allp_),
+                    units=round(sum(c["profit"] for c in allp_), 2), expected_units=round(sum(c["ev"] or 0 for c in allp_), 2),
+                    expected_wins=round(sum(c["prob"] for c in allp_), 2), legs=sum(w["legs"] for w in ws),
+                    legs_hit=sum(w["legs_hit"] for w in ws), legs_expected=round(sum(w["legs_expected"] for w in ws), 2))
+    parlay_summary = {m: psum([w for w in parlays if w["mode"] == m]) for m in PL.MODES if any(w["mode"] == m for w in parlays)} if parlays else None
+    if parlay_summary: parlay_summary["by_week"] = parlays
     out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
