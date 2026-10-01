@@ -297,3 +297,46 @@ Week 4 has no saved odds pull yet, so the 2+ tab and parlays show prices only af
   recommended free combination. Headline: OddsPapi's archive starts January 2026, so no 2024–25 prop prices exist
   for a real-price backtest; SportsGameOdds counts one game as one object, so a full Sunday pull is 16 of the 2,500
   monthly objects. Nothing in the pipeline changed.
+
+## 2026-10-01 — OddsPapi backfill: real pre-kickoff prices for 2026 weeks 1–3
+
+`oddspapi_backfill.py --run 2026 1 2 3 --books draftkings,fanduel` (free tier, 52 requests: 1 name map, 3 fixtures,
+48 historical). Per game, the last active snapshot before kickoff of DraftKings and FanDuel anytime-TD and first-TD
+prices, written to `odds_history/2026_w{1,2,3}_<first kickoff − 1 min>Z.json`. Neither book carried the 1.5-TD
+line in the archive, and Pinnacle has no player TD markets at all, so there is no 2+ backfill and no Pinnacle
+reference; the planned Pinnacle column is dropped. 15 of 16 games per week came back from the fixtures endpoint.
+
+Names: the archive returns numeric player ids; one live `odds-by-tournaments` call mapped 433 of 690 ids (the rest
+belonged to teams whose week-4 props were not posted yet). After flipping "Last, First", 250 / 287 / 291 of our
+slate players in weeks 1 / 2 / 3 are priced, and 80–86% of players projected at 15%+ (notable gaps: DJ Moore,
+Breece Hall, Caleb Williams, De'Von Achane). The writer now keeps raw responses in `data/oddspapi_raw/` so a later
+name map can fill those without new historical requests.
+
+results.py prices backfilled slates from the week's earliest saved pull with the live method (no-vig per book,
+median book, 50/50 blend) and builds Edge Board picks with the live rules (2+ books, EV ≥ 5% at the median and best
+book). Those picks are at **closing** prices, not flag time, and are tagged `backfill_price`.
+
+**Model vs market Brier (DK + FD, no-vig median book):**
+
+| | Anytime: model / market / blend | n | First TD: model / market / blend | n |
+|---|---|---|---|---|
+| Week 1 | 0.1309 / 0.1264 / 0.1278 | 250 | 0.0287 / 0.0270 / 0.0277 | 250 |
+| Week 2 | 0.1172 / 0.1176 / 0.1163 | 287 | 0.0396 / 0.0392 / 0.0392 | 287 |
+| Week 3 (live Odds API books) | 0.1345 / 0.1341 / 0.1336 | 299 | 0.0413 / 0.0417 / 0.0414 | 298 |
+| Season to date | 0.1275 / 0.1261 / 0.1259 | 836 | 0.0369 / 0.0364 / 0.0366 | 835 |
+
+The books beat the model slightly overall (anytime 0.1261 vs 0.1275), the model edges them in week 2, and the
+50/50 blend is best on anytime TD season to date. Week 1 is the model's worst week by a margin.
+
+**Edge Board on real prices, 1 unit per pick:**
+
+| | Picks | Won | Units | Expected | Excl. +1000 or longer: picks / won / units / expected |
+|---|---|---|---|---|---|
+| Week 1 (closing) | 102 | 6 | −60.1 | +41.5 | 27 / 5 / +0.9 / +5.8 |
+| Week 2 (closing) | 71 | 7 | +28.5 | +25.8 | 26 / 4 / −8.6 / +4.3 |
+| Week 3 (flag time) | 37 | 5 | +75.4 | +13.2 | 11 / 2 / −1.2 / +2.9 |
+| Combined | 210 | 18 | +43.7 | +80.5 | 64 / 11 / −8.9 / +12.9 |
+
+Shorter than +1000 the board is 11–53 for −8.9 units against +12.9 expected; the overall plus comes from seven
+long-shot hits. With 64 priced-under-+1000 picks the variance note still applies, but the model's "edges" at closing
+prices have not beaten the books so far.

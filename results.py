@@ -22,6 +22,39 @@ def calib_buckets(p, y, min_n=CAL_MIN_N):
     return out
 
 
+BLEND_W, MIN_BOOKS, MIN_EV = 0.5, 2, 0.05            # same rules as run_week.py's Edge Board
+
+
+def price_backfill(pl, season, week):
+    """Backfilled slates carry no prices. If a saved pull exists for the week (e.g. the OddsPapi pre-kickoff backfill),
+       price every player from it with the live method (no-vig per book, median book, blend) and build Edge Board picks
+       with the live rules, so model-vs-market Brier and the bet record extend to those weeks on real closing prices."""
+    import odds as O
+    pulls = C.pulls(season, week)
+    if not pulls or pl.empty:
+        return pl, []
+    events = json.load(open(pulls[0][1]))                       # earliest pull of the week = the pre-kickoff backfill
+    board, hold = O.prop_board(events), O.measure_hold(events)
+    cols, edges = {}, []
+    for market, point, pre, pcol, lbl in [("player_anytime_td", None, "any_", "p_any", "Anytime TD"), ("player_first_td", None, "first_", "p_first", "First TD"),
+                                          ("player_tds_over", 1.5, "two_", "p_2plus", "2+ TD")]:
+        for i, r in pl.iterrows():
+            ps = O.price_summary(board, market, r["name"], point, hold)
+            if not ps or pd.isna(r.get(pcol)):
+                continue
+            prob = float(r[pcol]); blend = BLEND_W * prob + (1 - BLEND_W) * ps["market_p"]
+            ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
+            cols.setdefault(pre + "mkt_p", {})[i] = round(ps["market_p"], 4); cols.setdefault(pre + "best", {})[i] = ps["best"]
+            cols.setdefault(pre + "book", {})[i] = ps["book"]; cols.setdefault(pre + "nbooks", {})[i] = ps["n_books"]
+            if ev_med >= MIN_EV and ev >= MIN_EV and ps["n_books"] >= MIN_BOOKS and not r.get("weak_spot"):
+                edges.append(dict(bet=f"{r['name']} {lbl}", pid=r["pid"], market=pre[:-1], team=r["team"], model_p=prob, mkt_p=round(ps["market_p"], 4),
+                                  blend_p=round(blend, 4), best=int(ps["best"]), book=ps["book"], ev=round(ev, 4), med=int(ps["median"]),
+                                  ev_med=round(ev_med, 4), nbooks=int(ps["n_books"]), role=r.get("role", "Unknown"), backfill_price=True))
+    for c, d in cols.items():
+        pl[c] = pd.Series(d)
+    return pl, edges
+
+
 def main():
     p = pd.read_parquet("data/pbp.parquet")
     s = pd.read_parquet("data/sched.parquet")
@@ -49,6 +82,11 @@ def main():
         pl["first_hit"] = [first_scorer.get(r.game_id) == r.pid for r in pl.itertuples()]
         pl["two_hit"] = [r.pid in two.get(r.game_id, set()) for r in pl.itertuples()]
         pl["season"], pl["week"] = d["season"], d["week"]
+        priced_edges = []
+        if d.get("backfill") and "any_mkt_p" not in pl:
+            pl, priced_edges = price_backfill(pl, d["season"], d["week"])
+            if priced_edges or "any_mkt_p" in pl:
+                print(f"  {d['season']} w{d['week']}: priced from the saved pull, {int(pl.get('any_mkt_p', pd.Series(dtype=float)).notna().sum())} players, {len(priced_edges)} edges")
         players_all.append(pl)
         games = sorted(pl.game_id.unique())
         # first TD: rank of the actual scorer inside his game
@@ -80,7 +118,7 @@ def main():
             if paper and all(any(l["team"] == t for t in set(pl.team)) for c in paper for l in c["legs"]):
                 graded, legs = PL.grade(paper, th)
                 parlays.append(dict(season=d["season"], week=d["week"], mode=mode, parlays=graded, **legs))
-        for e in d.get("edges", []):
+        for e in list(d.get("edges", [])) + priced_edges:
             if e.get("pid") is None:
                 continue
             row = pl[pl.pid == e["pid"]]
@@ -90,7 +128,8 @@ def main():
             dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"],
                              ev=e["ev"], won=won, profit=round(dec - 1 if won else -1.0, 3),
-                             role=e.get("role", "Unknown"), market=e.get("market", "any"), longshot=e["best"] >= 1000))
+                             role=e.get("role", "Unknown"), market=e.get("market", "any"), longshot=e["best"] >= 1000,
+                             backfill_price=bool(e.get("backfill_price"))))
 
     allp = pd.concat(players_all) if players_all else pd.DataFrame(columns=["p_any", "hit", "season", "week"])
 

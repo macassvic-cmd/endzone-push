@@ -153,3 +153,9 @@ Each game response includes every DK/FD market, so TD and yardage props come in 
 **Verdict:** a free DK/FD source for anytime TD, first TD (FD) and full alternate-yardage ladders, with clean
 names. It does not replace The Odds API for the 2+ line or for the other books, and it only ever shows two books.
 Fits as the cross-check/ladder source in the recommended combination above. Pipeline unchanged.
+
+### OddsPapi backfill run (2026-10-01): done
+
+52 requests (about 71 for the month with discovery). Auth is an `apiKey` query parameter; `odds-by-tournaments`
+takes exactly one `bookmaker`. Historical ids need the live name map ("Last, First" format); 433 of 690 ids mapped.
+Pinnacle has no player TD markets; DK/FD had no 1.5-TD line in the archive. Numbers in CHANGELOG.md.
