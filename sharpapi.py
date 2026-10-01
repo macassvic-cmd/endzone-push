@@ -22,7 +22,7 @@ REQS = 0
 
 def get(path, **params):
     global REQS
-    key = os.environ.get("SHARPAPI_KEY")
+    key = (os.environ.get("SHARPAPI_KEY") or "").strip()      # secrets pasted with a trailing newline break the header
     if not key:
         raise RuntimeError("SHARPAPI_KEY not set")
     REQS += 1

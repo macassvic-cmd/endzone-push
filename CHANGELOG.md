@@ -399,3 +399,21 @@ first run did not keep raw ids; a re-pull with raw saving (about 49 requests) wo
 - **Bug fixed on the way:** the weak-spot column became a pandas string dtype whose missing values are NaN, which
   is truthy, so the Edge Board loop skipped every player (0 edges). Pushed on 2026-09-28; the first live odds run
   after it would have shown an empty board. The check is now NaN-safe.
+
+## 2026-10-01 — Results tab: two-column layout, bets by week, running charts; two fixes
+
+- Below the scorecard the tab is a two-column grid on desktop (one column under 860 px): left Priced Bets, right
+  Market Brier and Closing Line Value. Tables inside cards wrap to fit their column instead of scrolling sideways.
+- **Edge bets by week**: one row per week plus a cumulative row with bets, record, units, expected units and ROI,
+  and the same four columns for bets shorter than +1000; a market filter (All / Anytime / First TD / 2+ TD /
+  Parlays); each week tagged "closing" (priced from the pre-kickoff backfill) or "live" (flag-time prices).
+  Parlay paper trades of both modes count as the Parlays market.
+- **Charts** (inline SVG, no library): cumulative units by week, actual vs expected, with a toggle for bets shorter
+  than +1000; cumulative anytime-TD Brier, model vs books vs blend, row-weighted.
+- Role split kept as a compact table inside Priced Bets; parlay paper-trade lines underneath.
+- Fix: a missing `backfill_price` value is NaN, which is truthy, so week 3's live bets were being tagged as closing.
+- Fix: the `SHARPAPI_KEY` secret value carries a trailing newline, which made the CI run's SharpAPI pull fail with
+  an invalid header (the fallback filled the board from the saved pull, as designed); the client now strips the
+  key. Re-saving the secret without the newline is tidier but no longer required.
+- Checked with a headless render of every tab; the phone-width behaviour rests on the media query, not on a
+  measured layout, since no browser is attached to this session.

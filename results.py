@@ -73,7 +73,7 @@ def rescore_edges(allp, models):
             out.append(dict(season=int(r.season), week=int(r.week), bet=f"{r['name']} {lbl}", price=int(r[pre + "best"]), book=r.get(pre + "book"),
                             ev=round(ev, 4), ev_med=round(ev_med, 4), blend_p=round(float(r.blend), 4), model_p=round(float(r[pcol]), 4), mkt_p=round(float(r[kcol]), 4),
                             won=won, profit=round(dec - 1 if won else -1.0, 3), role=r.get("role", "Unknown"), market=mk,
-                            longshot=int(r[pre + "best"]) >= 1000, backfill_price=bool(r.get("backfill_price", False)), fitted=coef is not None))
+                            longshot=int(r[pre + "best"]) >= 1000, backfill_price=(r.get("backfill_price") is True) or (r.get("backfill_price") == True and not pd.isna(r.get("backfill_price"))), fitted=coef is not None))
     return out
 
 
@@ -229,7 +229,26 @@ def main():
                     legs_hit=sum(w["legs_hit"] for w in ws), legs_expected=round(sum(w["legs_expected"] for w in ws), 2))
     parlay_summary = {m: psum([w for w in parlays if w["mode"] == m]) for m in PL.MODES if any(w["mode"] == m for w in parlays)} if parlays else None
     if parlay_summary: parlay_summary["by_week"] = parlays
-    out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
+    # ---- bets by week: edges by market plus parlay paper trades, with a cumulative row; priced = closing (backfill) or live ----
+    rows_bw = [dict(season=b["season"], week=b["week"], market=b["market"], won=b["won"], profit=b["profit"], ev=b["ev"], longshot=b["longshot"],
+                    closing=bool(b.get("backfill_price"))) for b in bets]
+    for w in (parlays or []):
+        for c in w["parlays"]:
+            if c.get("dec"): rows_bw.append(dict(season=w["season"], week=w["week"], market="parlay", won=c["won"], profit=c["profit"], ev=c["ev"] or 0.0, longshot=False, closing=False))
+    def agg(rs):
+        return dict(n=len(rs), won=sum(r["won"] for r in rs), units=round(sum(r["profit"] for r in rs), 2), expected=round(sum(r["ev"] for r in rs), 2),
+                    roi=round(sum(r["profit"] for r in rs) / len(rs), 4) if rs else None)
+    bets_by_week = []
+    for (sn, wk) in sorted({(r["season"], r["week"]) for r in rows_bw}):
+        rs = [r for r in rows_bw if r["season"] == sn and r["week"] == wk]
+        bets_by_week.append(dict(season=sn, week=wk, priced="closing" if all(r["closing"] for r in rs if r["market"] != "parlay") else "live" if not any(r["closing"] for r in rs) else "mixed",
+                                 all=agg(rs), short=agg([r for r in rs if not r["longshot"]]),
+                                 by_market={m: dict(all=agg([r for r in rs if r["market"] == m]), short=agg([r for r in rs if r["market"] == m and not r["longshot"]]))
+                                            for m in ("any", "first", "two", "parlay") if any(r["market"] == m for r in rs)}))
+    bets_cum = dict(all=agg(rows_bw), short=agg([r for r in rows_bw if not r["longshot"]]),
+                    by_market={m: dict(all=agg([r for r in rows_bw if r["market"] == m]), short=agg([r for r in rows_bw if r["market"] == m and not r["longshot"]]))
+                               for m in ("any", "first", "two", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
+    out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,
