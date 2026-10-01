@@ -72,3 +72,38 @@ both name-based), market equivalence for the 2+ line (Over 1.5 vs a "2+" market)
 which were calibrated on The Odds API's book set.
 
 Keys: `SPORTSGAMEODDS_API_KEY` and `SHARPAPI_KEY` as repository secrets; never in files.
+
+## OddsPapi backfill plan: 2026 weeks 1–3 pre-kickoff TD prices (planned, not run)
+
+Feasible on the free tier. From the docs: historical requests count like live ones (250/month), player props come
+back in the same response as main markets (`playerName` set on prop outcomes), `/v4/historical-odds` takes one
+`fixtureId` and up to 3 `bookmakers` per request and returns each market's full timestamped price history, and
+`/v4/fixtures` lists finished games (`statusId=2`) for a `tournamentId` over a window of at most 10 days.
+
+Request budget (`python oddspapi_backfill.py --plan 2026 1 2 3`):
+
+| Step | Requests |
+|---|---|
+| Discovery: sports, tournaments, bookmakers, markets (once) | 4 |
+| Fixtures, one per week | 3 |
+| Historical odds, one per game, 3 bookmakers each (16 × 3 weeks) | 48 |
+| **Total for DraftKings + FanDuel + Pinnacle** | **55 of 250** |
+| Same with a second bookmaker set (e.g. BetMGM, Caesars, Kalshi if listed) | 103 |
+
+Wall time: the historical endpoint has a 5-second cooldown, so about 4 minutes for 48 games.
+
+What each game yields: for anytime TD, first TD and the touchdowns over/under line (2+ = Over 1.5) from each
+bookmaker, the last snapshot before kickoff, written as an Odds-API-shaped pull to
+`odds_history/<season>_w<week>_<kickoff-1min>Z.json`. results.py and clv.py then grade and score those weeks
+exactly like our own pulls: model-vs-market Brier and the Edge Board EV for weeks 1–3 on real prices, and a closing
+price for CLV. It does not give flag-time prices (no edges were logged then), so CLV for those weeks is not
+available; the Brier and EV comparison is.
+
+Unknowns that only a key resolves (the `--discover` step, 4 requests): the NFL `tournamentId`, whether DraftKings
+and FanDuel are in the bookmaker list (the docs only show offshore examples; Pinnacle is confirmed), the market
+ids for anytime / first / touchdowns over-under in American football, and whether the archive holds complete
+week-1 prop histories (September 10–14, 2026; the archive began January 2026).
+
+Sequence on your go-ahead: create the free key → add it as the `ODDSPAPI_KEY` repository secret and export it locally
+for the one-off run → `--discover` (4 requests) → confirm ids with you → `--run 2026 1 2 3` (51 requests) → commit the
+three pull files → regrade. Nothing runs until then.
