@@ -496,10 +496,10 @@ def simulate(teams, pl, qbs, n=40000):
     first_team = np.zeros((n, P), dtype=bool)
     qb_ptd = {}
     game_ids = sorted({v["game_id"] for v in teams.values()})
-    game_tdcount = {}
+    game_tdcount = {}; game_f = {}
     for gid in game_ids:
         tt = [t for t in team_list if teams[t]["game_id"] == gid]
-        f = np.exp(RNG.normal(-GAME_SIGMA ** 2 / 2, GAME_SIGMA, n))
+        f = np.exp(RNG.normal(-GAME_SIGMA ** 2 / 2, GAME_SIGMA, n)); game_f[gid] = f      # shared game environment (yards sim reuses it)
         events = []   # list of (team, order_time array, scorer idx array)
         for t in tt:
             lam = teams[t]["lam"]
@@ -546,7 +546,7 @@ def simulate(teams, pl, qbs, n=40000):
         a = np.argmin(T, 1); hasany = np.isfinite(T[np.arange(n), a])
         fs = S[np.arange(n), a]; ok = hasany & (fs >= 0)
         first_game[np.where(ok)[0], fs[ok]] = True
-    return dict(pids=pids, pix=pix, tds=tds, first_game=first_game, first_team=first_team, qb_ptd=qb_ptd, n=n)
+    return dict(pids=pids, pix=pix, tds=tds, first_game=first_game, first_team=first_team, qb_ptd=qb_ptd, n=n, game_f=game_f)
 
 
 def first_td_split(spread):

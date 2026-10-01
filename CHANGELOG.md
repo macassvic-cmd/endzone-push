@@ -417,3 +417,97 @@ first run did not keep raw ids; a re-pull with raw saving (about 49 requests) wo
   key. Re-saving the secret without the newline is tidier but no longer required.
 - Checked with a headless render of every tab; the phone-width behaviour rests on the media query, not on a
   measured layout, since no browser is attached to this session.
+
+## 2026-10-01 — Yard ladders: rushing, receiving, passing (shipped for all three)
+
+`yards.py` simulates yards inside the TD game sim so a player's yards and TDs share one game environment: team plays
+come from recency-weighted pace tied to the sim's game factor (correlation 0.3), pass rate from the team's
+recency-weighted pass share plus a spread term (favorites run more), carries / targets from recency-weighted shares
+of team attempts / targets built by the same `build_slate` machinery as the TD shares (same shrinkage, snap cap,
+roles, redistribution; volume priors by position and depth rank), sacks removed from both attempts and targets,
+yards per touch shrunk 60 touches toward position averages with iid per-touch noise plus a per-game rate shock.
+The spread of outcomes is gamma (clipped-normal was the alternative). Per player: mean, median and P(≥ rung) for
+every rung the books offer plus the default ladder (rush / rec 25-40-50-60-75-100, pass 200-225-250-275-300).
+
+Backtest gate (`yards_backtest.py`, 2024 + 2025 weeks 4–18, depth-chart regime, n=3000): median absolute error
+against a season-average baseline (the player's mean over earlier games this season, else last season) and 5-point
+ladder-probability buckets with 1.96·√(p(1−p)/n) ranges, pooled over rungs.
+
+| Kind | Rows | MAE median / baseline | Buckets within range | Largest misses (pred / actual) |
+|---|---|---|---|---|
+| Rushing | 6,072 | 10.6 / 12.9 | 16 of 20 | 20-25: 22 / 26 ± 3, 50-55: 52 / 60 ± 5 |
+| Receiving | 8,836 | 15.0 / 16.9 | 15 of 19 | 15-20: 17 / 15 ± 1, 75-80: 77 / 84 ± 4 |
+| Passing | 896 | 58.0 / 66.6 | 15 of 15 | — |
+
+Variants on the way: clipped normal (rush 17/20, rec 6/19, pass 6/16; passing biased 5–10 points high because
+sacks were counted as attempts); gamma with sacks out of attempts only (rec 11/19); gamma with sacks out of targets
+too is the shipped version. Rushing runs 2–4 points low on the 15–35% rungs (RB medians below actual at high
+volume; QB rushing is the reverse), receiving 2 points low at 15–20%. All three beat the baseline by 1.9 / 1.9 /
+8.6 yards; shipped with those biases noted, and `yards.SHIP` keeps each kind switchable.
+
+Pricing (`yard_prices.py`) from SharpAPI's DraftKings / FanDuel main and alternate lines (week 4 pull: 88 rushers,
+154 receivers, 33 passers with a line; FanDuel carries most alternates, 779 rush / 1,576 rec rungs vs DK's 108 /
+164): no-vig both sides where a book quotes Over and Under at the line, otherwise the Over divided by that book's
+own main-line hold (DK 1.057, FD 1.065). Two filters: within a book, a higher line can never be likelier than a
+lower one, anchored on the book's main line (193 of ~3,000 rungs dropped in week 4; SharpAPI showed DK alternates
+like "Over 9.5 +2000" next to a main 25.5 at −113), and when books disagree by more than 30 points, or a rung has
+one quote, only prices within 15 / 35 points of the model are used. Blend: fitted model+market when the
+leave-one-week-out gate passes, else 50/50 (no graded yard rows yet, so 50/50). An edge needs EV ≥ 5% at the median
+book and at the best book, 2+ books, no weak-spot player, and a line of at least 10 yards (100 passing) — sub-10
+rungs like "Over 0.5 rush yds" are shown on the ladder but never flagged.
+
+Page: a Yards tab (after Parlays) with median, ladder probabilities, fair odds per rung, best price and book, EV,
+and a pick'em column (our median vs the main line, lean Over / Under); yard edges on the Edge Board with role tags
+(week 4 from the saved pull: 6 edges, all at main lines, e.g. Omarion Hampton Over 45.5 rush at −114 with the model
+at 68% vs the books' 50%). Results: yard edges are graded on actual yards from play-by-play, paper-traded as their
+own market (Yards filter in bets by week), and CLV-tracked against the last pre-kickoff pull.
+
+## 2026-10-01 — OddsPapi re-pull with raw ids: weeks 1–3 re-graded at 98% price coverage
+
+Second pass of `oddspapi_backfill.py --run 2026 1 2 3` (62 requests this time: 45 game histories re-pulled with the
+raw responses kept, 3 fixtures, 2 name maps, 1 `/v4/players` list, 3 fixtures again and 3 Monday-night games after
+the window fix; 115 of 250 used this month). What changed:
+
+- Names now come from `GET /v4/players?sportId=14` (one request, 43,893 ids), cached in `data/oddspapi_players.json`,
+  instead of the live board, which only names players priced that week; 0 ids unmapped (232 before).
+- The fixtures window ended at 23:59Z on the last game day, so every Monday-night game (00:20Z Tuesday) was missing:
+  16 games per week now, not 15.
+- "Last, First" flip also collapses split initials ("Moore, D J" → DJ Moore); a nickname fallback against the week's
+  slate maps "Cameron Skattebo" / "Kenneth Gainwell" to our Cam / Kenny (same last name, first names sharing three
+  letters, unique in the slate, so "Charvarius Ward" stays himself).
+- The feed prices defenders too, and a same-name player on another team was being matched by name: the Jaguars'
+  Josh Allen at +7500 landed on the Bills' Josh Allen and "won" 75 units in week 2. An outcome whose slate player is
+  not on either team in that game is dropped (1 per week).
+- Raw histories are cached once (50–110 MB per game) and a TD-markets-only slim copy (~3 MB) is kept, so a
+  name-only rerun takes seconds and no requests.
+
+Coverage of slate players: 307 / 314, 344 / 350, 339 / 347 in weeks 1 / 2 / 3 (250 / 287 / 291 before); of players
+projected at 15%+, 176 / 182, 172 / 176, 158 / 161. Still unpriced: DJ Moore, De'Von Achane, Woody Marks and Jacory
+Croskey-Merritt have no DraftKings / FanDuel rows in the OddsPapi archive at all (no id-0 rows either), so they stay
+out; Breece Hall and Caleb Williams are in.
+
+**Model vs market Brier (DK + FD, no-vig median book), updated:**
+
+| | Anytime: model / market / 50-50 | n | First TD: model / market / 50-50 | n |
+|---|---|---|---|---|
+| Week 1 | 0.1362 / 0.1328 / 0.1336 | 307 | 0.0354 / 0.0343 / 0.0347 | 307 |
+| Week 2 | 0.1094 / 0.1084 / 0.1082 | 344 | 0.0384 / 0.0383 / 0.0383 | 344 |
+| Week 3 (live books) | 0.1345 / 0.1341 / 0.1336 | 299 | 0.0413 / 0.0417 / 0.0414 | 298 |
+| Season to date | 0.1260 / 0.1244 / 0.1244 | 950 | 0.0383 / 0.0381 / 0.0381 | 949 |
+
+Adding the missing players and the Monday games moved week 1 against the model (0.1309 → 0.1362 model, 0.1264 →
+0.1328 market) and week 2 toward it (0.1172 → 0.1094, market 0.1176 → 0.1084). Season to date the books lead by
+0.0016 on anytime TD and 0.0002 on first TD; the 50/50 blend ties the market on both. The fitted blend still loses
+leave-one-week-out (anytime 0.1256 vs 0.1244), so 50/50 stays in use.
+
+**Edge Board on real prices, 1 unit per pick (re-scored):**
+
+| | Picks | Won | Units | Expected | Shorter than +1000: picks / won / units / expected |
+|---|---|---|---|---|---|
+| Week 1 (closing) | 98 | 4 | −60.2 | +41.2 | 20 / 3 / +3.8 / +4.3 |
+| Week 2 (closing) | 56 | 3 | −10.7 | +23.3 | 15 / 1 / −10.7 / +2.6 |
+| Week 3 (flag time) | 37 | 5 | +75.4 | +15.2 | 11 / 2 / −1.2 / +2.9 |
+| Combined | 191 | 12 | +4.5 | +79.8 | 46 / 6 / −8.1 / +9.8 |
+
+The earlier +43.7 included the mis-attributed Josh Allen win; without it the board is +4.5 units on 191 picks,
+carried by one +6600 first-TD hit, and 6–40 for −8.1 units on picks shorter than +1000.

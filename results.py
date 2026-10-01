@@ -84,6 +84,8 @@ def main():
     td = p[(p.touchdown == 1) & p.td_player_id.notna()]
     off = td[(td.rush_touchdown == 1) | (td.pass_touchdown == 1)]
     scored = off.groupby("game_id").td_player_id.apply(set).to_dict()
+    import yards_backtest as YB
+    ymap = {(int(r.week), r.pid, r.kind): float(r.y) for r in YB.actual_yards(p, int(s.season.max())).itertuples()} if "rushing_yards" in p else {}
     multi = off.groupby(["game_id", "td_player_id"]).size()
     two = multi[multi >= 2].reset_index().groupby("game_id").td_player_id.apply(set).to_dict()
     first = td.sort_values(["game_id", "play_id"]).groupby("game_id").first()
@@ -148,6 +150,16 @@ def main():
         print(f"  blend {mk}: coef {m['coef']} n {m['n']} | Brier model {m['brier']['model']} market {m['brier']['market']} 50/50 {m['brier']['half']} fitted {m['brier']['fitted']}"
               + (f" | leave-one-week-out: fitted {m['loo']['fitted']} 50/50 {m['loo']['half']} market {m['loo']['market']} model {m['loo']['model']}" if m.get("loo") else ""))
     bets = rescore_edges(allp, models)
+    # yard edges come straight from each slate's edge list (flag-time prices), graded on actual yards
+    for fn in sorted(glob.glob("slate_*_w*.json")):
+        d = json.load(open(fn))
+        if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
+        for e in d.get("edges", []):
+            if e.get("market") != "yds" or (d["week"], e["pid"], e.get("kind")) not in ymap: continue
+            won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
+            bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
+                             model_p=e.get("model_p"), mkt_p=e.get("mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=e.get("role", "Unknown"), market="yds",
+                             longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
 
     # ---- top-15 regulars: everyone who has made any week's top 15 ----
     regulars = []
@@ -244,10 +256,10 @@ def main():
         bets_by_week.append(dict(season=sn, week=wk, priced="closing" if all(r["closing"] for r in rs if r["market"] != "parlay") else "live" if not any(r["closing"] for r in rs) else "mixed",
                                  all=agg(rs), short=agg([r for r in rs if not r["longshot"]]),
                                  by_market={m: dict(all=agg([r for r in rs if r["market"] == m]), short=agg([r for r in rs if r["market"] == m and not r["longshot"]]))
-                                            for m in ("any", "first", "two", "parlay") if any(r["market"] == m for r in rs)}))
+                                            for m in ("any", "first", "two", "yds", "parlay") if any(r["market"] == m for r in rs)}))
     bets_cum = dict(all=agg(rows_bw), short=agg([r for r in rows_bw if not r["longshot"]]),
                     by_market={m: dict(all=agg([r for r in rows_bw if r["market"] == m]), short=agg([r for r in rows_bw if r["market"] == m and not r["longshot"]]))
-                               for m in ("any", "first", "two", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
+                               for m in ("any", "first", "two", "yds", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
     out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,

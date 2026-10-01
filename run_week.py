@@ -5,7 +5,7 @@
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
-import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA
+import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -144,7 +144,8 @@ except Exception as e:
     print("snaps unavailable for cap:", e)
 _rk = ros[ros.rookie_year == season].drop_duplicates("gsis_id")
 rookies = {g: M.draft_bucket(d) for g, d in zip(_rk.gsis_id, _rk.draft_number)}
-teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3, rookies=rookies)
+_cache = M.prep_week(p, s2, season, week)
+teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3, rookies=rookies, cache=_cache)
 pl.loc[pl.pid.isin(q_ids), "share"] *= 0.85
 sim = M.simulate(teams, pl, qbs, n=60000)
 df = M.summarize(teams, pl, qbs, sim, names)
@@ -269,6 +270,42 @@ vac = sh[sh.pid.isin(out_ids | inactive) & (sh.share > 0.08) & (sh.last_ord >= s
 vac = vac.assign(team=vac.last_team, name=vac.pid.map(names).fillna(vac.name))
 vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
 
+# ---------- yard ladders: rushing / receiving / passing yards from the same sim games ----------
+YARD_KINDS = [k for k, ok in Y.SHIP.items() if ok]        # kinds that passed the backtest gate (yards.SHIP)
+yard_rows, yard_edges = [], []
+if YARD_KINDS:
+    _yc = Y.prep(_cache["past"], season)
+    _tv, _plv, _qv = Y.build(p, s2, season, week, active, qbo, depth, snaps3, rookies, _cache, _yc, wind=wind)
+    _posof = lambda pid: M.POS_MAP.get(pos.get(pid, "WR"), pos.get(pid, "WR"))
+    _yd = Y.simulate(teams, _plv, qbs, _yc, sim, _posof)
+    _yb, _yh = YP.ladder_board(events) if events else ({}, {})
+    _name = {r.pid: r["name"] for _, r in df.iterrows()}; _meta = {r.pid: r for _, r in df.iterrows()}
+    _lines = {(pid, k): YP.offered_lines(_yb, k, _name.get(pid, "")) for (pid, k) in _yd if pid in _name}
+    _coef = {k: BL.coef_for(BLENDS, "yds_" + k) for k in Y.DEFAULT_LADDER}
+    for r in Y.summarize({k: v for k, v in _yd.items() if k[1] in YARD_KINDS}, _lines):
+        if r["pid"] not in _meta: continue
+        m = _meta[r["pid"]]; rungs = []; best_edge = None
+        for line, prob in sorted(((float(l), pr) for l, pr in r["ladder"].items())):
+            ps = YP.price_rung(_yb, _yh, r["kind"], _name[r["pid"]], line, model_p=prob) if _yb else None
+            rung = dict(line=line, p=round(prob, 4), fair=int(M.fair_american(np.array([prob]))[0]))
+            if ps:
+                blend = float(BL.predict(_coef.get(r["kind"]), [prob], [ps["market_p"]])[0])
+                ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
+                rung.update(best=ps["best"], book=ps["book"], med=ps["median"], nbooks=ps["n_books"], mkt_p=round(ps["market_p"], 4), blend=round(blend, 4),
+                            ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"])
+                if line >= Y.MIN_EDGE_LINE[r["kind"]] and ev >= 0.05 and ev_med >= 0.05 and ps["n_books"] >= 2 and not (isinstance(m.get("weak_spot"), str) and m.get("weak_spot")) and (best_edge is None or ev_med > best_edge["ev_med"]):
+                    best_edge = dict(bet=f"{_name[r['pid']]} Over {line:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=line, team=m["team"], model_p=round(prob, 4),
+                                     mkt_p=round(ps["market_p"], 4), blend_p=round(blend, 4), best=int(ps["best"]), book=ps["book"], ev=round(ev, 4), med=int(ps["median"]),
+                                     ev_med=round(ev_med, 4), nbooks=int(ps["n_books"]), games=int(m.get("games", 0)), w=0.5, role=m["role"], kalshi=None, kalshi_liquid=False)
+            rungs.append(rung)
+        main = [g for g in rungs if g.get("two_sided")]
+        main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
+        yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=m.get("pos"), role=m["role"], kind=r["kind"], mean=round(r["mean"], 1),
+                              median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
+                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=m.get("weak_spot") if isinstance(m.get("weak_spot"), str) else None))
+        if best_edge: yard_edges.append(best_edge)
+    print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {len(yard_edges)} edges")
+
 # ---------- edge board: priced by 2+ books and EV >= 5% at the median book (not just the best one) ----------
 MIN_BOOKS, MIN_EV = 2, 0.05
 edges = []
@@ -282,13 +319,14 @@ for _, r in df.iterrows():
                               best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
                               nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role,
                               kalshi=None if pd.isna(r.get(m + "kalshi")) else int(r[m + "kalshi"]), kalshi_liquid=bool(r.get(m + "kalshi_liquid", False))))
+edges += yard_edges
 clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
 print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
-data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl,
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),
@@ -308,6 +346,7 @@ if os.path.exists(slate_fn):
     data["players"] = [r for r in old.get("players", []) if r.get("game_id") in lg] + data["players"]
     lteams = {t for g in locked_games for t in (g["home"], g["away"])}
     data["edges"] = [e for e in old.get("edges", []) if e.get("team") in lteams] + data["edges"]
+    data["yards"] = [y for y in old.get("yards", []) if y.get("team") in lteams] + data["yards"]
     # parlays whose legs have all kicked off are locked with their flag-time prices
     for m, v in data["parlays"]["modes"].items():
         v["parlays"] = [c for c in old.get("parlays", {}).get("modes", {}).get(m, {}).get("parlays", []) if all(l["team"] in lteams for l in c["legs"])] + v["parlays"]

@@ -23,7 +23,10 @@ def log_edges(edges, season, week, stamp):
         key = f"{e['pid']}|{e['market']}"
         if key in log:
             continue
-        log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"),
+        if e["market"] == "yds": key = f"{e['pid']}|yds|{e.get('kind')}|{e.get('line')}"
+        if key in log:
+            continue
+        log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
                         flagged=stamp, best=e["best"], book=e["book"], med=e["med"], mkt_p=e["mkt_p"],
                         blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"])
         n += 1
@@ -81,6 +84,17 @@ def closing_summary(season, week, log=None):
         events = _load(latest[-1][1], cache)
         ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
         if not ev:
+            continue
+        if e["market"] == "yds":
+            import yard_prices as YP
+            before = [(st, fn) for st, fn in pulls(season, week) if st < ev["commence_time"].replace("-", "").replace(":", "")[:13]]
+            if not before: continue
+            cp = before[-1][1]; cev = _load(cp, cache)
+            yb, yh = cache.setdefault(("yboard", cp), YP.ladder_board(cev))
+            ps = YP.price_rung(yb, yh, e["kind"], e["bet"].split(" Over ")[0], float(e["line"]))
+            if not ps: continue
+            e["close_pull"] = os.path.basename(cp); e["close_best"] = ps["best"]; e["close_book"] = ps["book"]; e["close_med"] = ps["median"]
+            e["close_mkt_p"] = round(ps["market_p"], 4); e["clv"] = round(ps["market_p"] - e["mkt_p"], 4); e["beat_close"] = ps["market_p"] > e["mkt_p"]
             continue
         market = {"any": "player_anytime_td", "first": "player_first_td", "two": "player_tds_over"}.get(e["market"], "player_anytime_td")
         point = 1.5 if e["market"] == "two" else None

@@ -11,7 +11,8 @@ bookmakers each). Each game's full price history is reduced to the LAST snapshot
 Odds-API-shaped pull to odds_history/<season>_w<week>_<UTC stamp>Z.json, so results.py / clv.py treat it like our
 own pulls (closing = last pre-kickoff snapshot; a stamp of kickoff - 1 min is used). Quota: 250 requests/month on the
 free tier, historical counts the same as live; cooldowns 2 s (fixtures), 5 s (historical-odds).
-Keys live in the environment / GitHub secrets only.
+Keys live in the environment / GitHub secrets only. Raw histories, fixtures and the /players list are cached under
+data/oddspapi_raw/ and data/oddspapi_players.json, so a re-run that only re-maps names spends no requests.
 """
 import sys, os, re, json, time, urllib.request, urllib.parse, datetime as dt
 from odds import TEAM_ABBR
@@ -101,13 +102,27 @@ def flip_name(n):
     if not n or "," not in n: return n
     last, first = [x.strip() for x in n.split(",", 1)]
     m = re.match(r"^(.*?)\s+(Jr\.?|Sr\.?|II|III|IV|V)$", last)
+    first = re.sub(r"^([A-Z]) ([A-Z])$", lambda m: m.group(1) + m.group(2), first)   # 'Moore, D J' -> 'DJ Moore'
     return f"{first} {m.group(1)} {m.group(2)}" if m else f"{first} {last}"
 
 
+PLAYERS_FILE = "data/oddspapi_players.json"      # GET /v4/players?sportId=14 (one request, ~44k ids); data/ is gitignored
+
+
 def player_names(key, books):
-    """playerId -> playerName from one live odds-by-tournaments call (ids are global across fixtures and books)."""
-    d = get("odds-by-tournaments", {"tournamentIds": NFL_TOURNAMENT, "bookmaker": books.split(",")[0]}, key)   # endpoint takes exactly one bookmaker
+    """playerId -> playerName. Preferred: the saved /players list (every American-football player, so ids priced in past
+       weeks but not this week still resolve). Fallback: the live odds-by-tournaments board, which only names players
+       priced right now (the first backfill left 232 ids unnamed that way)."""
     names = {}
+    if os.path.exists(PLAYERS_FILE):
+        _collect(json.load(open(PLAYERS_FILE)), names); return names
+    for bk in books.split(","):                      # one call per book (the endpoint takes exactly one bookmaker); ids are global
+        d = get("odds-by-tournaments", {"tournamentIds": NFL_TOURNAMENT, "bookmaker": bk}, key)
+        _collect(d, names)
+    return names
+
+
+def _collect(d, names):
     def walk(x):
         if isinstance(x, dict):
             if x.get("playerName") and (x.get("playerId") is not None):
@@ -128,7 +143,31 @@ def player_names(key, books):
         elif isinstance(x, list):
             for v in x: walk2(v)
     walk2(d)
-    return names
+
+
+def _slate_matcher(season, wk):
+    """Two slate-based guards for a feed that names players by id and prices defenders too.
+       fix(name): nickname fallback, 'Cameron Skattebo' -> 'Cam Skattebo', 'Kenneth Gainwell' -> 'Kenny Gainwell': same
+       last-name letters and first names sharing at least their first three letters, unique in the slate ('Charvarius
+       Ward' must not become 'Cam Ward'). team(name): the slate team of a slate player, so an outcome in a game that
+       player's team is not in (the Jaguars' Josh Allen priced +7500 in Jacksonville's game) is dropped rather than
+       attached to the Bills' Josh Allen."""
+    from odds import norm_name
+    fn = f"slate_{season}_w{wk}.json"
+    if not os.path.exists(fn): return (lambda n: n), (lambda n: None)
+    slate = [(p["name"], p.get("team")) for p in json.load(open(fn)).get("players", [])]
+    exact = {norm_name(n): t for n, t in slate}
+    keys = {}
+    for n, _ in slate:
+        parts = norm_name(n).split()
+        if len(parts) >= 2: keys.setdefault("".join(parts[1:]), []).append((parts[0], n))
+    def fix(n):
+        if norm_name(n) in exact: return n
+        parts = norm_name(n).split()
+        if len(parts) < 2: return n
+        hits = [name for first, name in keys.get("".join(parts[1:]), []) if len(first) >= 3 and len(parts[0]) >= 3 and (first.startswith(parts[0][:3]) and parts[0].startswith(first[:3]))]
+        return hits[0] if len(hits) == 1 else n
+    return fix, lambda n: exact.get(norm_name(n))
 
 
 def run(key, season, weeks, books, sched, names=None):
@@ -138,14 +177,30 @@ def run(key, season, weeks, books, sched, names=None):
     print("player names mapped:", len(names))
     unmapped = set()
     for wk in weeks:
+        fix_name, slate_team = _slate_matcher(season, wk); wrong_team = 0
         g = sched[(sched.season == season) & (sched.week == wk)]
-        start, end = g.gameday.min() + "T00:00:00Z", g.gameday.max() + "T23:59:59Z"
-        fixtures = get("fixtures", {"tournamentId": NFL_TOURNAMENT, "from": start, "to": end, "statusId": 2}, key)
+        start = g.gameday.min() + "T00:00:00Z"                                                   # Monday night kicks off after 00:00Z Tuesday
+        end = (dt.date.fromisoformat(g.gameday.max()) + dt.timedelta(days=1)).isoformat() + "T12:00:00Z"
+        fx_fn = f"data/oddspapi_raw/{season}_w{wk}_fixtures.json"; os.makedirs("data/oddspapi_raw", exist_ok=True)
+        if os.path.exists(fx_fn): fixtures = json.load(open(fx_fn))
+        else:
+            fixtures = get("fixtures", {"tournamentId": NFL_TOURNAMENT, "from": start, "to": end, "statusId": 2}, key); json.dump(fixtures, open(fx_fn, "w"))
         events = []
         for fx in fixtures:
             fid, kick = fx["fixtureId"], fx["startTime"]
-            hist = get("historical-odds", {"fixtureId": fid, "bookmakers": books}, key)
-            os.makedirs("data/oddspapi_raw", exist_ok=True); json.dump(hist, open(f"data/oddspapi_raw/{season}_w{wk}_{fid}.json", "w"))   # raw ids, re-nameable later (data/ is gitignored)
+            raw_fn = f"data/oddspapi_raw/{season}_w{wk}_{fid}.json"; slim_fn = raw_fn.replace(".json", "_td.json")
+            if os.path.exists(slim_fn):
+                hist = json.load(open(slim_fn))                   # TD markets only (the full raw file is 50-110 MB per game)
+            else:
+                if os.path.exists(raw_fn):
+                    hist = json.load(open(raw_fn))                # resume: raw ids already saved, no request spent
+                else:
+                    hist = get("historical-odds", {"fixtureId": fid, "bookmakers": books}, key)
+                    json.dump(hist, open(raw_fn, "w"))             # raw ids, re-nameable later (data/ is gitignored)
+                keep = {mid for mid, _ in MARKETS.values()}
+                hist = {**hist, "bookmakers": {bk: {**bd, "markets": {m: v for m, v in (bd.get("markets") or {}).items() if m in keep}}
+                                               for bk, bd in (hist.get("bookmakers") or {}).items()}}
+                json.dump(hist, open(slim_fn, "w"))
             ev = dict(id=str(fid), commence_time=kick, home_team=fx.get("participant1Name"), away_team=fx.get("participant2Name"),
                       bookmakers=[], props={"bookmakers": []})
             for bk, bdata in (hist.get("bookmakers") or {}).items():
@@ -159,8 +214,10 @@ def run(key, season, weeks, books, sched, names=None):
                         for pid, hist_rows in (o.get("players") or {}).items():
                             snap = last_snapshot_before(hist_rows, kick)
                             if not snap or not snap.get("price"): continue
-                            nm = flip_name(names.get(str(pid)))
+                            nm = fix_name(flip_name(names.get(str(pid)))) if names.get(str(pid)) else None
                             if not nm: unmapped.add(str(pid)); continue
+                            _t = slate_team(nm)
+                            if _t and _t not in (TEAM_ABBR.get(ev["home_team"]), TEAM_ABBR.get(ev["away_team"])): wrong_team += 1; continue   # same name, other team
                             oc = dict(name="Over" if mkey == "two" else "Yes", description=nm, price=american(float(snap["price"])))
                             if mkey == "two": oc["point"] = 1.5
                             outcomes.append(oc)
@@ -170,7 +227,7 @@ def run(key, season, weeks, books, sched, names=None):
         kick_min = min(e["commence_time"] for e in events) if events else None
         stamp = (dt.datetime.fromisoformat(kick_min.replace("Z", "+00:00")) - dt.timedelta(minutes=1)).strftime("%Y%m%dT%H%M") if kick_min else "unknown"
         fn = f"odds_history/{season}_w{wk}_{stamp}Z.json"
-        json.dump(events, open(fn, "w")); print("wrote", fn, "games", len(events), "| priced players:", sum(len(o) for e in events for b in e["props"]["bookmakers"] for m in b["markets"] for o in [m["outcomes"]]))
+        json.dump(events, open(fn, "w")); print("wrote", fn, "games", len(events), "| priced players:", sum(len(o) for e in events for b in e["props"]["bookmakers"] for m in b["markets"] for o in [m["outcomes"]]), "| dropped as another team's namesake:", wrong_team)
     print("player ids without a name (skipped):", len(unmapped))
 
 

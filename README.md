@@ -1,7 +1,8 @@
 # Endzone Lab
 
-NFL touchdown projections: anytime TD, first TD (with opening-kickoff adjustment), red-zone usage,
-bring-backs, live sportsbook edges, and a Results tab that grades every week.
+NFL touchdown projections: anytime TD, first TD (with opening-kickoff adjustment), 2+ TD, parlays, yard ladders
+(rushing / receiving / passing, simulated inside the same game sim), red-zone usage, bring-backs, live sportsbook
+edges, and a Results tab that grades every week.
 
 Site: GitHub Pages from the repo root (`index.html` reads `latest.json` and `results.json`).
 A scheduled GitHub Action (`.github/workflows/update.yml`) reruns everything Tue/Thu/Sat/Sun.
@@ -14,6 +15,8 @@ A scheduled GitHub Action (`.github/workflows/update.yml`) reruns everything Tue
 - `results.py` – grades saved slates vs actual scorers, writes `results.json`
 - `backfill.py` – rebuilds pre-game slates for past weeks (`python backfill.py 2026 1 2`)
 - `backtest.py` – 2025 walk-forward calibration
+- `yards.py` – yard ladders (volume + efficiency inside the game sim); `yard_prices.py` prices them from the SharpAPI DK/FD main and alternate lines; `yards_backtest.py` is the 2024+2025 gate (`python yards_backtest.py --dist gamma --tag gamma`)
+- `oddspapi_backfill.py` – pre-kickoff DK/FD TD prices for past weeks from OddsPapi (raw histories cached under `data/oddspapi_raw/`, names from `/v4/players`)
 
 ## Secrets
 `ODDS_API_KEY` (the-odds-api.com). Odds are pulled around Sat 9:23am and Sun 9:23am PT (~95 credits/week); the
