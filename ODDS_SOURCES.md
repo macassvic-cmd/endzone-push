@@ -107,3 +107,49 @@ week-1 prop histories (September 10–14, 2026; the archive began January 2026).
 Sequence on your go-ahead: create the free key → add it as the `ODDSPAPI_KEY` repository secret and export it locally
 for the one-off run → `--discover` (4 requests) → confirm ids with you → `--run 2026 1 2 3` (51 requests) → commit the
 three pull files → regrade. Nothing runs until then.
+
+## SharpAPI test pull (2026-10-01, free key, 3 requests) — Steelers @ Browns, Thursday night
+
+`python sharpapi_probe.py` (key from the environment only). Endpoints that worked: `GET /api/v1/markets?league=nfl`
+(130 market ids), `GET /api/v1/events?league=nfl&limit=100` (the list is mostly outrights: 92 of 100; fixtures are
+`event_type: "fixture"`, filter client-side or page with `cursor`), `GET /api/v1/events/{id}/odds` (every market and
+book for the game in one response, 1,503 rows). Accepted event filters per the API's own error message: `league`,
+`date`, `date_range`, `books`, `is_player_prop`, `is_main_line`, `market`, `limit`, `cursor`, `devig_book`, …
+
+**Books returned on the free tier:** DraftKings (709 rows) and FanDuel (794) only, although the event lists 40
+books including Kalshi, Pinnacle, Novig, ProphetX, PrizePicks and Underdog (paid tiers).
+
+**TD markets, this game:**
+
+| Market id | DraftKings | FanDuel |
+|---|---|---|
+| `anytime_touchdown_scorer` | 29 rows / 28 players | 29 / 29 |
+| `first_touchdown_scorer` | none | 29 / 29 |
+| `last_touchdown_scorer` | none | 29 / 29 |
+| `player_touchdowns` (over/under, the 2+ line) | none | none |
+| `player_passing_touchdowns` | 2 QBs, 0.5 line | 2 QBs, 0.5 and 1.5 |
+
+So anytime TD from both books, first TD from FanDuel only, and **no 2+ TD line at either book for this game** even
+though `player_touchdowns` exists in the catalogue; the 2+ market would still come from The Odds API / Kalshi.
+
+**Yardage markets:** `player_rushing_yards`, `player_receiving_yards`, `player_passing_yards` (plus combos,
+receptions, attempts, longest reception/rush). Alternate lines come as separate rows with `is_main_line: false`
+and `is_alternate_line: true` and a numeric `line` (DK: up to 14 rushing / 10 receiving / 27 passing lines per
+player; FD: up to 13 / 16 / 11). Receiving yards: 13 players at each book; rushing: 6; passing: 2.
+
+**Names:** use the `player_name` field, not `selection` (FanDuel's ladders put "Aaron Rodgers 10+" in `selection`).
+Names are clean ("Harold Fannin Jr.", "DK Metcalf"). Of 30 `player_name` strings in the TD markets, 21 matched our
+week-4 board through `odds.norm_name` with zero wrong-team matches; the 9 unmatched were two defenses, an "Anytime
+TD" header row, and six deep-bench players outside our depth-chart cut (Carsen Ryan, Eli Heidenreich, Kaden Wetjen,
+Michael Burton, Riley Nowakowski, Travis Homer). No mapping work needed beyond skipping non-player rows.
+
+**Freshness:** every row carries `timestamp` (all 06:24Z for this pull, i.e. one snapshot) and
+`is_stale_pregame_price` (0 flagged).
+
+**Request count for a full Sunday:** 1–2 events-list requests (outrights crowd the list; use `cursor` or
+`date_range`) + 16 × `/events/{id}/odds` = **about 18 requests**, 1.5 minutes at 12 requests/min, no credits.
+Each game response includes every DK/FD market, so TD and yardage props come in the same call.
+
+**Verdict:** a free DK/FD source for anytime TD, first TD (FD) and full alternate-yardage ladders, with clean
+names. It does not replace The Odds API for the 2+ line or for the other books, and it only ever shows two books.
+Fits as the cross-check/ladder source in the recommended combination above. Pipeline unchanged.
