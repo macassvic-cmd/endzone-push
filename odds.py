@@ -8,7 +8,8 @@ from collections import defaultdict
 import numpy as np
 
 BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
-PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds", "player_tds_over"]   # tds_over 1.5 = 2+ TDs (one more market per event)
+PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds", "player_tds_over"]   # full set (fallback when SharpAPI is unavailable)
+PROP_MARKETS_TRIMMED = ["player_tds_over", "player_pass_tds"]   # with SharpAPI covering DK/FD anytime, first TD and yardage: 2 markets per event instead of 4
 TWO_PLUS = ("player_tds_over", 1.5)
 # The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
 MARKET_ALIAS = {"player_1st_td": "player_first_td"}
@@ -55,7 +56,8 @@ def _get(url, params, fetch=None):
         return json.load(r)
 
 
-def fetch_all(api_key=None, fetch=None, markets=PROP_MARKETS):
+def fetch_all(api_key=None, fetch=None, markets=None):
+    markets = markets or (PROP_MARKETS_TRIMMED if os.environ.get("ODDS_API_PROPS", "trimmed") == "trimmed" and os.environ.get("SHARPAPI_KEY") else PROP_MARKETS)
     if os.environ.get("ODDS_MOCK"):                     # offline test fixture
         return json.load(open(os.environ["ODDS_MOCK"]))
     api_key = api_key or os.environ.get("ODDS_API_KEY")
@@ -115,6 +117,8 @@ def prop_board(events):
                     side = o["name"].lower()
                     side = "yes" if side in ("yes", "over") else "no" if side in ("no", "under") else "yes"
                     key = (MARKET_ALIAS.get(m["key"], m["key"]), norm_name(player), o.get("point"))
+                    if o.get("name") in ("Over", "Under") and m["key"].startswith("player_") and "yds" in m["key"] or m["key"].endswith("_alternate"):
+                        continue                                           # yardage ladders are not TD props (yard ladders read them separately)
                     if o.get("reference"):
                         if side == "yes": REFERENCE.setdefault(key, {})[b["title"]] = o["price"]
                         continue

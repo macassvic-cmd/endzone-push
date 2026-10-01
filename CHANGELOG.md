@@ -373,3 +373,29 @@ than from the slate's edge list, so backfilled and live weeks are judged by one 
 
 OddsPapi name gaps (DJ Moore, Breece Hall, Caleb Williams, Achane): a second name map cannot fill them because the
 first run did not keep raw ids; a re-pull with raw saving (about 49 requests) would.
+
+## 2026-10-01 — Free odds combination live: SharpAPI primary for DK/FD, The Odds API trimmed
+
+- **SharpAPI** (`sharpapi.py`, `SHARPAPI_KEY` secret) is the primary source for DraftKings and FanDuel anytime TD,
+  first TD (FanDuel) and every yardage market, main and alternate lines (kept under The Odds API's keys
+  `player_rush_yds`, `player_reception_yds`, `player_pass_yds` and `*_alternate` for the yard ladders). Matching uses
+  `player_name`; team-defense and header rows are skipped. Fixtures are paged with `pagination.next_cursor` through
+  the outright-heavy event list until the 6-day horizon passes; duplicate listings of a game keep the entry with the
+  most books. Spreads and totals from SharpAPI feed the game lines when The Odds API is not pulled.
+- **The Odds API** prop pull is trimmed to `player_tds_over` (2+) and `player_pass_tds` (QB ladders); spreads and
+  totals unchanged. Credits per Sunday pull on a 16-game slate: **66 before → 34 after** (18 if passing TDs are
+  dropped too). The other books (BetMGM, BetRivers, Bovada, BetOnline) no longer contribute anytime/first-TD
+  prices; set `ODDS_API_PROPS=all` to restore the full market set.
+- **Merge** (`merge_sources` in run_week.py): events are matched by teams; a book present from both sources keeps
+  the fresher quote per market (SharpAPI row `timestamp` vs The Odds API market `last_update`); every outcome
+  carries `source` and `ts`. If SharpAPI fails or the key is missing, the run falls back to the full Odds API
+  market set so the board never goes blank. Started-game skip, partial-board guard, Kalshi liquidity floor and
+  odds_history saving are unchanged; SharpAPI is pulled on every run (free), The Odds API only when `decide_odds`
+  says so.
+- **Dry run, week 4, live SharpAPI + Kalshi, no Odds API credits:** 20 fixtures in 26 SharpAPI requests, 16 of 16
+  games with live lines, 358 players priced on anytime TD (DK 1,700 rows, FD 4,910, Kalshi 921 markets), 357 on
+  first TD, 41 on 2+ (Kalshi only until Saturday's Odds API pull), per-book holds DK 1.17 / FD 1.21 / Kalshi 1.00,
+  pull saved to `odds_history/2026_w4_20261001T0719Z.json`, 31 edges.
+- **Bug fixed on the way:** the weak-spot column became a pandas string dtype whose missing values are NaN, which
+  is truthy, so the Edge Board loop skipped every player (0 edges). Pushed on 2026-09-28; the first live odds run
+  after it would have shown an empty board. The check is now NaN-safe.

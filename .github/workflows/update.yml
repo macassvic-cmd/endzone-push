@@ -62,6 +62,7 @@ jobs:
         env:
           ODDS_API_KEY: ${{ steps.odds.outputs.use_odds == 'true' && secrets.ODDS_API_KEY || '' }}
           ODDS_SAVE: odds_raw.json
+          SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
         run: |
           python refresh.py
           python results.py

@@ -5,7 +5,7 @@
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
-import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL
+import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -36,7 +36,45 @@ if sched.empty:
     print(f"nothing to project: every {season} week {week} game has kicked off; keeping the existing files"); sys.exit(0)
 
 # ---------- live lines (Odds API) ----------
-events = O.fetch_all()
+def merge_sources(oa, sa):
+    """Merge Odds API events (oa) with SharpAPI events (sa) game by game. Same book from both sources: keep the
+       fresher quote per market (Odds API market last_update vs SharpAPI row timestamp). Every outcome keeps its source."""
+    def key(e): return (O.TEAM_ABBR.get(e["away_team"], e["away_team"]), O.TEAM_ABBR.get(e["home_team"], e["home_team"]))
+    for e in oa or []:
+        for b in e.get("props", {}).get("bookmakers", []):
+            for m in b["markets"]:
+                for o in m["outcomes"]:
+                    o.setdefault("source", "oddsapi"); o.setdefault("ts", m.get("last_update") or b.get("last_update"))
+    out = {key(e): e for e in (oa or [])}
+    for e in sa or []:
+        k = key(e)
+        if k not in out:
+            out[k] = e; continue
+        tgt = out[k]
+        if not tgt.get("bookmakers"): tgt["bookmakers"] = e.get("bookmakers", [])
+        tb = {b["title"]: b for b in tgt.setdefault("props", {}).setdefault("bookmakers", [])}
+        for b in e.get("props", {}).get("bookmakers", []):
+            if b["title"] not in tb:
+                tgt["props"]["bookmakers"].append(b); continue
+            tm = {m["key"]: m for m in tb[b["title"]]["markets"]}
+            for m in b["markets"]:
+                if m["key"] not in tm:
+                    tb[b["title"]]["markets"].append(m); continue
+                old = tm[m["key"]]; old_ts = max((o.get("ts") or "" for o in old["outcomes"]), default=""); new_ts = max((o.get("ts") or "" for o in m["outcomes"]), default="")
+                if new_ts >= old_ts:
+                    old["outcomes"] = m["outcomes"]                 # fresher SharpAPI quote replaces the Odds API one for this book+market
+    return list(out.values())
+
+
+sharp = None
+if os.environ.get("SHARPAPI_KEY") and not os.environ.get("ODDS_MOCK"):
+    try:
+        sharp = SA.fetch_week(); print(f"sharpapi: {len(sharp)} fixtures, {SA.REQS} requests, DK/FD anytime+first+yardage")
+    except Exception as e:
+        print("sharpapi failed, falling back to the full Odds API market set:", e); sharp = None
+events = O.fetch_all(markets=None if sharp else O.PROP_MARKETS)
+if sharp:
+    events = merge_sources(events, sharp)
 odds_asof = None
 if events is None:
     # live odds off: reuse the newest saved pull for games that have not kicked off, and say so on the board
@@ -237,7 +275,7 @@ edges = []
 for _, r in df.iterrows():
     for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first), ("two_", "2+ TD", r.p_2plus)]:
         ev, ev_med = r.get(m + "ev"), r.get(m + "ev_med")
-        if r.get("weak_spot"):
+        if isinstance(r.get("weak_spot"), str) and r.get("weak_spot"):      # None/NaN = not a weak spot (NaN is truthy in Python)
             continue
         if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
             edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
