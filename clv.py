@@ -82,13 +82,14 @@ def closing_summary(season, week, log=None):
         ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
         if not ev:
             continue
-        market = "player_anytime_td" if e["market"] == "any" else "player_first_td"
+        market = {"any": "player_anytime_td", "first": "player_first_td", "two": "player_tds_over"}.get(e["market"], "player_anytime_td")
+        point = 1.5 if e["market"] == "two" else None
         cp = closing_pull(season, week, ev["commence_time"], e["team"], market, cache)
         if not cp:
             continue
         cev = _load(cp, cache)
         board = cache.setdefault(("board", cp), O.prop_board(cev)); hold = cache.setdefault(("hold", cp), O.measure_hold(cev))
-        ps = O.price_summary(board, market, e["bet"].rsplit(" Anytime TD", 1)[0].rsplit(" First TD", 1)[0], None, hold)
+        ps = O.price_summary(board, market, e["bet"].rsplit(" Anytime TD", 1)[0].rsplit(" First TD", 1)[0].rsplit(" 2+ TD", 1)[0], point, hold)
         if not ps:
             continue
         e["close_pull"] = os.path.basename(cp); e["close_best"] = ps["best"]; e["close_book"] = ps["book"]

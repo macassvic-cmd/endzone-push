@@ -31,7 +31,7 @@ def prep(p, s, weeks, season=2025):
         qbo = {t: (g.passer_player_id.value_counts().index[0], '') for t, g in act[act.pass_attempt == 1].groupby('posteam')}
         sc = act[(act.touchdown == 1) & act.td_player_id.notna()]
         out[wk] = dict(cache=M.prep_week(p, s, season, wk), depth=depth, snaps=snaps, active=active, qbo=qbo,
-                       ytd=set(sc.td_player_id), qb_ids=set(q[0] for q in qbo.values()))
+                       ytd=set(sc.td_player_id), ycnt=sc.groupby("td_player_id").size().to_dict(), qb_ids=set(q[0] for q in qbo.values()))
     out["_rookies"] = B.rookie_map(season)
     return out
 
@@ -50,6 +50,7 @@ def evaluate(p, s, pre, params, n=3000, season=2025, seed=7):
             sim = M.simulate(teams, pl, qbs, n=n)
             out = M.summarize(teams, pl, qbs, sim, {})
             out["y_any"] = out.pid.isin(w["ytd"]); out["week"] = wk
+            out["y_2plus"] = out.pid.map(w["ycnt"]).fillna(0) >= 2
             out["is_qb"] = out.pid.isin(w["qb_ids"])
             qt = sh.drop_duplicates("pid").set_index("pid").get("qb_type")
             out["qb_type"] = out.pid.map(qt) if qt is not None else None
@@ -69,6 +70,10 @@ def score(r):
     for lo in range(15, 50, 5):
         c = b.get(f"{lo}–{lo + 5}%")
         row[f"b{lo}"] = f"{c['pred'] * 100:.1f}/{c['act'] * 100:.1f}/{c['n']}" if c else "-"
+    if "y_2plus" in r:
+        p2, y2 = r.p_2plus.astype(float), r.y_2plus.astype(float); top2 = r.sort_values("p_2plus", ascending=False).groupby("week").head(10)
+        row["two_pred"] = round(float(p2.mean()), 4); row["two_act"] = round(float(y2.mean()), 4); row["two_brier"] = round(float(((p2 - y2) ** 2).mean()), 5)
+        row["two_top10"] = f"{top2.y_2plus.mean() * 10:.2f}/{top2.p_2plus.mean() * 10:.2f}"
     q = r[r.is_qb]
     if len(q):
         row["qb_n"] = len(q); row["qb_pred"] = round(float(q.p_any.mean()), 4); row["qb_act"] = round(float(q.y_any.mean()), 4)

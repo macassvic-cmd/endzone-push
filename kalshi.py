@@ -10,7 +10,7 @@ import json, math, re, time, urllib.request, urllib.parse
 from odds import TEAM_ABBR, norm_name
 
 BASE = "https://api.elections.kalshi.com/trade-api/v2"
-SERIES = {"player_anytime_td": "KXNFLTD", "player_1st_td": "KXNFLFIRSTTD"}
+SERIES = {"player_anytime_td": "KXNFLTD", "player_1st_td": "KXNFLFIRSTTD", "player_tds_over": "KXNFLTD"}   # "Player: 1+" and "Player: 2+" share a series
 TAKER_FEE, MAKER_FEE = 0.07, 0.0175
 BOOK = "Kalshi"
 MIN_DOLLARS_AT_ASK = 100.0      # Kalshi counts as a real price (best/median/EV) only with >= $100 available at the ask; else reference only
@@ -67,9 +67,10 @@ def split_ticker(event_ticker):
 
 def player_from(market, series_key):
     sub = market.get("yes_sub_title") or market.get("title") or ""
-    if series_key == "player_anytime_td":
-        m = re.match(r"^(.*?):\s*1\+$", sub)
-        return m.group(1).strip() if m else None
+    if series_key in ("player_anytime_td", "player_tds_over"):
+        m = re.match(r"^(.*?):\s*([12])\+$", sub)
+        if not m or m.group(2) != ("1" if series_key == "player_anytime_td" else "2"): return None
+        return m.group(1).strip()
     if "D/ST" in sub or sub.lower().startswith("no touchdown"): return None
     return sub.strip() or None
 
@@ -77,9 +78,10 @@ def player_from(market, series_key):
 def fetch_board():
     """{(away, home): {market_key: [dict(player, yes_ask, yes_bid, last, volume, ticker, close)]}} plus raw events."""
     board, raw = {}, {}
+    fetched = {}
     for key, series in SERIES.items():
-        evs = fetch_events(series)
-        raw[series] = evs
+        evs = fetched.get(series) or fetch_events(series)
+        fetched[series] = evs; raw[series] = evs
         for e in evs:
             g = split_ticker(e["event_ticker"])
             if not g: continue
@@ -112,7 +114,8 @@ def attach(events, board=None, min_volume=0.0):
         if not k: continue
         markets = []
         for key, rows in k.items():
-            oc = [dict(name="Yes", description=r["player"], price=fee_adjusted_american(r["yes_ask"]),
+            oc = [dict(name="Over" if key == "player_tds_over" else "Yes", description=r["player"], price=fee_adjusted_american(r["yes_ask"]),
+                       **({"point": 1.5} if key == "player_tds_over" else {}),
                        reference=r["dollars_at_ask"] < MIN_DOLLARS_AT_ASK,
                        kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_ask_size=r["ask_size"],
                        kalshi_dollars_at_ask=r["dollars_at_ask"], kalshi_volume=r["volume"], kalshi_volume_24h=r["volume_24h"],

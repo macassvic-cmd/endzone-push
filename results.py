@@ -1,6 +1,6 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
 import glob, json, os, numpy as np, pandas as pd
-import clv as C
+import clv as C, parlay as PL
 
 CAL_EDGES = [i / 100 for i in range(0, 75, 5)] + [1.0]     # 0–5, 5–10, …, 65–70, 70+
 CAL_MIN_N = 10
@@ -29,11 +29,13 @@ def main():
     td = p[(p.touchdown == 1) & p.td_player_id.notna()]
     off = td[(td.rush_touchdown == 1) | (td.pass_touchdown == 1)]
     scored = off.groupby("game_id").td_player_id.apply(set).to_dict()
+    multi = off.groupby(["game_id", "td_player_id"]).size()
+    two = multi[multi >= 2].reset_index().groupby("game_id").td_player_id.apply(set).to_dict()
     first = td.sort_values(["game_id", "play_id"]).groupby("game_id").first()
     first_scorer = first.td_player_id.to_dict()
     first_name = first.td_player_name.to_dict()
 
-    weeks, players_all, bets, top15_weeks, top15_frames = [], [], [], [], []
+    weeks, players_all, bets, top15_weeks, top15_frames, parlays = [], [], [], [], [], []
     for fn in sorted(glob.glob("slate_*_w*.json")):
         d = json.load(open(fn))
         pl = pd.DataFrame(d["players"])
@@ -45,6 +47,7 @@ def main():
             continue
         pl["hit"] = [r.pid in scored.get(r.game_id, set()) for r in pl.itertuples()]
         pl["first_hit"] = [first_scorer.get(r.game_id) == r.pid for r in pl.itertuples()]
+        pl["two_hit"] = [r.pid in two.get(r.game_id, set()) for r in pl.itertuples()]
         pl["season"], pl["week"] = d["season"], d["week"]
         players_all.append(pl)
         games = sorted(pl.game_id.unique())
@@ -71,13 +74,18 @@ def main():
                                 hit=int(top.hit.sum()), exp=round(float(top.p_any.sum()), 1),
                                 rows=top[["pid", "name", "team", "pos", "p_any", "hit"]].round(4).to_dict("records")))
         top15_frames.append(top[["pid", "name", "team", "pos", "p_any", "hit", "season", "week"]])
+        paper = [c for c in d.get("parlays", {}).get("parlays", []) if c.get("paper")]
+        if paper and all(any(l["team"] == t for t in set(pl.team)) for c in paper for l in c["legs"]):
+            th = {r.pid: bool(r.two_hit) for r in pl.itertuples()}
+            graded, legs = PL.grade(paper, th)
+            parlays.append(dict(season=d["season"], week=d["week"], parlays=graded, **legs))
         for e in d.get("edges", []):
             if e.get("pid") is None:
                 continue
             row = pl[pl.pid == e["pid"]]
             if row.empty:
                 continue
-            won = bool(row.first_hit.iloc[0] if e.get("market") == "first" else row.hit.iloc[0])
+            won = bool(row.first_hit.iloc[0] if e.get("market") == "first" else row.two_hit.iloc[0] if e.get("market") == "two" else row.hit.iloc[0])
             dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"],
                              ev=e["ev"], won=won, profit=round(dec - 1 if won else -1.0, 3),
@@ -120,7 +128,7 @@ def main():
     detail = []
     if last:
         lp = allp[(allp.season == last["season"]) & (allp.week == last["week"])].nlargest(40, "p_any")
-        detail = lp[["name", "team", "pos", "p_any", "hit", "p_first", "first_hit"]].to_dict("records")
+        detail = lp[["name", "team", "pos", "p_any", "hit", "p_first", "first_hit", "p_2plus", "two_hit"]].to_dict("records")
     b = pd.DataFrame(bets)
 
     def tally(g):
@@ -133,13 +141,13 @@ def main():
     by_price = {"under_1000": tally(b[~b.longshot]), "1000_plus": tally(b[b.longshot])} if len(b) else {}
 
     # ---- market Brier: score the no-vig median-book probability the same way as the model, where a price existed ----
+    COLS = {"any": ("any_mkt_p", "hit", "p_any"), "first": ("first_mkt_p", "first_hit", "p_first"), "two": ("two_mkt_p", "two_hit", "p_2plus")}
     def mb(m, mk):
-        mp = m["any_mkt_p" if mk == "any" else "first_mkt_p"].astype(float)
-        y = m["hit" if mk == "any" else "first_hit"].astype(float); pm = m["p_any" if mk == "any" else "p_first"].astype(float)
+        c = COLS[mk]; mp = m[c[0]].astype(float); y = m[c[1]].astype(float); pm = m[c[2]].astype(float)
         return dict(n=int(len(m)), model=round(float(((pm - y) ** 2).mean()), 4), market=round(float(((mp - y) ** 2).mean()), 4),
                     blend=round(float(((0.5 * pm + 0.5 * mp - y) ** 2).mean()), 4))
     market_brier = {}
-    for mk, pcol in [("any", "any_mkt_p"), ("first", "first_mkt_p")]:
+    for mk, pcol in [("any", "any_mkt_p"), ("first", "first_mkt_p"), ("two", "two_mkt_p")]:
         if pcol in allp:
             m = allp[allp[pcol].notna()]
             if len(m):
@@ -157,7 +165,12 @@ def main():
     clv_summary = C.aggregate(clv_rows) if clv_rows else None
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
-    out = dict(weeks=weeks, season_total=season_total, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
+    allp_ = [c for w in parlays for c in w["parlays"]]
+    parlay_summary = dict(weeks=len(parlays), n=len(allp_), won=sum(c["won"] for c in allp_), units=round(sum(c["profit"] for c in allp_), 2),
+                          expected_units=round(sum(c["ev"] for c in allp_), 2), expected_wins=round(sum(c["prob"] for c in allp_), 2),
+                          legs=sum(w["legs"] for w in parlays), legs_hit=sum(w["legs_hit"] for w in parlays),
+                          legs_expected=round(sum(w["legs_expected"] for w in parlays), 2), by_week=parlays) if parlays else None
+    out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,

@@ -5,7 +5,7 @@
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
-import model as M, odds as O, weather as W, kalshi as K, clv as C
+import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -181,7 +181,8 @@ def attach(row, market, prob, point=None, prefix=""):
             f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w}
 
 ext = [dict(**attach(r, "player_anytime_td", r.p_any, prefix="any_"),
-            **attach(r, "player_first_td", r.p_first, prefix="first_")) for _, r in df.iterrows()]
+            **attach(r, "player_first_td", r.p_first, prefix="first_"),
+            **attach(r, O.TWO_PLUS[0], r.p_2plus, point=O.TWO_PLUS[1], prefix="two_")) for _, r in df.iterrows()]
 df = pd.concat([df.reset_index(drop=True), pd.DataFrame(ext)], axis=1)
 
 # ---------- QB ladders + stacks ----------
@@ -236,7 +237,7 @@ vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
 MIN_BOOKS, MIN_EV = 2, 0.05
 edges = []
 for _, r in df.iterrows():
-    for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first)]:
+    for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first), ("two_", "2+ TD", r.p_2plus)]:
         ev, ev_med = r.get(m + "ev"), r.get(m + "ev_med")
         if r.get("weak_spot"):
             continue
@@ -249,7 +250,10 @@ clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
-data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []),
+_pl = PL.build(clean(df.round(4)).to_dict("records")) if board else dict(pool=[], parlays=[], rules={})
+for i, c in enumerate(sorted(_pl["parlays"], key=lambda c: -c["ev"])): c["paper"] = i < 3        # top 3 by EV are paper-traded at 1 unit
+print("parlay legs:", len(_pl["pool"]), "| parlays:", len(_pl["parlays"]))
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),
@@ -269,6 +273,8 @@ if os.path.exists(slate_fn):
     data["players"] = [r for r in old.get("players", []) if r.get("game_id") in lg] + data["players"]
     lteams = {t for g in locked_games for t in (g["home"], g["away"])}
     data["edges"] = [e for e in old.get("edges", []) if e.get("team") in lteams] + data["edges"]
+    # parlays whose legs have all kicked off are locked with their flag-time prices
+    data["parlays"]["parlays"] = [c for c in old.get("parlays", {}).get("parlays", []) if all(l["team"] in lteams for l in c["legs"])] + data["parlays"]["parlays"]
     data["bring"] = [b for b in old.get("bring", []) if b.get("a_team") in lteams] + data["bring"]
 
 # ---------- red zone / end zone usage (2025 + current season) ----------

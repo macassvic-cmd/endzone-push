@@ -12,6 +12,11 @@ Only data strictly before the target week is used for shares.
 import numpy as np, pandas as pd
 
 RNG = np.random.default_rng(7)
+# Game-to-game role variability: each sim game draws every player's share from Beta(mean*k, (1-mean)*k), renormalised per
+# team. 2024+2025 weeks 1-18 (n=3000): k=0 under-predicts 2+ TD games (2.48% vs 3.10% actual in 2025, 2.36% vs 2.98% in
+# 2024); k=15 gives 2.78% / 2.66% with the best 2+ Brier, anytime Brier flat within seed noise (-0.00005 / +0.00012) and
+# top-15 hits 7.67 -> 7.61 (2025), 7.72 -> 8.06 (2024). k=8 matches the 2+ rate but costs 0.0003 anytime Brier in 2024.
+SHARE_VAR_KAPPA = 15.0
 TD_N, GAME_SIGMA = 7, 0.20          # binomial drive cap / shared game factor (fit to data)
 DST_TD_RATE = 0.13                  # non-offensive TDs per team-game
 # Round 1 grid (search.py --grid, 144 cells, DECAY 0.80-0.95 x PRIOR_SEASON_W 0.3-0.8 x PRIOR_K 1.5-5 x REC_SLOPE 0.25-0.6):
@@ -508,7 +513,15 @@ def simulate(teams, pl, qbs, n=40000):
                 sub = pl[(pl.team == t) & (pl.kind == kind)]
                 probs = np.append(sub.share.values, max(0, 1 - sub.share.sum()))
                 idx = np.append([pix[x] for x in sub.pid], -1)
-                draw = idx[RNG.choice(len(probs), size=(n, maxk), p=probs / probs.sum())]
+                if SHARE_VAR_KAPPA > 0 and len(sub):
+                    # game-to-game role variability: per sim game, shares ~ Beta around the mean, then renormalised
+                    m = np.clip(probs / probs.sum(), 1e-4, 1 - 1e-4)
+                    S = RNG.beta(m * SHARE_VAR_KAPPA, (1 - m) * SHARE_VAR_KAPPA, size=(n, len(m)))
+                    S /= S.sum(1, keepdims=True)
+                    cum = np.cumsum(S, 1); u = RNG.random((n, maxk))
+                    draw = idx[np.minimum((u[:, :, None] > cum[:, None, :]).sum(2), len(m) - 1)]
+                else:
+                    draw = idx[RNG.choice(len(probs), size=(n, maxk), p=probs / probs.sum())]
                 scorer = np.where(mask & valid, draw, scorer)
             qpid = qbs[t][0]
             qb_ptd[t] = ((ispass & valid & (RNG.random((n, maxk)) < 0.97))).sum(1)

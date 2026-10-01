@@ -239,3 +239,45 @@ position/slot prior does not fix it: the early-season error is that shares are t
 teams actually spread touches in September, which a slot-mean prior does not change. **Nothing changed.** Next
 candidate: regress each team's share vector toward uniform (not toward slot means) in weeks 1–3, or a smaller
 first-season weight on last year's shares.
+
+## 2026-09-30 — 2+ TD market, game-to-game share variability, parlay builder
+
+**2+ TD validation.** The sim's `p_2plus` under-predicted 2+ TD games in both backtests (2025: 2.47% mean vs 3.05%
+actual over 5,929 rows; 2024: 2.36% vs 2.94%), and the top-10 2+ candidates per week hit 1.8–2.1 times against 1.6
+expected. Fix tested: each sim game draws every player's share from a Beta around his mean (concentration k),
+renormalised per team (`SHARE_VAR_KAPPA`).
+
+| k (2024+2025 weeks 1–18 pooled) | 2+ mean pred / act | 2+ Brier | Anytime Brier | Top-15 hits/exp |
+|---|---|---|---|---|
+| 0 (old) | 2.41 / 3.00 | 0.02747 | 0.13334 | 7.75 / 7.42 |
+| 30 | 2.58 / 3.00 | 0.02744 | 0.13337 | 7.86 / 7.38 |
+| **15 (kept)** | 2.72 / 3.00 | 0.02742 | 0.13339 | 7.83 / 7.34 |
+| 8 | 2.93 / 3.00 | 0.02743 | 0.13348 | 7.67 / 7.29 |
+
+k=15: every 2+ bucket inside its ± range in both seasons and pooled (e.g. 10–15%: 11.8 / 13.4 ± 3.3; 15–20%:
+17.1 / 17.8 ± 6.6; 20%+: 23.8 / 32.2 ± 11.9), anytime Brier flat within seed noise, top-15 not hurt. k=8 matches the
+mean exactly but costs 0.0003 anytime Brier in 2024. Full-resolution 2025 backtest with k=15: Brier 0.1316.
+
+**Odds.** `player_tds_over` added to the prop pull (Over 1.5 = 2+ TDs; one more market per event, roughly a third
+more props credits per pull). One-sided like anytime, so it is de-vigged with its own anchor: 0.68 players with 2+
+offensive TDs per game (2024–25). Kalshi's "Player: 2+" markets attach as the same market. The hold measurement for
+this market uses only the 1.5 line.
+
+**Page / results.** New "2+ TD" tab (projection, fair odds, best price and book, EV, Kalshi, role tag), 2+ TD edges on
+the Edge Board (same rules, market "two"), and in Results: 2+ grading in the top-40 table, paper trades and CLV split
+as their own market, market Brier for 2+.
+
+**Parlay builder** (`parlay.py`, "Parlays" tab). Legs: Starter role, priced 2+ TD market with 2+ books or a liquid
+Kalshi quote, blended probability, EV ≥ 10% at the best book, no weak-spot QBs. Best 2-, 3- and 4-leg parlays with
+every leg from a different game; probability = product of leg probabilities; price = product of best-book decimal odds
+or a typed book price; fair odds, EV, "hits about 1 in N", and a 1/8-Kelly stake capped at 0.25% of bankroll. The
+top 3 by EV are paper-traded at 1 unit each week; Results reports record, units, expected units and legs hit vs
+projected with a luck-vs-legs note.
+
+Backtest (model-only probabilities, top legs with p_any ≥ 0.35 as the Starter stand-in, one per game, 2024+2025
+weeks 4–18, 15 parlays per size per season): 2-leg predicted 5.2% hit 10.0% (3 of 30, ± 10.7); 3-leg predicted 1.0%
+hit 6.7% (2 of 30, ± 8.9); 4-leg predicted 0.17% hit 0 of 30. Legs: 21.4% projected vs 30.0% hit over 90 legs
+(2025 35.6%, 2024 24.4%). Predicted and actual match within the ± range, so the builder ships, with the caveat that
+30 parlays per size is a weak test and the top legs so far run above projection rather than below.
+
+Week 4 has no saved odds pull yet, so the 2+ tab and parlays show prices only after Saturday's first pull.

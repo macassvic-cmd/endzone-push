@@ -8,14 +8,16 @@ from collections import defaultdict
 import numpy as np
 
 BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
-PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds"]
+PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds", "player_tds_over"]   # tds_over 1.5 = 2+ TDs (one more market per event)
+TWO_PLUS = ("player_tds_over", 1.5)
 # The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
 MARKET_ALIAS = {"player_1st_td": "player_first_td"}
 # What a book's Yes prices for one game should sum to with no margin (2024-25 regular season play-by-play):
 # anytime TD -> mean distinct offensive (run/pass) TD scorers per game; first TD -> share of games whose first
 # TD is scored by an offensive player. Dividing the observed sum by this gives the book's real overround.
-ANCHOR = {"player_anytime_td": 4.10, "player_first_td": 0.945}
-DEFAULT_OVERROUND = {"player_anytime_td": 1.22, "player_first_td": 1.43}   # measured 2026 wk3, used if a book has too few games
+ANCHOR = {"player_anytime_td": 4.10, "player_first_td": 0.945, "player_tds_over": 0.68}   # tds_over: players with 2+ TDs per game (2024-25), measured at point 1.5 only
+ANCHOR_POINT = {"player_tds_over": 1.5}
+DEFAULT_OVERROUND = {"player_anytime_td": 1.22, "player_first_td": 1.43, "player_tds_over": 1.25}   # measured 2026 wk3, used if a book has too few games
 TEAM_ABBR = {
     "Arizona Cardinals": "ARI", "Atlanta Falcons": "ATL", "Baltimore Ravens": "BAL", "Buffalo Bills": "BUF",
     "Carolina Panthers": "CAR", "Chicago Bears": "CHI", "Cincinnati Bengals": "CIN", "Cleveland Browns": "CLE",
@@ -135,7 +137,8 @@ def measure_hold(events, min_games=3):
                 mk = MARKET_ALIAS.get(m["key"], m["key"])
                 if mk not in ANCHOR:
                     continue
-                yes = [o for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference")]
+                yes = [o for o in m["outcomes"] if o["name"].lower() in ("yes", "over") and not o.get("reference")
+                       and (mk not in ANCHOR_POINT or o.get("point") == ANCHOR_POINT[mk])]
                 if len(yes) < HOLD_MIN_OUTCOMES:
                     continue
                 s = sum(implied(o["price"]) for o in yes)
