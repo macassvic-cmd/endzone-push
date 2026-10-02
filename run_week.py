@@ -286,7 +286,7 @@ if YARD_KINDS:
     _yb, _yh = YP.ladder_board(events) if events else ({}, {})
     _name = {r.pid: r["name"] for _, r in df.iterrows()}; _meta = {r.pid: r for _, r in df.iterrows()}
     _lines = {(pid, k): YP.offered_lines(_yb, k, _name.get(pid, "")) for (pid, k) in _yd if pid in _name}
-    _coef = {k: BL.coef_for(BLENDS, "yds_" + k) for k in Y.DEFAULT_LADDER}
+    _coef = {k: BL.coef_for(BLENDS, "yds_" + k) or BL.coef_for(BLENDS, "yds") for k in Y.DEFAULT_LADDER}   # pooled yards fit when gated in (3+ weeks, beats 50/50 held out)
     for r in Y.summarize({k: v for k, v in _yd.items() if k[1] in YARD_KINDS}, _lines):
         if r["pid"] not in _meta: continue
         m = _meta[r["pid"]]; rungs = []; best_edge = None

@@ -8,7 +8,8 @@ with a light ridge so the weekly CI run needs no extra dependency. Leave-one-wee
 import json, os, numpy as np
 
 FILE, MIN_ROWS, RIDGE = "blend_model.json", 300, 1e-3
-MARKETS = {"any": ("p_any", "any_mkt_p", "hit"), "first": ("p_first", "first_mkt_p", "first_hit"), "two": ("p_2plus", "two_mkt_p", "two_hit")}
+MARKETS = {"any": ("p_any", "any_mkt_p", "hit"), "first": ("p_first", "first_mkt_p", "first_hit"), "two": ("p_2plus", "two_mkt_p", "two_hit"),
+           "yds": ("p_yds", "yds_mkt_p", "yds_hit")}     # yards: pooled over rush / rec / pass at the books' main lines (results.py, 3+ graded weeks)
 
 
 def logit(p):

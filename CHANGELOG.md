@@ -519,3 +519,21 @@ carried by one +6600 first-TD hit, and 6–40 for −8.1 units on picks shorter 
 - Chips show the kickoff in Pacific time ("Thu 5:15 PM") and are grouped with small labels: Thu / Sat / Sun intl
   (before 9 AM PT) / Sun early / Sun late / Sun night / Mon, plus "Started".
 - On load the chip bar scrolls to the next game that has not kicked off.
+
+## 2026-10-02 — Paper-only gates for TD singles and yard edges; yards head-to-head vs the book
+
+- **TD singles stay paper-only.** The Edge Board's TD section is labelled "Paper only — model has not beaten
+  closing prices" until the season-to-date 50/50 blend beats the no-vig market by at least 0.001 Brier on anytime
+  TD (today: blend 0.1244 vs market 0.1244, so the label stays). results.py writes the flag (`paper_only.td`).
+- **Yards head-to-head from week 4 on** (`yards_h2h` in results.json, "Yards vs book" card on the Results tab next
+  to Market Brier): for every main line we priced, model P(over), the no-vig book P(over) and the outcome; weekly
+  and season-to-date Brier for model, book and 50/50 blend, by kind for the season; and "closer to the actual
+  yards: our median or the book line" as a count and share (ties excluded from the share). Lines where the player
+  had no touches are skipped (books void), as are pushes.
+- **Yard edges stay paper-only** ("Paper only — yards model has not beaten the book over 3+ weeks") until the model's
+  Brier at the main lines is better than the book's over at least 3 graded weeks (`paper_only.yds`).
+- **Fitted blend for yards**: once 3+ weeks are graded, results.py fits the same logistic blend on the pooled yard
+  rows (market key `yds`) under the leave-one-week-out gate; run_week uses it for every yard EV when it passes,
+  else 50/50.
+- Edge Board now shows TD edges and yard edges as two sections, each with its label; the Yards section states the
+  10-yard (100 passing) line floor.

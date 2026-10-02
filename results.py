@@ -161,6 +161,38 @@ def main():
                              model_p=e.get("model_p"), mkt_p=e.get("mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=e.get("role", "Unknown"), market="yds",
                              longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
 
+    # ---- yards head-to-head at the books' main lines, from week 4 on: model P(over) vs no-vig book P(over) vs 50/50,
+    #      and whether our median or the book line was closer to the actual yards ----
+    yrows = []
+    for fn in sorted(glob.glob("slate_*_w*.json")):
+        d = json.load(open(fn))
+        if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
+        for r in d.get("yards", []):
+            if r.get("main_line") is None or r.get("main_mkt_p") is None or r.get("main_p") is None: continue
+            y = ymap.get((d["week"], r["pid"], r["kind"]))
+            if y is None or y == float(r["main_line"]): continue              # no touches (books void) or a push
+            yrows.append(dict(season=d["season"], week=d["week"], kind=r["kind"], pid=r["pid"], line=float(r["main_line"]), p_yds=float(r["main_p"]),
+                              yds_mkt_p=float(r["main_mkt_p"]), median=float(r["median"]), y=float(y), yds_hit=int(y > float(r["main_line"]))))
+    ydf = pd.DataFrame(yrows)
+
+    def yh2h(g):
+        pm, pk, yv = g.p_yds.values, g.yds_mkt_p.values, g.yds_hit.values.astype(float)
+        dm, db = np.abs(g["median"].values - g.y.values), np.abs(g.line.values - g.y.values)
+        return dict(n=int(len(g)), model=round(BL.brier(pm, yv), 4), book=round(BL.brier(pk, yv), 4), blend=round(BL.brier(0.5 * pm + 0.5 * pk, yv), 4),
+                    median_closer=int((dm < db).sum()), book_closer=int((db < dm).sum()), ties=int((dm == db).sum()),
+                    median_closer_pct=round(float((dm < db).sum() / max(1, (dm != db).sum())), 4))
+    yards_h2h = None
+    if len(ydf):
+        yards_h2h = dict(season=dict(**yh2h(ydf), weeks=int(ydf[["season", "week"]].drop_duplicates().shape[0])),
+                         by_week=[dict(season=int(sn), week=int(wk), **yh2h(g)) for (sn, wk), g in ydf.groupby(["season", "week"])],
+                         by_kind={k: yh2h(g) for k, g in ydf.groupby("kind")})
+        # yard edges stay paper-only until the model beats the book on Brier over at least 3 graded weeks
+        yards_h2h["paper_only"] = not (yards_h2h["season"]["weeks"] >= 3 and yards_h2h["season"]["model"] < yards_h2h["season"]["book"])
+        if yards_h2h["season"]["weeks"] >= 3:                                # fitted blend for yards, same gate as the TD markets
+            rec = BL.fit_market(ydf, "yds")
+            if rec: models["yds"] = rec; BL.save(models)
+        s_ = yards_h2h["season"]; print(f"  yards vs book: n {s_['n']} weeks {s_['weeks']} | Brier model {s_['model']} book {s_['book']} 50/50 {s_['blend']} | median closer {s_['median_closer']} of {s_['median_closer'] + s_['book_closer']} | paper only: {yards_h2h['paper_only']}")
+
     # ---- top-15 regulars: everyone who has made any week's top 15 ----
     regulars = []
     if top15_frames:
@@ -222,6 +254,13 @@ def main():
                 market_brier[mk] = dict(**mb(m, mk), weeks=int(m[["season", "week"]].drop_duplicates().shape[0]),
                                         by_week=[dict(season=int(sn), week=int(wk), **mb(g, mk)) for (sn, wk), g in m.groupby(["season", "week"])])
 
+    # TD singles stay paper-only until the season-to-date 50/50 blend beats the market by at least 0.001 Brier (anytime TD)
+    _a = market_brier.get("any")
+    paper_only = dict(td=not (_a and _a["market"] - _a["blend"] >= 0.001), yds=yards_h2h["paper_only"] if yards_h2h else True,
+                      td_rule="season-to-date 50/50 blend beats the no-vig market by 0.001 Brier on anytime TD",
+                      yds_rule="model P(over) beats the no-vig book on Brier at the main lines over at least 3 graded weeks")
+    print(f"  paper only: TD {paper_only['td']} (blend {_a['blend'] if _a else None} vs market {_a['market'] if _a else None}) | yards {paper_only['yds']}")
+
     # ---- closing line value for logged edges (flag-time vs last pull before kickoff) ----
     clv_rows = []
     for fn in sorted(glob.glob(f"{C.EDGE_DIR}/*_w*.json")):
@@ -266,7 +305,7 @@ def main():
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,
                last_week_meta=dict(season=last["season"], week=last["week"], graded=last["games"], total=last["games_total"]) if last else None,
                clv=clv_summary, clv_rows=[{k: v for k, v in r.items() if k in ("season", "week", "bet", "role", "market", "book", "best", "mkt_p", "close_best", "close_mkt_p", "clv", "beat_close")} for r in clv_rows if "clv" in r],
-               backtest_2025=backtest, blend=models)
+               backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")
