@@ -16,6 +16,7 @@ A scheduled GitHub Action (`.github/workflows/update.yml`) reruns everything Tue
 - `backfill.py` – rebuilds pre-game slates for past weeks (`python backfill.py 2026 1 2`)
 - `backtest.py` – 2025 walk-forward calibration
 - `yards.py` – yard ladders (volume + efficiency inside the game sim); `yard_prices.py` prices them from the SharpAPI DK/FD main and alternate lines; `yards_backtest.py` is the 2024+2025 gate (`python yards_backtest.py --dist gamma --tag gamma`)
+- `slips.py` – Underdog-style slip pricer from `draws.bin` (2,000 sim games per player written by run_week.py; the Slips tab prices the same way in the browser and keeps its log in that browser)
 - `oddspapi_backfill.py` – pre-kickoff DK/FD TD prices for past weeks from OddsPapi (raw histories cached under `data/oddspapi_raw/`, names from `/v4/players`)
 
 ## Secrets

@@ -27,6 +27,10 @@ h1 span{color:var(--accent)}
 .g .kt{color:var(--accent);font-size:11px}
 .paper{display:inline-block;background:var(--hot-soft);color:var(--hot);border:1px solid var(--hot);border-radius:4px;padding:1px 7px;font-family:var(--mono);font-size:11px;letter-spacing:.02em;margin-left:6px;vertical-align:middle;text-transform:none}
 .paper.ok{background:var(--accent-soft);color:var(--good);border-color:var(--good)}
+textarea{width:100%;box-sizing:border-box;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px;font-family:var(--mono);font-size:13px;resize:vertical}
+.btn{background:var(--accent);color:#0b1a12;border:0;border-radius:6px;padding:6px 12px;font-family:var(--display);font-weight:600;font-size:15px;cursor:pointer;margin-left:6px}
+.lnk{background:none;border:0;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;text-decoration:underline}
+code{font-family:var(--mono);font-size:12px;background:var(--panel);padding:1px 4px;border-radius:3px}
 .g.locked{opacity:.45}
 .g.locked .kt{color:var(--muted)}
 .ggrp{flex:0 0 auto;display:flex;align-items:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 2px 0 8px;border-left:1px solid var(--line);white-space:nowrap}
@@ -102,6 +106,7 @@ try { st.showBench = localStorage.getItem('ezl_bench')==='1'; } catch(e){}
 let book = {};
 try { book = JSON.parse(localStorage.getItem('ezl_book')||'{}'); } catch(e){}
 try { const t=localStorage.getItem('ezl_tab'); if(t) st.tab=t; } catch(e){}
+try { st.slipText = localStorage.getItem('ezl_slipdraft') || ''; } catch(e){}
 if (location.hash) st.tab = location.hash.slice(1);
 
 function setMeta(){document.getElementById('meta').innerHTML = `${D.season} · WEEK ${D.week}<br>${D.games.length} games · updated ${D.generated}<br>${D.odds_live?(D.odds_asof?`<span style="color:var(--hot)">odds as of ${D.odds_asof} · ${D.n_events} events</span>`:`<span style="color:var(--good)">live odds · ${D.n_events} events</span>`):'no live odds feed'}`;}
@@ -115,6 +120,7 @@ const TABS = {
  two:{label:'2+ TD', note:'Two or more rushing/receiving TDs in the game. Fair = no-vig price for the model probability; the book line is Over 1.5 touchdowns (Kalshi: "2+"). Validated on the 2024-25 backtests, see CHANGELOG.'},
  parlays:{label:'Parlays', note:'2+ TD parlays, Starter legs only, every leg from a different game, no weak-spot QBs. Most likely = legs ranked by model probability, parlays by joint probability. Best value = legs at 10%+ EV with real liquidity, parlays by EV. Price = product of best-book odds unless you type a book\'s parlay/SGP price. Stake = 1/8 Kelly capped at 0.25% of bankroll, 0 when the price is not worth it. The top 3 of each mode are paper-traded each week.'},
  yards:{label:'Yards', note:'Rushing, receiving and passing yards from the same sim games as the TDs. Median and mean, the book\'s main line with our lean for pick\'em (Underdog / PrizePicks higher-lower), P(over) and fair odds per rung, best price and EV at the median book. Backtest gate: 2024-25 weeks 4-18, see CHANGELOG.'},
+ slips:{label:'Slips', note:'Underdog-style slips priced from this week\'s sim games: paste legs, get each leg\'s P(hit), the joint probability (same-game and same-player correlation kept), the independence product, and EV at your payout. Every priced slip is logged in this browser and graded on the Results tab.'},
  first:{label:'First TD', note:'First TD of the game. Set who receives the opening kickoff once the coin toss is known: the receiving team scores the first TD about 59% of the time at even odds (2023–25 data). Books are often slow to move after the toss.'},
  rz:{label:'Red Zone', note:'Red-zone and end-zone usage from play-by-play. Share = player\'s cut of his team\'s red-zone carries, inside-10 carries, red-zone targets and end-zone targets. Switch seasons to compare with 2025.'},
  bring:{label:'Bring-backs', note:'Pass catchers on opposite sides of the same game both scoring. Lift shows shared game-script correlation.'},
@@ -123,6 +129,75 @@ const TABS = {
 };
 const tabs=document.getElementById('tabs');
 Object.entries(TABS).forEach(([k,v])=>{const b=document.createElement('button');b.textContent=v.label;b.dataset.k=k;b.onclick=()=>{st.tab=k;st.sort=null;try{localStorage.setItem('ezl_tab',k)}catch(e){};render()};tabs.appendChild(b)});
+
+
+// ---------- slips: Underdog-style pricer from the saved sim draws (draws.bin), log kept in this browser ----------
+const SL_STATS={fpts:'fantasy',rec:'receptions',rec_yds:'rec yds',rush_yds:'rush yds',pass_yds:'pass yds',pass_att:'pass att'};
+const SL_WORDS=[['pass_att',/pass(ing)?\s*att(empts|s)?|attempts/],['pass_yds',/pass(ing)?\s*(yds|yards)/],['rec_yds',/rec(eiving)?\s*(yds|yards)|receiving/],['rush_yds',/rush(ing)?\s*(yds|yards)|rushing/],['rec',/receptions?|catches|\brec\b/],['fpts',/fantasy|fpts|\bfp\b|points|\bpts\b/]];
+const SL_HI=/\b(higher|more|over|o)\b/, SL_LO=/\b(lower|less|under|u)\b/;
+const SL_DEFPAY={2:3,3:6,4:12,5:20,6:27};
+const slPay=()=>(D&&D.draws&&D.draws.payout)||SL_DEFPAY;
+const normName=n=>String(n||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[.'\-]/g,'').replace(/\b(jr|sr|ii|iii|iv|v)\b/g,'').replace(/\s+/g,' ').trim();
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function parseLeg(text){
+  let t=text.trim().replace(/[\u2014\u2013-]/g,' ').toLowerCase(); if(!t) return null;
+  const dir=SL_HI.test(t)?'higher':SL_LO.test(t)?'lower':null; const stat=(SL_WORDS.find(([k,re])=>re.test(t))||[])[0];
+  const m=t.match(/(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])/);
+  if(!dir||!stat||!m) return {raw:text,error:'need a player, a line, higher/lower and a stat'};
+  let name=t.replace(SL_HI,' ').replace(SL_LO,' ').replace(m[0],' '); SL_WORDS.forEach(([k,re])=>{name=name.replace(re,' ')});
+  name=name.replace(/[^a-z' ]/g,' ').replace(/\s+/g,' ').trim();
+  return {raw:text,name,stat,line:parseFloat(m[1]),dir};
+}
+let DR=null, DRP=null;
+function loadDraws(){
+  if(DR||!D||!D.draws) return Promise.resolve(DR);
+  if(!DRP) DRP=(async()=>{const buf=new Uint8Array(await (await fetch(D.draws.file,{cache:'no-store'})).arrayBuffer()); const n=D.draws.n, L=D.draws.layout; const map=new Map();
+    for(const pl of D.draws.players){let off=pl.offset; const vals={};
+      for(const stt of pl.stats){const sp=L[stt]; const arr=new Float32Array(n);
+        if(sp.bytes===2){for(let i=0;i<n;i++) arr[i]=((buf[off+2*i]|(buf[off+2*i+1]<<8))-(sp.offset||0))/sp.scale; off+=2*n;}
+        else {for(let i=0;i<n;i++) arr[i]=(buf[off+i]-(sp.offset||0))/sp.scale; off+=n;}
+        vals[stt]=arr;}
+      map.set(pl.pid,{...pl,vals,norm:normName(pl.name)});}
+    DR=map; return DR;})();
+  return DRP;
+}
+function findPlayer(name){const nn=normName(name); const all=[...DR.values()]; let hit=all.filter(p=>p.norm===nn); if(hit.length===1) return hit[0];
+  const parts=nn.split(' '); if(parts.length>=2){hit=all.filter(p=>p.norm.split(' ').pop()===parts[parts.length-1]&&p.norm[0]===parts[0][0]); if(hit.length===1) return hit[0];} return null;}
+function priceSlip(text,payout){
+  const legs=text.split(/\n|;/).map(parseLeg).filter(Boolean); const out=[], masks=[];
+  for(const lg of legs){ if(lg.error){out.push(lg);continue;} const p=findPlayer(lg.name); if(!p){out.push({...lg,error:"player not in this week's sim"});continue;}
+    const v=p.vals[lg.stat]; if(!v){out.push({...lg,player:p.name,error:`${SL_STATS[lg.stat]} is not simulated for a ${p.pos}`});continue;}
+    const n=v.length, hit=new Uint8Array(n); let c=0; for(let i=0;i<n;i++){const h=lg.dir==='higher'?v[i]>lg.line:v[i]<lg.line; hit[i]=h?1:0; c+=h?1:0;}
+    masks.push(hit); const srt=Array.from(v).sort((a,b)=>a-b); out.push({...lg,pid:p.pid,player:p.name,team:p.team,p:c/n,median:srt[Math.floor(n/2)]}); }
+  const res={legs:out,n_legs:legs.length}; const ok=out.length&&out.every(l=>!l.error)&&legs.length>=2;
+  if(!ok){res.error=legs.length<2?'a slip needs 2+ legs':'fix the legs marked above'; return res;}
+  const n=masks[0].length; let j=0; for(let i=0;i<n;i++){let all=1; for(const m of masks){if(!m[i]){all=0;break;}} j+=all;}
+  res.p_joint=j/n; res.p_prod=out.reduce((a,l)=>a*l.p,1); res.payout=payout||slPay()[legs.length]||null;
+  res.ev=res.payout?res.p_joint*res.payout-1:null; res.breakeven=res.p_joint>0?1/res.p_joint:null; return res;
+}
+const slipLogRead=()=>{try{return JSON.parse(localStorage.getItem('ezl_slips')||'[]')}catch(e){return []}};
+const slipLogWrite=l=>{try{localStorage.setItem('ezl_slips',JSON.stringify(l))}catch(e){}};
+function logSlip(res){const l=slipLogRead(); l.push({id:Date.now(),ts:new Date().toISOString(),season:D.season,week:D.week,n_legs:res.n_legs,p_joint:res.p_joint,p_prod:res.p_prod,payout:res.payout,ev:res.ev,
+  legs:res.legs.map(g=>({pid:g.pid,player:g.player,team:g.team,stat:g.stat,line:g.line,dir:g.dir,p:g.p,median:g.median}))}); slipLogWrite(l);}
+const SL_COL={rec:0,rec_yds:1,rush_yds:2,pass_yds:3,pass_att:4,fpts:5};
+function gradeSlip(s){ // against results.json actuals (only fully graded weeks are exported)
+  const A=RES&&RES.actuals&&RES.actuals[`${s.season}-${s.week}`]; if(!A) return {status:'pending'};
+  const legs=s.legs.map(g=>{const row=A[g.pid]; if(!row) return {...g,res:'void'}; const v=row[SL_COL[g.stat]]; if(v===g.line) return {...g,actual:v,res:'void'}; return {...g,actual:v,res:(g.dir==='higher'?v>g.line:v<g.line)?'hit':'miss'};});
+  const live=legs.filter(g=>g.res!=='void'); if(live.length<2) return {status:'refund',units:0,legs};
+  const pay=live.length===s.n_legs?s.payout:(slPay()[live.length]||s.payout*(SL_DEFPAY[live.length]||1)/(SL_DEFPAY[s.n_legs]||1));
+  const won=live.every(g=>g.res==='hit'); return {status:won?'won':'lost',units:won?pay-1:-1,payout:pay,legs};
+}
+function slipSummary(){const l=slipLogRead().map(s=>({...s,g:gradeSlip(s)})); const done=l.filter(s=>s.g.status==='won'||s.g.status==='lost');
+  return {all:l,done,won:done.filter(s=>s.g.status==='won').length,units:done.reduce((a,s)=>a+s.g.units,0),expected:done.reduce((a,s)=>a+(s.ev==null?0:s.ev),0)};}
+function renderSlipRes(r){const legRow=g=>`<tr><td class="l n">${g.error?esc(g.raw):`${g.player} <span style="color:var(--muted)">${g.team}</span>`}</td><td class="l">${g.stat?SL_STATS[g.stat]:'–'}</td><td>${g.line==null?'–':g.line}</td><td class="l">${g.dir||'–'}</td><td>${g.median==null?'–':g.median.toFixed(1)}</td><td>${g.error?`<span class="edge-neg">${esc(g.error)}</span>`:pct(g.p)}</td></tr>`;
+  const corr=r.p_prod>0?r.p_joint/r.p_prod:null;
+  return `<div class="tbl"><table><thead><tr><th class="l">Leg</th><th class="l">Stat</th><th>Line</th><th class="l">Pick</th><th>Our median</th><th>P(hit)</th></tr></thead><tbody>${r.legs.map(legRow).join('')}</tbody></table></div>`+
+    (r.error?`<p class="note edge-neg">${esc(r.error)}</p>`:`<h3 style="margin-top:10px">Joint ${pct(r.p_joint)} · ${r.payout?`${r.payout}x → EV <span class="${r.ev>=0?'edge-pos':'edge-neg'}">${(r.ev*100).toFixed(1)}%</span>`:'type a payout for EV'}</h3><p class="note">Product of legs (independence) ${pct(r.p_prod)}${corr?` · joint ÷ product ${corr.toFixed(2)} (${corr>1.02?'legs help each other':corr<0.98?'legs work against each other':'about independent'})`:''} · break-even payout ${r.breakeven?r.breakeven.toFixed(1)+'x':'–'} · ${DR?DR.size:0} players, ${D.draws?D.draws.n:0} sim games. Ties on whole-number lines count as misses here; Underdog voids the leg.</p>`);}
+function slipLogHtml(){const S=slipSummary(); if(!S.all.length) return '<p class="note" style="margin-top:12px">No slips logged yet in this browser. Every priced slip is logged here and graded on the Results tab once its week is complete.</p>';
+  const row=s=>{const g=s.g; const legs=s.legs.map(x=>`${x.player} ${x.dir==='higher'?'▲':'▼'}${x.line} ${SL_STATS[x.stat]}${g.legs?` <span class="${(g.legs.find(y=>y.pid===x.pid&&y.stat===x.stat)||{}).res==='hit'?'edge-pos':(g.legs.find(y=>y.pid===x.pid&&y.stat===x.stat)||{}).res==='miss'?'edge-neg':''}" style="font-size:11px">${(g.legs.find(y=>y.pid===x.pid&&y.stat===x.stat)||{}).res||''}${(g.legs.find(y=>y.pid===x.pid&&y.stat===x.stat)||{}).actual!=null?` (${(g.legs.find(y=>y.pid===x.pid&&y.stat===x.stat)||{}).actual})`:''}</span>`:''}`).join('<br>');
+    const st=g.status==='won'?`<span class="edge-pos">won +${g.units.toFixed(1)}u</span>`:g.status==='lost'?'<span class="edge-neg">lost −1u</span>':g.status==='refund'?'void':'<span style="color:var(--muted)">pending</span>';
+    return `<tr><td class="l">W${s.week}</td><td class="l n" style="white-space:normal">${legs}</td><td>${pct(s.p_joint)}</td><td>${pct(s.p_prod)}</td><td>${s.payout?s.payout+'x':'–'}</td><td>${s.ev==null?'–':`<span class="${s.ev>=0?'edge-pos':'edge-neg'}">${(s.ev*100).toFixed(1)}%</span>`}</td><td>${st}</td><td><button data-del="${s.id}" class="lnk">remove</button></td></tr>`;};
+  return `<h2 class="sec" style="margin-top:14px">Slip log · ${S.done.length?`${S.won}–${S.done.length-S.won}, ${S.units>=0?'+':''}${S.units.toFixed(1)}u (expected ${S.expected>=0?'+':''}${S.expected.toFixed(1)}u)`:`${S.all.length} pending`} <button id="slipexport" class="lnk">copy log JSON</button></h2><div class="tbl"><table><thead><tr><th class="l">Wk</th><th class="l">Legs</th><th>Joint</th><th>Product</th><th>Payout</th><th>EV</th><th>Result</th><th></th></tr></thead><tbody>${S.all.slice().reverse().map(row).join('')}</tbody></table></div>`;}
 
 const gEl=document.getElementById('games');
 // kickoff handling: games carry kick_utc (ISO, from run_week); older slates only the Eastern 'YYYY-MM-DD HH:MM' string
@@ -203,6 +278,12 @@ function render(){
       {k:'p_2plus',h:'2+ TD',f:r=>pct(r.p_2plus)},{k:'fair_2plus',h:'Fair 2+',f:r=>am(r.fair_2plus)},
       {k:'snap_last',h:'Snap %',f:r=>r.snap_last==null?'–':`${Math.round(r.snap_last*100)}%${r.snap_trend>0.08?' <span class="edge-pos">▲</span>':r.snap_trend<-0.08?' <span class="edge-neg">▼</span>':''}`},
       {k:'any_ev',h:'Best price / EV',f:r=>bookCell(r,'any_',r.p_any,'any|'+r.name+'|'+r.team)}],rows,'p_any');
+  } else if(st.tab==='slips'){
+    const sl=st.slip||{}, dr=D.draws;
+    html=`<div class="card"><span class="tag">Price a slip</span><span class="paper" title="The 2024-25 single-leg calibration backtest for receptions, fantasy and attempts has not completed yet; see CHANGELOG">Calibration pending — joints not yet validated</span><p class="note">One leg per line, e.g. <code>Puka Nacua higher 14.5 fantasy</code> · <code>Josh Allen lower 34.5 pass attempts</code> · <code>Breece Hall over 3.5 receptions</code>. Stats: fantasy (half-PPR: 0.5/rec, 0.1/yd, 6/TD; QB 0.04/pass yd, 4/pass TD, −2 INT, −2 fumble lost), receptions, rec yds, rush yds, pass yds, pass attempts. ${dr?`${dr.players.length} players × ${dr.n} sim games this week, every stat from the same game draw.`:'No sim draws saved for this week yet.'}</p>
+      <textarea id="sliptext" rows="6" placeholder="Player higher 14.5 fantasy">${esc(st.slipText||'')}</textarea>
+      <p style="margin-top:8px"><label>Payout, total return per unit <input id="slippay" type="number" step="0.5" min="1" value="${esc(st.slipPay||'')}" placeholder="auto" style="width:80px"></label> <span class="note">auto: 2→3x · 3→6x · 4→12x · 5→20x · 6→27x</span> <button id="slipgo" class="btn">Price slip</button> ${sl.msg?`<span class="note">${esc(sl.msg)}</span>`:''}</p>
+      ${sl.res?renderSlipRes(sl.res):''}</div>`+slipLogHtml();
   } else if(st.tab==='two'){
     const rows=filt(D.players.filter(p=>p.p_2plus>0.005));
     html=table([{k:'name',h:'Player',l:1,cls:'n',f:nameCell},{k:'team',h:'Tm',l:1},{k:'role',h:'Role',l:1,f:r=>roleTag(r.role)},
@@ -291,7 +372,7 @@ function render(){
         const bChart=bpts.length?lineChart([{name:'model',color:'var(--accent)',pts:bpts.map(p=>({x:p.x,y:p.m}))},{name:'books',color:'var(--hot)',pts:bpts.map(p=>({x:p.x,y:p.k}))},{name:'blend',color:'var(--muted)',pts:bpts.map(p=>({x:p.x,y:p.b}))}],{title:'cumulative anytime Brier',fmt:v=>v.toFixed(4)}):'';
         const parl=R.parlays?['likely','value'].filter(m=>R.parlays[m]).map(m=>{const P=R.parlays[m];return `<p style="margin-top:6px"><b>Parlays · ${m==='likely'?'most likely':'best value'}:</b> ${P.won}–${P.n-P.won}, ${P.units>0?'+':''}${P.units}u (exp ${P.expected_units>0?'+':''}${P.expected_units}u, ${P.expected_wins} wins); legs ${P.legs_hit} of ${P.legs} vs ${P.legs_expected} projected.</p>`}).join(''):'';
         return `<div class="res-grid">
-        <div class="card"><span class="tag">Priced bets</span><h3>${b.n?`${b.won}–${b.n-b.won} · ${b.units>0?'+':''}${b.units}u`:'No graded bets yet'}</h3><p>${b.n?`1 unit per Edge Board play, bench plays included. Expected ${b.expected_units>0?'+':''}${b.expected_units}u from the EV at the prices taken.${b.n<100?` <span class="edge-neg">Only ${b.n} bets graded: mostly variance at this size.</span>`:''}`:'Edge Board plays are graded here once the odds feed has run on a slate.'}</p>${roleT}${filt}${table}<p class="note" style="margin-top:8px"><label><input type="checkbox" id="shortonly"${st.shortOnly?' checked':''}> Chart only bets shorter than +1000</label></p>${uChart}${parl}</div>
+        <div class="card"><span class="tag">Priced bets</span><h3>${b.n?`${b.won}–${b.n-b.won} · ${b.units>0?'+':''}${b.units}u`:'No graded bets yet'}</h3><p>${b.n?`1 unit per Edge Board play, bench plays included. Expected ${b.expected_units>0?'+':''}${b.expected_units}u from the EV at the prices taken.${b.n<100?` <span class="edge-neg">Only ${b.n} bets graded: mostly variance at this size.</span>`:''}`:'Edge Board plays are graded here once the odds feed has run on a slate.'}</p>${roleT}${filt}${table}<p class="note" style="margin-top:8px"><label><input type="checkbox" id="shortonly"${st.shortOnly?' checked':''}> Chart only bets shorter than +1000</label></p>${uChart}${parl}</div>${(()=>{const S=slipSummary(); return `<div class="card" style="margin-top:12px"><span class="tag">Slips (this browser)</span><h3>${S.done.length?`${S.won}–${S.done.length-S.won} · ${S.units>=0?'+':''}${S.units.toFixed(1)}u`:S.all.length?`${S.all.length} pending`:'No slips logged'}</h3><p>${S.done.length?`Expected ${S.expected>=0?'+':''}${S.expected.toFixed(1)}u from the EV at the payouts typed. `:''}Slips priced on the Slips tab are logged in this browser and graded here on actual receptions, yards, attempts and half-PPR points once their week is fully graded; void legs drop the slip to the smaller payout, fewer than two live legs refunds it.</p>${S.done.length?`<div class="tbl" style="border:0"><table><thead><tr><th class="l">Wk</th><th class="l">Legs</th><th>Joint</th><th>Payout</th><th>EV</th><th>Result</th></tr></thead><tbody>${S.done.slice().reverse().map(s=>`<tr><td class="l">W${s.week}</td><td class="l n" style="white-space:normal">${s.legs.map(x=>{const g=(s.g.legs||[]).find(y=>y.pid===x.pid&&y.stat===x.stat)||{};return `<span class="${g.res==='hit'?'edge-pos':g.res==='miss'?'edge-neg':''}">${x.player} ${x.dir==='higher'?'▲':'▼'}${x.line} ${SL_STATS[x.stat]}${g.actual!=null?` (${g.actual})`:''}</span>`}).join('<br>')}</td><td>${pct(s.p_joint)}</td><td>${s.g.payout?s.g.payout+'x':s.payout?s.payout+'x':'–'}</td><td>${s.ev==null?'–':(s.ev*100).toFixed(1)+'%'}</td><td>${s.g.status==='won'?`<span class="edge-pos">+${s.g.units.toFixed(1)}u</span>`:'<span class="edge-neg">−1u</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}</div>`})()}
         <div><div class="card"><span class="tag">Market Brier</span><h3>${mb.any?`Model ${mb.any.model} · books ${mb.any.market}`:'Not priced yet'}</h3><p>${mb.any?`Anytime TD, season to date, no-vig median book, ${mb.any.n} priced players over ${mb.any.weeks} week${mb.any.weeks===1?'':'s'}; 50/50 blend ${mb.any.blend}.${mb.first?` First TD: model ${mb.first.model} vs books ${mb.first.market}.`:''}${mb.two?` 2+ TD: model ${mb.two.model} vs books ${mb.two.market}.`:''}`:'Appears once a priced week is graded.'}</p>${R.blend&&Object.keys(R.blend).length?`<p>Fitted blend, refit weekly: ${Object.entries(R.blend).map(([k,m])=>`${k==='first'?'first TD':k==='two'?'2+ TD':k==='yds'?'yards (pooled)':'anytime'} ${m.in_use?'<span class="edge-pos">in use</span>':'50/50 in use (fit not better held-out)'} · coef ${m.coef.map(c=>c.toFixed(2)).join('/')}${m.loo?` · held-out fitted ${m.loo.fitted} vs 50/50 ${m.loo.half}`:''}`).join('<br>')}</p>`:''}${bwk.length>1?`<div class="tbl" style="border:0"><table><thead><tr><th class="l">Week</th><th>Priced</th><th>Model</th><th>Books</th><th>Blend</th></tr></thead><tbody>${bwk.map(w=>`<tr><td class="l">${w.season} W${w.week}</td><td>${w.n}</td><td>${w.model}</td><td>${w.market}</td><td>${w.blend}</td></tr>`).join('')}</tbody></table></div>`:''}${bChart}</div>${(()=>{const yh=R.yards_h2h;const po=R.paper_only||{};
           const row=(l,v)=>`<tr><td class="l">${l}</td><td>${v.n}</td><td>${v.model}</td><td>${v.book}</td><td>${v.blend}</td><td>${v.median_closer} of ${v.median_closer+v.book_closer} (${(v.median_closer_pct*100).toFixed(0)}%)</td></tr>`;
           return `<div class="card" style="margin-top:12px"><span class="tag">Yards vs book</span>${yh?`<h3>Model ${yh.season.model} · books ${yh.season.book}</h3><p>Every main line priced from week 4 on: Brier of P(over), model vs no-vig book, ${yh.season.n} lines over ${yh.season.weeks} week${yh.season.weeks===1?'':'s'}; 50/50 blend ${yh.season.blend}. Closer to the actual yards: our median ${yh.season.median_closer} of ${yh.season.median_closer+yh.season.book_closer} (${(yh.season.median_closer_pct*100).toFixed(0)}%)${yh.season.ties?`, ${yh.season.ties} ties`:''}. ${po.yds===false?'<span class="paper ok" style="margin-left:0">Model ahead of the book over 3+ weeks</span>':'<span class="paper" style="margin-left:0">Paper only — yards model has not beaten the book over 3+ weeks</span>'}</p><div class="tbl" style="border:0"><table><thead><tr><th class="l">Week</th><th>Lines</th><th>Model</th><th>Books</th><th>Blend</th><th>Median closer</th></tr></thead><tbody>${yh.by_week.map(w=>row(`${w.season} W${w.week}`,w)).join('')}${Object.entries(yh.by_kind||{}).map(([k,v])=>row(`${k==='rec'?'receiving':k==='rush'?'rushing':'passing'} · season`,v)).join('')}</tbody></table></div>`:'<h3>Not graded yet</h3><p>From week 4 on: every main line we priced, model P(over) vs the no-vig book P(over) and the outcome, plus whether our median or the book line was closer to the actual yards. Yard edges are paper only until the model beats the book over 3+ weeks.</p>'}</div>`})()}
@@ -333,6 +414,17 @@ function render(){
     </div>`;
   }
   V.innerHTML=html;
+
+  if(st.tab==='slips'){
+    const stx=document.getElementById('sliptext'); if(stx) stx.oninput=()=>{st.slipText=stx.value;try{localStorage.setItem('ezl_slipdraft',stx.value)}catch(e){}};
+    const sp=document.getElementById('slippay'); if(sp) sp.oninput=()=>{st.slipPay=sp.value};
+    const go=document.getElementById('slipgo'); if(go) go.onclick=async()=>{st.slip={msg:'loading sim draws…'};render();
+      try{await loadDraws();}catch(e){st.slip={msg:'could not load draws.bin'};render();return;}
+      if(!DR){st.slip={msg:'no sim draws for this week'};render();return;}
+      const res=priceSlip(st.slipText||'',parseFloat(st.slipPay)||null); if(!res.error) logSlip(res); st.slip={res}; render();};
+    V.querySelectorAll('button[data-del]').forEach(b=>b.onclick=()=>{slipLogWrite(slipLogRead().filter(s=>String(s.id)!==b.dataset.del));render()});
+    const ex=document.getElementById('slipexport'); if(ex) ex.onclick=()=>{try{navigator.clipboard.writeText(localStorage.getItem('ezl_slips')||'[]');st.slip={...(st.slip||{}),msg:'log copied'};render();}catch(e){}};
+  }
   const sb=document.getElementById('showbench'); if(sb) sb.onchange=()=>{st.showBench=sb.checked;try{localStorage.setItem('ezl_bench',sb.checked?'1':'0')}catch(e){};render()};
   V.querySelectorAll('details.wk').forEach(d=>d.ontoggle=()=>{if(d.open)st.open.add(d.dataset.wk);else st.open.delete(d.dataset.wk)});
   V.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(st.sort===k)st.dir*=-1;else{st.sort=k;st.dir=-1}render()});

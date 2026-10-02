@@ -311,6 +311,27 @@ if YARD_KINDS:
         if best_edge: yard_edges.append(best_edge)
     print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {len(yard_edges)} edges")
 
+# ---------- sim draws for the slip pricer: N sim games per player, every stat from the same game-environment draw ----------
+import slips as SL
+DRAWS_N = 2000
+draws_idx = None
+if YARD_KINDS:
+    _st = Y.stats(_yd, sim, qbs, _posof)
+    LAYOUT = {"rec": dict(bytes=1, scale=1), "rec_yds": dict(bytes=1, scale=1), "rush_yds": dict(bytes=1, scale=1),
+              "pass_att": dict(bytes=1, scale=1), "pass_yds": dict(bytes=1, scale=0.5), "fpts": dict(bytes=2, scale=10, offset=200)}   # fantasy can be negative
+    _keep = [pid for pid in _st if pid in _meta and (_meta[pid]["role"] != "Bench" or _posof(pid) == "QB")]
+    _buf = bytearray(); _plist = []
+    for pid in sorted(_keep, key=lambda x: _name[x]):
+        d = _st[pid]; order = [k for k in ("pass_att", "pass_yds", "rec", "rec_yds", "rush_yds", "fpts") if k in d]
+        _plist.append(dict(pid=pid, name=_name[pid], team=_meta[pid]["team"], pos=_meta[pid].get("pos"), stats=order, offset=len(_buf)))
+        for k in order:
+            sp = LAYOUT[k]; v = np.asarray(d[k][:DRAWS_N], float) * sp["scale"] + sp.get("offset", 0)
+            _buf += np.clip(np.rint(v), 0, 65535 if sp["bytes"] == 2 else 255).astype("<u2" if sp["bytes"] == 2 else "u1").tobytes()
+    open("draws.bin", "wb").write(bytes(_buf))
+    draws_idx = dict(file="draws.bin", n=int(min(DRAWS_N, sim["n"])), layout=LAYOUT, players=_plist, payout=SL.PAYOUT,
+                     cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"])
+    print(f"draws: {len(_plist)} players x {draws_idx['n']} sim games -> draws.bin ({len(_buf) / 1e6:.1f} MB)")
+
 # ---------- edge board: priced by 2+ books and EV >= 5% at the median book (not just the best one) ----------
 MIN_BOOKS, MIN_EV = 2, 0.05
 edges = []
@@ -331,7 +352,7 @@ if edges and not os.environ.get("ODDS_MOCK"):
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
 print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
-data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows,
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),

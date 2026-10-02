@@ -23,6 +23,12 @@ PLAYS_MEAN, PLAYS_SD, PLAYS_K = 62.9, 8.3, 4.0 # league plays per team-game, gam
 PASS_A, PASS_B = 0.571, -0.0038               # league pass rate and its slope per point favored (2022-24)
 PLAYS_RHO = 0.3                               # correlation of team plays with the TD sim's game factor
 QB_ATT_SHARE = 0.97
+# receptions, turnovers and half-PPR fantasy (slip pricer): catch rate per player shrunk CATCH_K targets toward the position
+# rate, INT rate per QB shrunk INT_K attempts toward the league rate, fumbles lost at league rates per touch / dropback (2023-25 pbp)
+CATCH_PRIOR, CATCH_K = {"RB": 0.786, "TE": 0.718, "WR": 0.633, "QB": 0.70}, 40.0
+INT_RATE, INT_K = 0.0222, 300.0
+FUM_RATE = {"RB": 0.0047, "WR": 0.007, "TE": 0.006, "QB": 0.0057}
+FPTS = dict(rec=0.5, yd=0.1, td=6.0, pass_yd=0.04, pass_td=4.0, int=-2.0, fum=-2.0)   # half-PPR
 VOL_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1): 0.074, ('rec', 'RB', 2): 0.046, ('rec', 'RB', 3): 0.01,
              ('rec', 'TE', 1): 0.149, ('rec', 'TE', 2): 0.03, ('rec', 'WR', 1): 0.221, ('rec', 'WR', 2): 0.158, ('rec', 'WR', 3): 0.098,
              ('rec', 'WR', 4): 0.025, ('rush', 'QB', 1): 0.109, ('rush', 'QB', 2): 0.011, ('rush', 'RB', 1): 0.372, ('rush', 'RB', 2): 0.206,
@@ -50,12 +56,12 @@ def prep(past, season):
     pg = M.player_games(vp)
     # efficiency: recency-weighted yards and touches per player & kind
     ru = vp[vp.rush_xtd > 0].groupby(["season", "week", "rusher_player_id"]).agg(touch=("rush_xtd", "sum"), yds=("rushing_yards", "sum")).reset_index().rename(columns={"rusher_player_id": "pid"}).assign(kind="rush")
-    rc = vp[vp.rec_xtd > 0].groupby(["season", "week", "receiver_player_id"]).agg(touch=("rec_xtd", "sum"), yds=("receiving_yards", lambda x: x.fillna(0).sum())).reset_index().rename(columns={"receiver_player_id": "pid"}).assign(kind="rec")
-    qa = vp[(vp.pass_attempt == 1) & (vp.sack == 0) & vp.passer_player_id.notna()].groupby(["season", "week", "passer_player_id"]).agg(touch=("pass_attempt", "sum"), yds=("passing_yards", lambda x: x.fillna(0).sum())).reset_index().rename(columns={"passer_player_id": "pid"}).assign(kind="pass")
-    e = pd.concat([ru, rc, qa]); e["ord"] = e.season * 100 + e.week
+    rc = vp[vp.rec_xtd > 0].groupby(["season", "week", "receiver_player_id"]).agg(touch=("rec_xtd", "sum"), yds=("receiving_yards", lambda x: x.fillna(0).sum()), extra=("complete_pass", "sum")).reset_index().rename(columns={"receiver_player_id": "pid"}).assign(kind="rec")
+    qa = vp[(vp.pass_attempt == 1) & (vp.sack == 0) & vp.passer_player_id.notna()].groupby(["season", "week", "passer_player_id"]).agg(touch=("pass_attempt", "sum"), yds=("passing_yards", lambda x: x.fillna(0).sum()), extra=("interception", "sum")).reset_index().rename(columns={"passer_player_id": "pid"}).assign(kind="pass")
+    e = pd.concat([ru, rc, qa]); e["extra"] = e["extra"].fillna(0.0); e["ord"] = e.season * 100 + e.week      # extra = receptions (rec) / interceptions (pass)
     e = e.sort_values("ord", ascending=False); e["rank"] = e.groupby(["pid", "kind"]).cumcount()
     e["w"] = M.DECAY ** e["rank"] * np.where(e.season < season, M.PRIOR_SEASON_W, 1.0)
-    eff = e.groupby(["pid", "kind"]).apply(lambda g: pd.Series(dict(wtouch=float((g.w * g.touch).sum()), wyds=float((g.w * g.yds).sum()), games=len(g)))).reset_index()
+    eff = e.groupby(["pid", "kind"]).apply(lambda g: pd.Series(dict(wtouch=float((g.w * g.touch).sum()), wyds=float((g.w * g.yds).sum()), wextra=float((g.w * g.extra).sum()), games=len(g)))).reset_index()
     # team pace and pass rate (plays per game, recency weighted; QB attempts per game)
     plays = vp[(vp.rush_attempt == 1) | (vp.pass_attempt == 1)].groupby(["season", "week", "posteam"]).agg(plays=("play_id", "size"), passes=("pass_attempt", "sum")).reset_index()
     plays["ord"] = plays.season * 100 + plays.week; plays = plays.sort_values("ord", ascending=False); plays["rank"] = plays.groupby("posteam").cumcount()
@@ -64,6 +70,19 @@ def prep(past, season):
     team["pace"] = (team.wsum * team.pace + PLAYS_K * PLAYS_MEAN) / (team.wsum + PLAYS_K)
     team["pr"] = (team.wsum * team.pr + PLAYS_K * PASS_A) / (team.wsum + PLAYS_K)
     return dict(vpast=vp, vpg=pg, eff=eff.set_index(["pid", "kind"]), team=team.set_index("posteam"))
+
+
+def catch_rate(eff, pid, pos):
+    prior = CATCH_PRIOR.get(pos, CATCH_PRIOR["WR"])
+    if (pid, "rec") in eff.index:
+        r = eff.loc[(pid, "rec")]; return (r.wextra + CATCH_K * prior) / (r.wtouch + CATCH_K)
+    return prior
+
+
+def int_rate(eff, pid):
+    if (pid, "pass") in eff.index:
+        r = eff.loc[(pid, "pass")]; return (r.wextra + INT_K * INT_RATE) / (r.wtouch + INT_K)
+    return INT_RATE
 
 
 def rate_for(eff, pid, kind, pos):
@@ -107,10 +126,40 @@ def simulate(teams, plv, qbs, ycache, sim, pos_of, rng=None):
                 vol = rng.binomial(tot, min(float(r.share), 0.95))
                 rate, _ = rate_for(eff, r.pid, kind, pos_of(r.pid))
                 out[(r.pid, kind)] = _yards(vol, rate, TOUCH_SD.get((kind, pos_of(r.pid)), 8.0), rng)
+                out[(r.pid, "tgt" if kind == "rec" else "car")] = vol                 # volume draws, kept for receptions / fumbles
+                if kind == "rec": out[(r.pid, "recn")] = rng.binomial(vol, catch_rate(eff, r.pid, pos_of(r.pid)))
         qid = qbs.get(t, (None,))[0]
         if qid:
             att = rng.binomial(passes, QB_ATT_SHARE * (1 - SACK_RATE)); rate, _ = rate_for(eff, qid, "pass", "QB")
             out[(qid, "pass")] = _yards(att, rate, TOUCH_SD[("pass", "QB")], rng, tau=RATE_TAU_PASS)
+            out[(qid, "att")] = att; out[(qid, "int")] = rng.binomial(att, int_rate(eff, qid)); out[(qid, "db")] = passes
+    return out
+
+
+YARD_KINDS_ALL = ("rush", "rec", "pass")      # keys of simulate() that are yards; the rest are volume / count draws
+
+
+def stats(ydraws, sim, qbs, pos_of, rng=None):
+    """Per player: receptions, yards, pass attempts and half-PPR fantasy points per sim game, from the same draws.
+       {pid: {"rec", "rec_yds", "rush_yds", "fpts"}} for skill players, {"pass_att", "pass_yds", "rush_yds", "fpts"} for QBs.
+       TDs come from the TD sim (sim["tds"] rush+rec per player, sim["qb_ptd"] passing TDs per team)."""
+    rng = rng or M.RNG; n = sim["n"]; pix = sim["pix"]; zero = np.zeros(n)
+    qb_team = {q[0]: t for t, q in qbs.items() if q[0]}
+    out = {}
+    for pid in {k[0] for k in ydraws}:
+        pos = pos_of(pid); g = lambda kind: ydraws.get((pid, kind), zero)
+        tds = sim["tds"][:, pix[pid]].astype(float) if pid in pix else zero
+        rec_yds, rush_yds, recn = g("rec"), g("rush"), g("recn")
+        if pid in qb_team:
+            fum = rng.binomial(g("db").astype(int), FUM_RATE["QB"]) if (pid, "db") in ydraws else zero
+            fpts = FPTS["pass_yd"] * g("pass") + FPTS["pass_td"] * sim["qb_ptd"][qb_team[pid]] + FPTS["int"] * g("int") \
+                 + FPTS["yd"] * (rush_yds + rec_yds) + FPTS["td"] * tds + FPTS["rec"] * recn + FPTS["fum"] * fum
+            out[pid] = dict(pass_att=g("att"), pass_yds=g("pass"), rush_yds=rush_yds, fpts=fpts)
+        else:
+            touches = (g("car") + recn).astype(int)
+            fum = rng.binomial(touches, FUM_RATE.get(pos, FUM_RATE["WR"]))
+            fpts = FPTS["rec"] * recn + FPTS["yd"] * (rush_yds + rec_yds) + FPTS["td"] * tds + FPTS["fum"] * fum
+            out[pid] = dict(rec=recn, rec_yds=rec_yds, rush_yds=rush_yds, fpts=fpts)
     return out
 
 
@@ -130,6 +179,7 @@ def summarize(ydraws, lines=None):
     """{(pid, kind): draws} -> rows with mean, median, sd and P(>= rung) for the default ladder and any offered lines."""
     rows = []
     for (pid, kind), y in ydraws.items():
+        if kind not in DEFAULT_LADDER: continue                                 # volume / count draws are not ladders
         rungs = sorted(set(DEFAULT_LADDER[kind]) | set(lines.get((pid, kind), []) if lines else []))
         rows.append(dict(pid=pid, kind=kind, mean=float(y.mean()), median=float(np.median(y)), sd=float(y.std()), p_zero=float((y <= 0).mean()),
                          ladder={str(r): float((y >= r).mean()) for r in rungs}))

@@ -537,3 +537,43 @@ carried by one +6600 first-TD hit, and 6–40 for −8.1 units on picks shorter 
   else 50/50.
 - Edge Board now shows TD edges and yard edges as two sections, each with its label; the Yards section states the
   10-yard (100 passing) line floor.
+
+## 2026-10-02 — Underdog slip pricer: receptions, pass attempts and half-PPR fantasy inside the game sim; Slips tab
+
+Sim (`yards.py`): every player's receptions (Binomial of the simulated targets at a catch rate shrunk 40 targets
+toward the position rate: RB 0.786, TE 0.718, WR 0.633), QB pass attempts and interceptions (per-QB INT rate shrunk
+300 attempts toward 2.22%), fumbles lost at league rates per touch (RB 0.47%, WR 0.7%, TE 0.6%) or per dropback
+(QB 0.57%), and half-PPR fantasy points (0.5/rec, 0.1/rush+rec yd, 6/TD from the TD sim, QB 0.04/pass yd, 4/pass TD
+from the sim's passing-TD count, −2 INT, −2 fumble lost) are all drawn in the same sim game as the yards and TDs, so
+a slip's legs share the game environment, the team's plays and pass rate, and each player's own volume draw.
+
+Draws (`run_week.py`): 2,000 sim games per player for Starters and Rotational players plus every QB (194 players in
+week 4) are written to `draws.bin` (1.9 MB: receptions, rec / rush yards and pass attempts as bytes, pass yards at
+2-yard resolution, fantasy at 0.1) with an index in latest.json; the workflow commits it with the board.
+
+Pricer (`slips.py` and the Slips tab, same arithmetic, checked equal on a 4-leg slip): paste legs as "Player higher
+14.5 fantasy" (stats: fantasy, receptions, rec yds, rush yds, pass yds, pass attempts; higher/lower, over/under,
+more/less); per leg P(hit) and our median; joint P = share of sim games where every leg clears (keeps same-game and
+same-player correlation); product of legs under independence, with the joint ÷ product ratio shown; EV = joint ×
+payout − 1 at a typed payout (defaults 2→3x, 3→6x, 4→12x, 5→20x, 6→27x) and the break-even payout. Ties on
+whole-number lines count as misses at pricing (Underdog voids the leg). Example from week 4's board: Josh Allen
+higher 249.5 pass yds + higher 19.5 fantasy prices at a joint 35.7% against a 29.1% product (legs help each other),
++6.9% EV at 3x.
+
+Log and grading: every priced slip is logged in the browser (localStorage, with a copy-as-JSON export) and the
+Results tab's "Slips (this browser)" card grades it once the week is fully graded, from the per-player actuals
+results.py now exports (`actuals`: receptions, rec / rush / pass yards, pass attempts, half-PPR points): a leg with
+no row (player did not play) or a tie is void, void legs drop the slip to the smaller slip's payout, fewer than two
+live legs refunds it. Record, units and expected units are shown; the log lives in the browser that priced it, not
+in the repo.
+
+Backtest gate (`yards_backtest.py --tag stats`, 2024 + 2025 weeks 4–18, single legs: receptions, fantasy, pass
+attempts; rungs 2–8 receptions, 5–25 fantasy, 25–40 attempts; P(stat ≥ rung) in 5-point buckets with ± ranges, and
+MAE of the median against the season-average baseline):
+
+**Not complete.** The full run was stopped by the machine's low-memory guard at 2024 week 10 (nothing is written
+until the end), so there is no 2024–25 calibration yet and the joints are **not validated**. A one-week smoke test
+(2025 week 4, n=400) ran clean for every stat: receptions 18 of 19 buckets in range, MAE median 1.1 vs baseline
+1.3; fantasy 18 of 20, MAE 3.6 vs 4.2; attempts n=32, MAE 7.2 vs 8.3. The Slips tab is labelled "calibration
+pending" until `python yards_backtest.py --dist gamma --tag stats` has run on its own (about an hour with nothing
+else running) and the numbers are logged here.

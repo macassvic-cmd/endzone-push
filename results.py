@@ -193,6 +193,19 @@ def main():
             if rec: models["yds"] = rec; BL.save(models)
         s_ = yards_h2h["season"]; print(f"  yards vs book: n {s_['n']} weeks {s_['weeks']} | Brier model {s_['model']} book {s_['book']} 50/50 {s_['blend']} | median closer {s_['median_closer']} of {s_['median_closer'] + s_['book_closer']} | paper only: {yards_h2h['paper_only']}")
 
+    # ---- actual stats per fully graded week, for grading slips in the browser (Slips tab log) ----
+    #      columns: rec, rec_yds, rush_yds, pass_yds, pass_att, fpts (half-PPR); a player with no touches has no row (a void leg)
+    actuals = {}
+    cur_season = int(s.season.max())
+    _sa = YB.actual_stats(p, cur_season) if "complete_pass" in p else None
+    for fn in sorted(glob.glob(f"slate_{cur_season}_w*.json")):
+        d = json.load(open(fn))
+        w = next((w for w in weeks if w["season"] == d["season"] and w["week"] == d["week"]), None)
+        if _sa is None or w is None or w.get("partial"): continue
+        pids = {r["pid"] for r in d.get("players", [])} | {r["pid"] for r in (d.get("draws") or {}).get("players", [])}
+        wk = _sa[(_sa.week == d["week"]) & _sa.pid.isin(pids)]
+        actuals[f"{d['season']}-{d['week']}"] = {r.pid: [int(r.rec), int(r.rec_yds), int(r.rush_yds), int(r.pass_yds), int(r.pass_att), round(float(r.fpts), 1)] for r in wk.itertuples()}
+
     # ---- top-15 regulars: everyone who has made any week's top 15 ----
     regulars = []
     if top15_frames:
@@ -305,7 +318,8 @@ def main():
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,
                last_week_meta=dict(season=last["season"], week=last["week"], graded=last["games"], total=last["games_total"]) if last else None,
                clv=clv_summary, clv_rows=[{k: v for k, v in r.items() if k in ("season", "week", "bet", "role", "market", "book", "best", "mkt_p", "close_best", "close_mkt_p", "clv", "beat_close")} for r in clv_rows if "clv" in r],
-               backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only)
+               backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
+               actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"])
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")
