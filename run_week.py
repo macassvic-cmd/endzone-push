@@ -254,12 +254,17 @@ for t, (qid, qn) in qbs.items():
                 bring.append(dict(game=f"{t}-{o}", a=x["name"], a_team=t, b=y["name"], b_team=o, joint=j,
                                   lift=j / (xa.mean() * yb.mean()), fair=int(M.fair_american(np.array([j]))[0])))
 
+def kick_utc(et):
+    """'2026-10-04 13:00' (Eastern, as nflverse lists it) -> '2026-10-04T17:00Z' so the page can sort and show local time."""
+    return pd.Timestamp(et).tz_localize("America/New_York").tz_convert("UTC").strftime("%Y-%m-%dT%H:%MZ")
+
+
 games = []
 for gid in sorted({v["game_id"] for v in teams.values()}):
     tt = [t for t in teams if teams[t]["game_id"] == gid]
     home = [t for t in tt if teams[t]["home"]][0]; away = [t for t in tt if not teams[t]["home"]][0]
     hr, ar, mix = M.first_td_split(teams[home]["spread"])
-    games.append(dict(game_id=gid, away=away, home=home, kickoff=teams[home]["gametime"],
+    games.append(dict(game_id=gid, away=away, home=home, kickoff=teams[home]["gametime"], kick_utc=kick_utc(teams[home]["gametime"]),
                       away_imp=teams[away]["implied"], home_imp=teams[home]["implied"],
                       exp_td=teams[away]["lam"] + teams[home]["lam"] + 2 * M.DST_TD_RATE,
                       lines=line_src.get(gid), wx=wx.get(gid),
@@ -341,7 +346,9 @@ if os.path.exists(slate_fn):
     keep = lambda rows, key="game_id": [r for r in rows if r.get(key) not in live and r.get(key) in set(done)]
     locked_games = keep(old.get("games", []))
     lg = {g["game_id"] for g in locked_games}
-    for g in locked_games: g["locked"] = True
+    for g in locked_games:
+        g["locked"] = True
+        if not g.get("kick_utc") and g.get("kickoff"): g["kick_utc"] = kick_utc(g["kickoff"])
     data["games"] = locked_games + data["games"]
     data["players"] = [r for r in old.get("players", []) if r.get("game_id") in lg] + data["players"]
     lteams = {t for g in locked_games for t in (g["home"], g["away"])}

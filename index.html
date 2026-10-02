@@ -26,6 +26,10 @@ h1 span{color:var(--accent)}
 .g b{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.02em}
 .g.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .g .td{color:var(--muted)}
+.g .kt{color:var(--accent);font-size:11px}
+.g.locked{opacity:.45}
+.g.locked .kt{color:var(--muted)}
+.ggrp{flex:0 0 auto;display:flex;align-items:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 2px 0 8px;border-left:1px solid var(--line);white-space:nowrap}
 nav{display:flex;flex-wrap:wrap;gap:4px}
 nav button{font-family:var(--display);font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:none;border:0;border-bottom:3px solid transparent;padding:6px 10px;color:var(--muted);cursor:pointer}
 nav button.on{color:var(--ink);border-color:var(--accent)}
@@ -120,20 +124,46 @@ const tabs=document.getElementById('tabs');
 Object.entries(TABS).forEach(([k,v])=>{const b=document.createElement('button');b.textContent=v.label;b.dataset.k=k;b.onclick=()=>{st.tab=k;st.sort=null;try{localStorage.setItem('ezl_tab',k)}catch(e){};render()};tabs.appendChild(b)});
 
 const gEl=document.getElementById('games');
+// kickoff handling: games carry kick_utc (ISO, from run_week); older slates only the Eastern 'YYYY-MM-DD HH:MM' string
+const kickMs = g => { if(g.kick_utc) return Date.parse(g.kick_utc); if(!g.kickoff) return 0; const m=+g.kickoff.slice(5,7); return Date.parse(g.kickoff.replace(' ','T')+':00'+((m>=11||m<=2)?'-05:00':'-04:00')); };
+const started = g => !!g.locked || (kickMs(g)>0 && kickMs(g) <= Date.now());
+const ptFmt = new Intl.DateTimeFormat('en-US',{weekday:'short',hour:'numeric',minute:'2-digit',timeZone:'America/Los_Angeles'});
+const ptStr = g => kickMs(g) ? ptFmt.format(new Date(kickMs(g))).replace(',','') : '';
+function slotOf(g){ // chip-bar group label, Pacific time
+  if(!kickMs(g)) return 'TBD';
+  const parts=new Intl.DateTimeFormat('en-US',{weekday:'short',hour:'numeric',hour12:false,timeZone:'America/Los_Angeles'}).formatToParts(new Date(kickMs(g)));
+  const wd=parts.find(p=>p.type==='weekday').value, h=(+parts.find(p=>p.type==='hour').value)%24;
+  if(wd!=='Sun') return wd;
+  return h<9?'Sun intl':h<12?'Sun early':h<16?'Sun late':'Sun night';
+}
+function orderGames(){ // kickoff order everywhere; games already under way go last
+  if(!D||!D.games) return;
+  D.games.sort((a,b)=>(started(a)-started(b))||(kickMs(a)-kickMs(b))||a.game_id.localeCompare(b.game_id));
+}
+const gameRank = t => D.games.findIndex(g=>g.home===t||g.away===t);
 function gameBtns(){
+  orderGames();
   gEl.innerHTML='';
   const all=document.createElement('button');all.className='g'+(st.game===''?' on':'');all.innerHTML='<b>ALL GAMES</b><br><span class="td">full slate</span>';all.onclick=()=>{st.game='';render()};gEl.appendChild(all);
-  D.games.forEach(g=>{const b=document.createElement('button');b.className='g'+(st.game===g.game_id?' on':'');
+  let grp=null, firstOpen=null;
+  D.games.forEach(g=>{const lab=started(g)?'Started':slotOf(g);
+    if(lab!==grp){grp=lab;const l=document.createElement('div');l.className='ggrp';l.textContent=lab;gEl.appendChild(l)}
+    const b=document.createElement('button');b.className='g'+(st.game===g.game_id?' on':'')+(started(g)?' locked':'');
     const wx=g.wx?`${Math.round(g.wx.wind)} mph${g.wx.precip>=50?' · rain':''}`:(g.indoor?'indoor':'no forecast');
-    b.innerHTML=`<b>${g.away} @ ${g.home}</b><br>${g.away_imp.toFixed(1)}–${g.home_imp.toFixed(1)}<br><span class="td">${g.exp_td.toFixed(2)} exp TD · ${wx}</span>`;
+    b.innerHTML=`<b>${g.away} @ ${g.home}</b><br><span class="kt">${started(g)?'started · ':''}${ptStr(g)||'kickoff TBD'}</span><br>${g.away_imp.toFixed(1)}–${g.home_imp.toFixed(1)}<br><span class="td">${g.exp_td.toFixed(2)} exp TD · ${wx}</span>`;
     b.title=`Lines: ${g.lines||'nflverse'}`;
-    b.onclick=()=>{st.game=g.game_id;render()};gEl.appendChild(b)});
+    b.onclick=()=>{st.game=g.game_id;render()};gEl.appendChild(b);
+    if(!firstOpen&&!started(g)) firstOpen=b;});
+  if(!st._scrolled&&firstOpen){st._scrolled=true; // on load, bring the next game that has not started into view
+    const go=()=>{try{if(typeof firstOpen.offsetLeft==='number'&&typeof gEl.offsetLeft==='number') gEl.scrollLeft=Math.max(0,firstOpen.offsetLeft-gEl.offsetLeft-130)}catch(e){}};
+    (typeof requestAnimationFrame==='function')?requestAnimationFrame(go):go();}
 }
 const gameOf = t => (D.games.find(g=>g.home===t||g.away===t)||{}).game_id;
 
 function table(cols, rows, defSort){
   const s = st.sort || defSort;
-  rows = rows.slice().sort((a,b)=>{const x=a[s],y=b[s];return (typeof x==='string'? x.localeCompare(y): (x-y))*st.dir});
+  const sc=cols.find(c=>c.k===s), sv=sc&&sc.sv?sc.sv:(r=>r[s]);   // a column may define sv(row) as its sort value (e.g. kickoff order for games)
+  rows = rows.slice().sort((a,b)=>{const x=sv(a),y=sv(b);return (typeof x==='string'? x.localeCompare(y): (x-y))*st.dir});
   let h='<div class="tbl"><table><thead><tr>'+cols.map(c=>`<th class="${c.l?'l':''}" data-k="${c.k}" scope="col">${c.h}${(s===c.k)?(st.dir<0?' ▾':' ▴'):''}</th>`).join('')+'</tr></thead><tbody>';
   h+=rows.map(r=>'<tr>'+cols.map(c=>`<td class="${c.cls||''} ${c.l?'l':''}">${c.f?c.f(r):r[c.k]}</td>`).join('')+'</tr>').join('');
   return h+'</tbody></table></div>';
@@ -157,6 +187,7 @@ function oddsCell(key,p){const v=book[key]??'';let e='';if(v!==''&&!isNaN(+v)&&M
   return `<input class="odds" id="o-${key.replace(/[^a-z0-9]/gi,'_')}" data-key="${key}" data-p="${p}" value="${v}" placeholder="+odds" inputmode="numeric" aria-label="Book odds">${e}`}
 
 function render(){
+  orderGames();
   gameBtns();
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.k===st.tab));
   document.getElementById('note').textContent=TABS[st.tab].note;
@@ -275,7 +306,7 @@ function render(){
     }
   } else if(st.tab==='bring'){
     const rows=filt(D.bring.map(r=>({...r,name:r.a+' '+r.b,team:r.a_team})));
-    html=table([{k:'game',h:'Game',l:1},{k:'a',h:'Side A',l:1,cls:'n',f:r=>`${r.a} <span style="color:var(--muted)">${r.a_team}</span>`},{k:'b',h:'Side B',l:1,cls:'n',f:r=>`${r.b} <span style="color:var(--muted)">${r.b_team}</span>`},
+    html=table([{k:'game',h:'Game',l:1,sv:r=>-gameRank(r.a_team),f:r=>{const g=D.games[gameRank(r.a_team)];return g?`${g.away} @ ${g.home} <span style="color:var(--muted)">${ptStr(g)}</span>`:r.game}},{k:'a',h:'Side A',l:1,cls:'n',f:r=>`${r.a} <span style="color:var(--muted)">${r.a_team}</span>`},{k:'b',h:'Side B',l:1,cls:'n',f:r=>`${r.b} <span style="color:var(--muted)">${r.b_team}</span>`},
       {k:'joint',h:'Both score',f:r=>pct(r.joint)},{k:'lift',h:'Lift',f:r=>`<span class="lift ${r.lift>1.1?'up':''}">${r.lift.toFixed(2)}×</span>`},{k:'fair',h:'Fair',f:r=>am(r.fair)},
       {k:'bk',h:'Book / edge',f:r=>oddsCell('bb|'+r.a+'|'+r.b,r.joint)}],rows,'joint');
   } else {

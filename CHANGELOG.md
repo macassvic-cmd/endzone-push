@@ -511,3 +511,11 @@ leave-one-week-out (anytime 0.1256 vs 0.1244), so 50/50 stays in use.
 
 The earlier +43.7 included the mis-attributed Josh Allen win; without it the board is +4.5 units on 191 picks,
 carried by one +6600 first-TD hit, and 6–40 for −8.1 units on picks shorter than +1000.
+
+## 2026-10-02 — Game chips in kickoff order
+
+- Every game record now carries `kick_utc`; the page sorts games by kickoff everywhere (chip bar, the first-TD
+  receive selectors, the bring-backs Game column), with games already under way moved to the end and greyed.
+- Chips show the kickoff in Pacific time ("Thu 5:15 PM") and are grouped with small labels: Thu / Sat / Sun intl
+  (before 9 AM PT) / Sun early / Sun late / Sun night / Mon, plus "Started".
+- On load the chip bar scrolls to the next game that has not kicked off.
