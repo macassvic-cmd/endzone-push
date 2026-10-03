@@ -577,3 +577,30 @@ until the end), so there is no 2024–25 calibration yet and the joints are **no
 1.3; fantasy 18 of 20, MAE 3.6 vs 4.2; attempts n=32, MAE 7.2 vs 8.3. The Slips tab is labelled "calibration
 pending" until `python yards_backtest.py --dist gamma --tag stats` has run on its own (about an hour with nothing
 else running) and the numbers are logged here.
+
+## 2026-10-03 — Bet record restored and frozen; no paper labels; slip log moved into the repo
+
+**Bug:** Saturday's scheduled run graded weeks 1–3 down to nothing (results.json showed 3 bets, all week-4 yards).
+Cause: once week 4's first game was final its rows joined the graded table and brought the `weak_spot` column
+with them; weeks 1–3 have no tag there, pandas fills NaN, and `if r.get("weak_spot")` is true for NaN, so every TD
+row was skipped by the re-scorer. Fixed with the same NaN-safe check used elsewhere (unit-tested on a NaN row).
+The record is back at the last reported figures: 12–179 overall (+4.5u, expected +79.8u), 6–40 shorter than
++1000 (−8.1u), Bench 6–143 / Rotational 2–15 / Starter 4–21.
+
+**Frozen record** (`bets_frozen.json`, committed by the workflow): once a week is fully graded its bets are stored
+with the rule in force at the time and never recomputed, so a later blend refit or rule change cannot rewrite
+history. "Under current rules" is a separate re-score of every week with today's rule and blend, shown as one
+clearly labelled line under Priced Bets, never replacing the record. Weeks 1–2 froze on this run; week 3 freezes
+on the next run with fresh schedule data (its Monday game is not final in the local copy).
+
+**Page:** every "paper only" label and note is gone (Edge Board banners, the Yards-vs-book sentence, parlay
+"paper" tags); the gating flags are still computed in results.json (`paper_only`) as data. Priced Bets shows every
+market together with the full toggle (All / Anytime / First TD / 2+ TD / Yards / Parlays, always present) and a
+side-by-side line for Yards, TD markets and Parlays under the all-markets headline.
+
+**Slips:** the log now lives in the repo. `python slips.py "..." "..." --payout 12 --log` appends the priced slip to
+`slips_log.jsonl`; the Slips tab's "Copy command" button prints that line for the slip just priced, so it can be
+logged from any device, and results.py grades the file once the week is complete (void legs drop to the smaller
+payout, under two live legs refunds). The browser keeps only the draft text. Same-player legs (a QB's pass yards
+and fantasy) are tagged with a note that Underdog may block or reprice them, and the slip is also priced without
+them (joint, payout and EV at the smaller size), on the tab, in the CLI and in the log.

@@ -64,7 +64,7 @@ def rescore_edges(allp, models):
         coef = BL.coef_for(models, mk)
         d["blend"] = BL.predict(coef, d[pcol].values, d[kcol].values)
         for _, r in d.iterrows():
-            if r.get("weak_spot") or (r.get(pre + "nbooks") or 0) < MIN_BOOKS or pd.isna(r.get(pre + "med")):
+            if (isinstance(r.get("weak_spot"), str) and r.get("weak_spot")) or (r.get(pre + "nbooks") or 0) < MIN_BOOKS or pd.isna(r.get(pre + "med")):
                 continue
             ev, ev_med = float(r.blend) * O.decimal(r[pre + "best"]) - 1, float(r.blend) * O.decimal(r[pre + "med"]) - 1
             if ev < MIN_EV or ev_med < MIN_EV:
@@ -161,6 +161,24 @@ def main():
                              model_p=e.get("model_p"), mkt_p=e.get("mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=e.get("role", "Unknown"), market="yds",
                              longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
 
+    # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
+    #      then and never recomputed; "under current rules" is a separate re-score of every week with today's rule and blend ----
+    FROZEN = "bets_frozen.json"
+    frozen = json.load(open(FROZEN)) if os.path.exists(FROZEN) else {}
+    bets_current = list(bets)                                           # today's rule applied to every week
+    partial = {(w["season"], w["week"]) for w in weeks if w.get("partial")}
+    rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, " + ("fitted" if any(BL.coef_for(models, m) for m in ("any", "first", "two")) else "50/50")
+                + " model-market blend; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor")
+    by_wk = {}
+    for b_ in bets: by_wk.setdefault(f"{b_['season']}-{b_['week']}", []).append(b_)
+    for w in weeks:
+        key = f"{w['season']}-{w['week']}"
+        if key not in frozen and (w["season"], w["week"]) not in partial:
+            frozen[key] = dict(rule=rule_now, frozen_at=pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%dT%H:%MZ"), bets=by_wk.get(key, []))
+    json.dump(frozen, open(FROZEN, "w"), indent=0)
+    bets = [b_ for key in sorted(frozen) for b_ in frozen[key]["bets"]] + [b_ for key, rows in by_wk.items() if key not in frozen for b_ in rows]
+    print(f"  bet record: {len(bets)} bets ({sum(len(v['bets']) for v in frozen.values())} frozen over {len(frozen)} weeks); under current rules {len(bets_current)}")
+
     # ---- yards head-to-head at the books' main lines, from week 4 on: model P(over) vs no-vig book P(over) vs 50/50,
     #      and whether our median or the book line was closer to the actual yards ----
     yrows = []
@@ -206,6 +224,23 @@ def main():
         wk = _sa[(_sa.week == d["week"]) & _sa.pid.isin(pids)]
         actuals[f"{d['season']}-{d['week']}"] = {r.pid: [int(r.rec), int(r.rec_yds), int(r.rush_yds), int(r.pass_yds), int(r.pass_att), round(float(r.fpts), 1)] for r in wk.itertuples()}
 
+    # ---- slips log (slips_log.jsonl, appended by `python slips.py ... --log`): graded on actual stats once the week is complete ----
+    import slips as SL
+    slips_rows = []
+    if os.path.exists(SL.LOG):
+        for line in open(SL.LOG, encoding="utf-8"):
+            line = line.strip()
+            if not line: continue
+            try: sl = json.loads(line)
+            except Exception: continue
+            key = f"{sl['season']}-{sl['week']}"
+            A = actuals.get(key)
+            g = SL.grade(sl, A) if A is not None else dict(status="pending")
+            slips_rows.append({**{k: sl.get(k) for k in ("id", "ts", "season", "week", "n_legs", "p_joint", "p_prod", "p_joint_ex", "payout", "ev", "legs", "same_player")}, **g})
+    done = [r for r in slips_rows if r["status"] in ("won", "lost")]
+    slips_summary = dict(n=len(slips_rows), graded=len(done), won=sum(1 for r in done if r["status"] == "won"), units=round(sum(r["units"] for r in done), 2),
+                         expected=round(sum((r["ev"] or 0) for r in done), 2), refund=sum(1 for r in slips_rows if r["status"] == "refund"), pending=sum(1 for r in slips_rows if r["status"] == "pending"))
+
     # ---- top-15 regulars: everyone who has made any week's top 15 ----
     regulars = []
     if top15_frames:
@@ -249,6 +284,9 @@ def main():
                     units=round(float(g.profit.sum()), 2) if len(g) else 0.0,
                     expected_units=round(float(g.ev.sum()), 2) if len(g) else 0.0,     # sum of EV at the price taken
                     roi=round(float(g.profit.mean()), 4) if len(g) else None)
+    bc = pd.DataFrame(bets_current)
+    rescore_current = dict(**tally(bc), short=tally(bc[~bc.longshot]) if len(bc) else tally(bc), rule=rule_now,
+                           by_market={k: tally(g) for k, g in bc.groupby("market")} if len(bc) else {}) if len(bc) else None
     by_role = {k: tally(g) for k, g in b.groupby("role")} if len(b) else {}
     by_market = {k: tally(g) for k, g in b.groupby("market")} if len(b) else {}
     by_price = {"under_1000": tally(b[~b.longshot]), "1000_plus": tally(b[b.longshot])} if len(b) else {}
@@ -319,7 +357,9 @@ def main():
                last_week_meta=dict(season=last["season"], week=last["week"], graded=last["games"], total=last["games_total"]) if last else None,
                clv=clv_summary, clv_rows=[{k: v for k, v in r.items() if k in ("season", "week", "bet", "role", "market", "book", "best", "mkt_p", "close_best", "close_mkt_p", "clv", "beat_close")} for r in clv_rows if "clv" in r],
                backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
-               actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"])
+               actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
+               rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
+               slips=dict(rows=slips_rows, summary=slips_summary))
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")
