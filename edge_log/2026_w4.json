@@ -1852,5 +1852,41 @@
 "model_p": 0.6573,
 "ev": 0.0882,
 "ev_med": 0.0882
+},
+"00-0035535|yds|rec|13.5": {
+"pid": "00-0035535",
+"bet": "Darius Slayton Over 13.5 rec yds",
+"market": "yds",
+"team": "IND",
+"role": "Rotational",
+"kind": "rec",
+"line": 13.5,
+"flagged": "20261003T1921Z",
+"best": -113,
+"book": "FanDuel",
+"med": -114,
+"mkt_p": 0.5026,
+"blend_p": 0.6127,
+"model_p": 0.7227,
+"ev": 0.1548,
+"ev_med": 0.1501
+},
+"00-0040198|yds|rush|24.5": {
+"pid": "00-0040198",
+"bet": "Ollie Gordon II Over 24.5 rush yds",
+"market": "yds",
+"team": "MIA",
+"role": "Rotational",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261003T1921Z",
+"best": -102,
+"book": "FanDuel",
+"med": -108,
+"mkt_p": 0.4911,
+"blend_p": 0.578,
+"model_p": 0.665,
+"ev": 0.1447,
+"ev_med": 0.1133
 }
 }
