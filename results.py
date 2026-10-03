@@ -323,6 +323,7 @@ def main():
     clv_summary = C.aggregate(clv_rows) if clv_rows else None
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
+    slips_bt = json.load(open("slips_backtest.json")) if os.path.exists("slips_backtest.json") else None
     def psum(ws):
         allp_ = [c for w in ws for c in w["parlays"]]
         return dict(weeks=len({(w["season"], w["week"]) for w in ws}), n=len(allp_), won=sum(c["won"] for c in allp_),
@@ -359,7 +360,7 @@ def main():
                backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
                actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
-               slips=dict(rows=slips_rows, summary=slips_summary))
+               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")

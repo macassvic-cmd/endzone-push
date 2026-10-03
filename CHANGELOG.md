@@ -571,12 +571,26 @@ Backtest gate (`yards_backtest.py --tag stats`, 2024 + 2025 weeks 4–18, single
 attempts; rungs 2–8 receptions, 5–25 fantasy, 25–40 attempts; P(stat ≥ rung) in 5-point buckets with ± ranges, and
 MAE of the median against the season-average baseline):
 
-**Not complete.** The full run was stopped by the machine's low-memory guard at 2024 week 10 (nothing is written
-until the end), so there is no 2024–25 calibration yet and the joints are **not validated**. A one-week smoke test
-(2025 week 4, n=400) ran clean for every stat: receptions 18 of 19 buckets in range, MAE median 1.1 vs baseline
-1.3; fantasy 18 of 20, MAE 3.6 vs 4.2; attempts n=32, MAE 7.2 vs 8.3. The Slips tab is labelled "calibration
-pending" until `python yards_backtest.py --dist gamma --tag stats` has run on its own (about an hour with nothing
-else running) and the numbers are logged here.
+Run one season at a time (the pooled run died on memory): first with the volume draws as shipped, then with
+game-to-game variability added. Diagnosis: with fixed per-game shares and pass rate the simulated receptions,
+attempts and fantasy were too tight (actual residual variance 1.45× / 2.0× / 1.5× the simulated), so low rungs were
+under-priced and high rungs over-priced. Fix (`yards.py`): each sim game draws the player's share of carries /
+targets from a Beta around his mean (concentration 15 for carries, 60 for targets; 15 for both over-dispersed
+targets and rec yards) and the team's pass rate gets a 0.06 game-script shock. Pooled 2024 + 2025, weeks 4–18:
+
+| Stat | Legs | Buckets in range, before → after | MAE median / baseline |
+|---|---|---|---|
+| Receptions | 8,900 | 5 of 20 → 16 of 20 | 1.2 / 1.3 |
+| Fantasy (half-PPR) | 9,796 | 7 of 20 → 13 of 20 | 3.7 / 4.1 |
+| Pass attempts | 896 | 11 of 20 → 16 of 20 | 6.6 / 8.2 |
+| Rush yds | 6,072 | 15 of 20 → 14 of 19 | 10.6 / 12.9 |
+| Rec yds | 8,836 | 15 of 19 → 13 of 18 | 15.0 / 16.9 |
+| Pass yds | 896 | 13 of 15 → 14 of 15 | 57.9 / 66.6 |
+
+Receptions and attempts now sit within 1–2 points of actual across the range; fantasy is still 2–3 points tight at
+the tails (7% rungs hit 10%, 83% rungs hit 79%), so fantasy legs near the ends should be read with that in mind.
+The yard ladders move by a bucket either way with the same MAE and stay shipped. Shipped; the "calibration
+pending" label is gone and the numbers sit on the Results tab ("Slip stats backtest") and in `slips_backtest.json`.
 
 ## 2026-10-03 — Bet record restored and frozen; no paper labels; slip log moved into the repo
 

@@ -22,6 +22,8 @@ SACK_RATE = 0.065                             # team pass plays include sacks; a
 PLAYS_MEAN, PLAYS_SD, PLAYS_K = 62.9, 8.3, 4.0 # league plays per team-game, game-to-game sd, games of shrinkage for team pace
 PASS_A, PASS_B = 0.571, -0.0038               # league pass rate and its slope per point favored (2022-24)
 PLAYS_RHO = 0.3                               # correlation of team plays with the TD sim's game factor
+PASS_RATE_SD = 0.06                           # game-to-game pass-rate shock (game script); 0 = fixed pass rate
+VOL_KAPPA = {"rush": 15.0, "rec": 60.0}       # game-to-game share variability (Beta concentration) for carries / targets; carries swing more than targets. 0 = fixed
 QB_ATT_SHARE = 0.97
 # receptions, turnovers and half-PPR fantasy (slip pricer): catch rate per player shrunk CATCH_K targets toward the position
 # rate, INT rate per QB shrunk INT_K attempts toward the league rate, fumbles lost at league rates per touch / dropback (2023-25 pbp)
@@ -115,6 +117,7 @@ def simulate(teams, plv, qbs, ycache, sim, pos_of, rng=None):
         pr = float(tp.pr) if tp is not None else PASS_A
         fav = -info["spread"] if info["home"] else info["spread"]          # points this team is favored by
         pr = float(np.clip(pr + PASS_B * fav, 0.35, 0.75))
+        pr = np.clip(pr + PASS_RATE_SD * rng.normal(size=n), 0.25, 0.85) if PASS_RATE_SD > 0 else pr
         f = sim.get("game_f", {}).get(info["game_id"]); z = (np.log(f) + M.GAME_SIGMA ** 2 / 2) / M.GAME_SIGMA if f is not None else rng.normal(size=n)
         plays = np.clip(pace + PLAYS_SD * (PLAYS_RHO * z + np.sqrt(1 - PLAYS_RHO ** 2) * rng.normal(size=n)), 40, 95)
         passes = rng.binomial(plays.astype(int), pr); rushes = plays.astype(int) - passes
@@ -123,7 +126,10 @@ def simulate(teams, plv, qbs, ycache, sim, pos_of, rng=None):
             sub = plv[(plv.team == t) & (plv.kind == kind)]
             for _, r in sub.iterrows():
                 if r.share <= 0: continue
-                vol = rng.binomial(tot, min(float(r.share), 0.95))
+                sh = min(float(r.share), 0.95)
+                kap = VOL_KAPPA.get(kind, 0)
+                if kap > 0: sh = rng.beta(sh * kap, (1 - sh) * kap, size=n)                           # this game's share of the team's volume
+                vol = rng.binomial(tot, sh)
                 rate, _ = rate_for(eff, r.pid, kind, pos_of(r.pid))
                 out[(r.pid, kind)] = _yards(vol, rate, TOUCH_SD.get((kind, pos_of(r.pid)), 8.0), rng)
                 out[(r.pid, "tgt" if kind == "rec" else "car")] = vol                 # volume draws, kept for receptions / fumbles
