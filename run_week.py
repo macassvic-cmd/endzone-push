@@ -6,6 +6,8 @@ Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, numpy as np, pandas as pd
 import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
+import rules as RU
+from nansafe import val, flag, text, num, isnan
 
 DATA, OUT = "data", "."
 os.makedirs(OUT, exist_ok=True)
@@ -298,16 +300,16 @@ if YARD_KINDS:
                 ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
                 rung.update(best=ps["best"], book=ps["book"], med=ps["median"], nbooks=ps["n_books"], mkt_p=round(ps["market_p"], 4), blend=round(blend, 4),
                             ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"])
-                if line >= Y.MIN_EDGE_LINE[r["kind"]] and ev >= 0.05 and ev_med >= 0.05 and ps["n_books"] >= 2 and not (isinstance(m.get("weak_spot"), str) and m.get("weak_spot")) and (best_edge is None or ev_med > best_edge["ev_med"]):
+                if line >= Y.MIN_EDGE_LINE[r["kind"]] and ev >= 0.05 and ev_med >= 0.05 and ps["n_books"] >= 2 and not text(m, "weak_spot") and (best_edge is None or ev_med > best_edge["ev_med"]):
                     best_edge = dict(bet=f"{_name[r['pid']]} Over {line:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=line, team=m["team"], model_p=round(prob, 4),
                                      mkt_p=round(ps["market_p"], 4), blend_p=round(blend, 4), best=int(ps["best"]), book=ps["book"], ev=round(ev, 4), med=int(ps["median"]),
-                                     ev_med=round(ev_med, 4), nbooks=int(ps["n_books"]), games=int(m.get("games", 0)), w=0.5, role=m["role"], kalshi=None, kalshi_liquid=False)
+                                     ev_med=round(ev_med, 4), nbooks=int(ps["n_books"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False)
             rungs.append(rung)
         main = [g for g in rungs if g.get("two_sided")]
         main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
-        yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=m.get("pos"), role=m["role"], kind=r["kind"], mean=round(r["mean"], 1),
+        yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=val(m, "pos"), role=val(m, "role", "Unknown"), kind=r["kind"], mean=round(r["mean"], 1),
                               median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
-                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=m.get("weak_spot") if isinstance(m.get("weak_spot"), str) else None))
+                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot")))
         if best_edge: yard_edges.append(best_edge)
     print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {len(yard_edges)} edges")
 
@@ -323,7 +325,7 @@ if YARD_KINDS:
     _buf = bytearray(); _plist = []
     for pid in sorted(_keep, key=lambda x: _name[x]):
         d = _st[pid]; order = [k for k in ("pass_att", "pass_yds", "rec", "rec_yds", "rush_yds", "fpts") if k in d]
-        _plist.append(dict(pid=pid, name=_name[pid], team=_meta[pid]["team"], pos=_meta[pid].get("pos"), stats=order, offset=len(_buf)))
+        _plist.append(dict(pid=pid, name=_name[pid], team=_meta[pid]["team"], pos=val(_meta[pid], "pos"), stats=order, offset=len(_buf)))
         for k in order:
             sp = LAYOUT[k]; v = np.asarray(d[k][:DRAWS_N], float) * sp["scale"] + sp.get("offset", 0)
             _buf += np.clip(np.rint(v), 0, 65535 if sp["bytes"] == 2 else 255).astype("<u2" if sp["bytes"] == 2 else "u1").tobytes()
@@ -333,18 +335,8 @@ if YARD_KINDS:
     print(f"draws: {len(_plist)} players x {draws_idx['n']} sim games -> draws.bin ({len(_buf) / 1e6:.1f} MB)")
 
 # ---------- edge board: priced by 2+ books and EV >= 5% at the median book (not just the best one) ----------
-MIN_BOOKS, MIN_EV = 2, 0.05
-edges = []
-for _, r in df.iterrows():
-    for m, lbl, pr in [("any_", "Anytime TD", r.p_any), ("first_", "First TD", r.p_first), ("two_", "2+ TD", r.p_2plus)]:
-        ev, ev_med = r.get(m + "ev"), r.get(m + "ev_med")
-        if isinstance(r.get("weak_spot"), str) and r.get("weak_spot"):      # None/NaN = not a weak spot (NaN is truthy in Python)
-            continue
-        if pd.notna(ev_med) and ev_med >= MIN_EV and ev >= MIN_EV and r.get(m + "nbooks", 0) >= MIN_BOOKS:
-            edges.append(dict(bet=f"{r['name']} {lbl}", pid=r.pid, market=m[:-1], team=r.team, model_p=pr, mkt_p=r[m + "mkt_p"], blend_p=r[m + "blend_p"],
-                              best=int(r[m + "best"]), book=r[m + "book"], ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
-                              nbooks=int(r[m + "nbooks"]), games=int(r.get("games", 0)), w=r[m + "w"], role=r.role,
-                              kalshi=None if pd.isna(r.get(m + "kalshi")) else int(r[m + "kalshi"]), kalshi_liquid=bool(r.get(m + "kalshi_liquid", False))))
+MIN_BOOKS, MIN_EV = RU.MIN_BOOKS, RU.MIN_EV
+edges = RU.td_edges(df)                                       # shared rule (rules.py), every field read NaN-safely
 edges += yard_edges
 clean = lambda d: d.replace({np.nan: None})
 if edges and not os.environ.get("ODDS_MOCK"):

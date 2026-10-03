@@ -29,11 +29,14 @@ def fair_price(prob):
     return american(1 / prob) if 0 < prob < 1 else None
 
 
+from nansafe import val, flag, text, num, isnan
+
+
 def _leg(p, prob):
-    price = int(p["two_best"]) if p.get("two_best") is not None else None
+    price = int(p["two_best"]) if not isnan(val(p, "two_best")) else None
     dec = decimal(price) if price else None
     return dict(pid=p["pid"], name=p["name"], team=p["team"], game_id=p["game_id"], prob=round(prob, 4),
-                model_p=round(p["p_2plus"], 4), mkt_p=p.get("two_mkt_p"), price=price, book=p.get("two_book"),
+                model_p=round(p["p_2plus"], 4), mkt_p=val(p, "two_mkt_p"), price=price, book=val(p, "two_book"),
                 dec=round(dec, 4) if dec else None, ev=round(prob * dec - 1, 4) if dec else None,
                 fair=fair_price(prob))                      # minimum price for this leg to break even
 
@@ -41,17 +44,17 @@ def _leg(p, prob):
 def leg_pool(players, mode):
     out = []
     for p in players:
-        if p.get("role") != "Starter" or p.get("weak_spot"):
+        if val(p, "role") != "Starter" or text(p, "weak_spot"):
             continue
         if mode == "likely":
-            if p.get("p_2plus", 0) <= 0:
+            if num(p, "p_2plus", 0) <= 0:
                 continue
             out.append(_leg(p, p["p_2plus"]))
         else:
-            if p.get("two_best") is None or p.get("two_blend_p") is None:
+            if isnan(val(p, "two_best")) or isnan(val(p, "two_blend_p")):
                 continue
-            liquid_kalshi = p.get("two_kalshi_liquid") and p.get("two_book") == "Kalshi"
-            if (p.get("two_nbooks") or 0) < MIN_BOOKS and not liquid_kalshi:
+            liquid_kalshi = flag(p, "two_kalshi_liquid") and val(p, "two_book") == "Kalshi"
+            if num(p, "two_nbooks", 0) < MIN_BOOKS and not liquid_kalshi:
                 continue
             leg = _leg(p, p["two_blend_p"])
             if leg["ev"] is None or leg["ev"] < MIN_EV:

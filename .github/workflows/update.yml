@@ -64,6 +64,7 @@ jobs:
           ODDS_SAVE: odds_raw.json
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
         run: |
+          python test_nan_safety.py
           python refresh.py
           python results.py
       - name: Save raw odds (download from the run's Artifacts to rerun locally with ODDS_MOCK)

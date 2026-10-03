@@ -618,3 +618,25 @@ logged from any device, and results.py grades the file once the week is complete
 payout, under two live legs refunds). The browser keeps only the draft text. Same-player legs (a QB's pass yards
 and fantasy) are tagged with a note that Underdog may block or reprice them, and the slip is also priced without
 them (joint, payout and EV at the smaller size), on the tab, in the CLI and in the log.
+
+## 2026-10-03 — NaN-safety audit: shared helper, shared Edge Board rule, tests
+
+The same bug bit twice: a field read with `.get()` or tested for truth on a DataFrame row where a column was missing
+from one slate (NaN after concat) — NaN is truthy, so `if r.get("weak_spot")` skipped every row, and `r.get(x) or 0`
+returns NaN. Audit of every `.get` / `if x` / `or` default on row and JSON fields in results.py, run_week.py,
+parlay.py, clv.py, yards and odds code:
+
+- `nansafe.py`: `val / flag / text / num / isnan` — missing, None, NaN, pd.NA and NaT all read as absent; works on
+  dicts, iterrows Series and itertuples rows. Used everywhere a row field can be NaN.
+- `rules.py`: the TD Edge Board rule (`td_edges`) moved out of run_week.py so the live board and the tests share one
+  NaN-safe implementation (`qualifying_rows` recounts it with plain masks for the tests). Reproduces the committed
+  week-4 board's 45 TD edges exactly.
+- Fixed sites beyond the two known ones: `kalshi_liquid` read as True when the Kalshi column was NaN (display
+  only), `games` would have crashed on `int(NaN)`, a NaN role would have vanished from the role split (`groupby`
+  drops NaN keys) — roles now default to "Unknown"; parlay legs read role / weak spot / books / Kalshi flags safely;
+  CLV role split likewise. Raw `.get` remains only on JSON and API dicts, where None is the missing value.
+- `test_nan_safety.py` (no pytest needed): helper semantics; the Edge Board rule and the re-scorer on frames where
+  one week lacks the weak-spot and Kalshi columns, asserting edges(concat) = edges(A) + edges(B) = an independent
+  mask count; NaN in a gate column drops exactly that row; parlay leg pool with NaN fields. `--slow` runs
+  results.main() twice on the real slates, once with the weak-spot column removed from the first slate, and asserts
+  identical graded-player and bet counts per week. The workflow runs the fast tests before every projection run.

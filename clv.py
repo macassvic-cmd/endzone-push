@@ -126,6 +126,7 @@ def aggregate(rows):
         return dict(n=len(g), avg_clv=round(sum(r["clv"] for r in g) / len(g), 4) if g else None,
                     beat_close=round(sum(r["beat_close"] for r in g) / len(g), 3) if g else None)
     out = agg(rows)
-    out["by_role"] = {k: agg([r for r in rows if r.get("role") == k]) for k in sorted({r.get("role") or "Unknown" for r in rows})}
+    role = lambda r: r.get("role") if isinstance(r.get("role"), str) and r.get("role") else "Unknown"
+    out["by_role"] = {k: agg([r for r in rows if role(r) == k]) for k in sorted({role(r) for r in rows})}
     out["by_market"] = {k: agg([r for r in rows if r["market"] == k]) for k in sorted({r["market"] for r in rows})}
     return out

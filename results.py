@@ -1,6 +1,7 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
 import glob, json, os, numpy as np, pandas as pd
 import clv as C, parlay as PL, blend as BL
+from nansafe import val, flag, text, num, isnan
 
 CAL_EDGES = [i / 100 for i in range(0, 75, 5)] + [1.0]     # 0–5, 5–10, …, 65–70, 70+
 CAL_MIN_N = 10
@@ -64,16 +65,16 @@ def rescore_edges(allp, models):
         coef = BL.coef_for(models, mk)
         d["blend"] = BL.predict(coef, d[pcol].values, d[kcol].values)
         for _, r in d.iterrows():
-            if (isinstance(r.get("weak_spot"), str) and r.get("weak_spot")) or (r.get(pre + "nbooks") or 0) < MIN_BOOKS or pd.isna(r.get(pre + "med")):
+            if text(r, "weak_spot") or num(r, pre + "nbooks", 0) < MIN_BOOKS or isnan(val(r, pre + "med")):
                 continue
             ev, ev_med = float(r.blend) * O.decimal(r[pre + "best"]) - 1, float(r.blend) * O.decimal(r[pre + "med"]) - 1
             if ev < MIN_EV or ev_med < MIN_EV:
                 continue
             won = bool(r[ycol]); dec = O.decimal(r[pre + "best"])
-            out.append(dict(season=int(r.season), week=int(r.week), bet=f"{r['name']} {lbl}", price=int(r[pre + "best"]), book=r.get(pre + "book"),
+            out.append(dict(season=int(r.season), week=int(r.week), bet=f"{r['name']} {lbl}", price=int(r[pre + "best"]), book=val(r, pre + "book"),
                             ev=round(ev, 4), ev_med=round(ev_med, 4), blend_p=round(float(r.blend), 4), model_p=round(float(r[pcol]), 4), mkt_p=round(float(r[kcol]), 4),
-                            won=won, profit=round(dec - 1 if won else -1.0, 3), role=r.get("role", "Unknown"), market=mk,
-                            longshot=int(r[pre + "best"]) >= 1000, backfill_price=(r.get("backfill_price") is True) or (r.get("backfill_price") == True and not pd.isna(r.get("backfill_price"))), fitted=coef is not None))
+                            won=won, profit=round(dec - 1 if won else -1.0, 3), role=text(r, "role") or "Unknown", market=mk,
+                            longshot=int(r[pre + "best"]) >= 1000, backfill_price=flag(r, "backfill_price"), fitted=coef is not None))
     return out
 
 
@@ -158,7 +159,7 @@ def main():
             if e.get("market") != "yds" or (d["week"], e["pid"], e.get("kind")) not in ymap: continue
             won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
-                             model_p=e.get("model_p"), mkt_p=e.get("mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=e.get("role", "Unknown"), market="yds",
+                             model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=text(e, "role") or "Unknown", market="yds",
                              longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
 
     # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
@@ -186,7 +187,7 @@ def main():
         d = json.load(open(fn))
         if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
         for r in d.get("yards", []):
-            if r.get("main_line") is None or r.get("main_mkt_p") is None or r.get("main_p") is None: continue
+            if isnan(val(r, "main_line")) or isnan(val(r, "main_mkt_p")) or isnan(val(r, "main_p")): continue
             y = ymap.get((d["week"], r["pid"], r["kind"]))
             if y is None or y == float(r["main_line"]): continue              # no touches (books void) or a push
             yrows.append(dict(season=d["season"], week=d["week"], kind=r["kind"], pid=r["pid"], line=float(r["main_line"]), p_yds=float(r["main_p"]),
@@ -278,6 +279,7 @@ def main():
         lp = allp[(allp.season == last["season"]) & (allp.week == last["week"])].nlargest(40, "p_any")
         detail = lp[["name", "team", "pos", "p_any", "hit", "p_first", "first_hit", "p_2plus", "two_hit"]].to_dict("records")
     b = pd.DataFrame(bets)
+    if len(b): b["role"] = b["role"].apply(lambda v: v if isinstance(v, str) and v else "Unknown")
 
     def tally(g):
         return dict(n=int(len(g)), won=int(g.won.sum()) if len(g) else 0,
