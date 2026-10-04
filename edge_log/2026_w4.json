@@ -2086,5 +2086,23 @@
 "model_p": 0.6671,
 "ev": 0.1238,
 "ev_med": 0.109
+},
+"00-0035891|first": {
+"pid": "00-0035891",
+"bet": "Cody White First TD",
+"market": "first",
+"team": "LV",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261004T1943Z",
+"best": 3500,
+"book": "DraftKings",
+"med": 3500,
+"mkt_p": 0.0212,
+"blend_p": 0.0295,
+"model_p": 0.037766666666666664,
+"ev": 0.0612,
+"ev_med": 0.0612
 }
 }
