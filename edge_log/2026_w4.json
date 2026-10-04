@@ -2104,5 +2104,41 @@
 "model_p": 0.037766666666666664,
 "ev": 0.0612,
 "ev_med": 0.0612
+},
+"00-0039407|any": {
+"pid": "00-0039407",
+"bet": "Dylan Laube Anytime TD",
+"market": "any",
+"team": "LV",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261004T1951Z",
+"best": 2800,
+"book": "DraftKings",
+"med": 2750,
+"mkt_p": 0.0292,
+"blend_p": 0.0375,
+"model_p": 0.04591666666666667,
+"ev": 0.0889,
+"ev_med": 0.0701
+},
+"00-0033881|any": {
+"pid": "00-0033881",
+"bet": "Evan Engram Anytime TD",
+"market": "any",
+"team": "DEN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261004T1951Z",
+"best": 519,
+"book": "Kalshi",
+"med": 500,
+"mkt_p": 0.1457,
+"blend_p": 0.1772,
+"model_p": 0.20863333333333334,
+"ev": 0.0967,
+"ev_med": 0.063
 }
 }
