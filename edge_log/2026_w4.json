@@ -2140,5 +2140,23 @@
 "model_p": 0.20863333333333334,
 "ev": 0.0967,
 "ev_med": 0.063
+},
+"00-0037005|yds|rec|13.5": {
+"pid": "00-0037005",
+"bet": "Tommy Tremble Over 13.5 rec yds",
+"market": "yds",
+"team": "CAR",
+"role": "Starter",
+"kind": "rec",
+"line": 13.5,
+"flagged": "20261004T2314Z",
+"best": -113,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.5011,
+"blend_p": 0.5734,
+"model_p": 0.6458,
+"ev": 0.0809,
+"ev_med": 0.0809
 }
 }
