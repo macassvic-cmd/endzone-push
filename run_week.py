@@ -344,6 +344,9 @@ if edges and not os.environ.get("ODDS_MOCK"):
     print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
 print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
+if not os.environ.get("ODDS_MOCK"):
+    _pstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+    print("paper parlays newly logged:", PL.log_paper(_pl["modes"], season, week, _pstamp))
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),

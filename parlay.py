@@ -103,6 +103,26 @@ def build(players):
                 rules=dict(min_ev=MIN_EV, min_books=MIN_BOOKS, kelly=KELLY_FRACTION, max_stake=MAX_STAKE, top_paper=TOP_PAPER))
 
 
+LOG_DIR = "parlay_log"
+
+
+def log_paper(modes, season, week, stamp):
+    """Freeze each mode's paper parlays the first time they exist in a week (parlay_log/<season>_w<week>.json), so later
+       runs that rebuild the slate (games kicked off, prices moved) cannot lose or replace them. results.py grades from
+       this log. Returns the modes newly logged."""
+    import json, os
+    os.makedirs(LOG_DIR, exist_ok=True)
+    fn = f"{LOG_DIR}/{season}_w{week}.json"
+    log = json.load(open(fn)) if os.path.exists(fn) else {}
+    new = []
+    for mode, v in modes.items():
+        paper = [c for c in v.get("parlays", []) if c.get("paper")]
+        if mode in log or not paper: continue
+        log[mode] = dict(flagged=stamp, parlays=paper); new.append(mode)
+    if new: json.dump(log, open(fn, "w"), indent=0)
+    return new
+
+
 def grade(parlays, two_hit):
     """two_hit: pid -> bool (scored 2+). Returns graded parlays and leg-level tallies."""
     graded, legs_n, legs_hit, legs_p = [], 0, 0, 0.0

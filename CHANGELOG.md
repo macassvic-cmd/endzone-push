@@ -640,3 +640,52 @@ parlay.py, clv.py, yards and odds code:
   mask count; NaN in a gate column drops exactly that row; parlay leg pool with NaN fields. `--slow` runs
   results.main() twice on the real slates, once with the weak-spot column removed from the first slate, and asserts
   identical graded-player and bet counts per week. The workflow runs the fast tests before every projection run.
+
+## 2026-10-08 — Week 4 review: parlays paper-traded in both modes, Kalshi placeholder quotes excluded, confirmation filter tested
+
+**Results tab for week 4** — confirmed present in results.json and rendered: yards head-to-head (273 main lines,
+model Brier 0.2549 vs book 0.2524 vs 50/50 0.2495; our median closer than the line on 127 of 273, 47%), market
+Brier by week (week 4 n=360 anytime), CLV (127 flagged edges, +0.22 pts average, 57% beat the close).
+
+**Parlays.** Only "best value" was being paper-traded, and only by accident of timing: results.py graded the paper
+flags from the slate's *final* state, but every later run rebuilds the parlays (games kicked off, prices moved), so
+the Thursday "most likely" picks were overwritten by Monday's single-game pool (10 legs from one game, zero
+parlays) and the Saturday value parlay replaced Thursday's. Fix: `parlay_log/<season>_w<week>.json` freezes each
+mode's top-3 paper parlays the first time they exist in a week (run_week.py, committed by the workflow) and
+results.py grades from that log. Week 4's first-flag parlays were recovered from git history (the Oct 1 23:07 UTC
+slate): likely 3 (Gibbs + Henry / Walker / McCaffrey at Kalshi, +908 to +1041), value 3 (Boston + Gesicki + Allen
+(+ Rice / Warren), all Kalshi longshots). The Saturday-built Hutchinson + Wilson value parlay that was graded
+before is no longer in the record; it was a rebuild, not the first flag. Graded: likely 0–3 (−3.0u, expected −1.2u), value 0–3 (−3.0u, expected +2.9u).
+
+**Kalshi placeholder quotes.** Hutchinson's 2+ TD at +4893 was a resting 2c ask with a 1c bid, $489 at the ask, 1,114
+contracts of all-time volume and nothing traded in 24 hours: a market-maker placeholder that the $100-at-ask rule
+let through. `kalshi.is_liquid` now also requires an ask of at least 4c (at 2c the 1c tick is half the price), a bid
+within 2c of the ask, and some trading (24-hour volume, or 100+ contracts all-time). On week 4's quotes: Hutchinson
+and Gesicki (4c/2c, no 24h volume) become reference-only, Wilson (5c/4c, 431 traded) stays liquid. Value-mode legs
+still need Starter role and 2+ books or a liquid Kalshi quote.
+
+**Confirmation filter (tested on saved pulls, not adopted).** For every logged edge of weeks 3–4 (164 graded), the
+no-vig median-book probability was re-priced from the week's first saved pull and from the pull at flag time.
+Weeks 1–2 have one pull (the OddsPapi closing backfill) and no flag time, so they carry no movement. The filter
+cannot be evaluated yet: 59 edges were flagged on the first pull itself (movement is zero by construction), 44 had
+no price at one end (2+ TD and yards appear only once SharpAPI / Kalshi quote them), and only 11 moved by a point
+or more:
+
+| Group | n | Record | Units | Expected | CLV | Blend Brier |
+|---|---|---|---|---|---|---|
+| All logged edges | 164 | 23–141 | +31.2 | +55.9 | +0.18 (n 49) | 0.0816 |
+| … shorter than +1000 | 59 | 18–41 | −2.3 | +9.4 | +0.12 (n 18) | 0.1498 |
+| Moved toward us (≥ +1 pt) | 6 | 1–5 | −2.0 | +1.3 | 0.00 (n 6) | 0.1050 |
+| Moved against us (≤ −1 pt) | 5 | 2–3 | +13.5 | +2.3 | +0.25 (n 4) | 0.2115 |
+| Within 1 pt or flagged on the first pull | 109 | 15–94 | +54.3 | +36.5 | +0.19 (n 38) | 0.0857 |
+| No movement measurable | 44 | 5–39 | −34.5 | +15.9 | — | 0.0535 |
+
+By market, logged edges: anytime 9–72 (+22.5u, −7.0u under +1000), first TD 1–39 (+27.0u on one +5600 hit), 2+ TD
+0–23 (−23.0u, all Kalshi longshots), yards 13–7 (+4.7u). Verdict: no evidence either way on confirmation; the
+sample that moved is 11 edges. Because edges are almost always flagged on the first priced pull, a usable version
+would compare the flag pull to the *closing* pull, which is what CLV already measures (+0.18 pts, 57% beat the
+close over 49 edges). Nothing on the Edge Board changed. `confirm_filter.py` reruns the study.
+
+**Model vs books Brier, season to date (4 weeks):** anytime TD model 0.1272 vs books 0.1264 (50/50 0.1260,
+n 1,310); first TD 0.0390 vs 0.0387 (n 1,307); 2+ TD 0.0531 vs 0.0524 (n 230, one week); yards 0.2549 vs 0.2524
+(n 273, one week). The books lead every market; the 50/50 blend edges the books only on anytime TD.

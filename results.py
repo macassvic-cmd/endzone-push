@@ -137,7 +137,10 @@ def main():
                                 rows=top[["pid", "name", "team", "pos", "p_any", "hit"]].round(4).to_dict("records")))
         top15_frames.append(top[["pid", "name", "team", "pos", "p_any", "hit", "season", "week"]])
         th = {r.pid: bool(r.two_hit) for r in pl.itertuples()}
-        for mode, v in d.get("parlays", {}).get("modes", {}).items():
+        plog_fn = f"{PL.LOG_DIR}/{d['season']}_w{d['week']}.json"      # paper parlays frozen at first flag (both modes); slate as fallback
+        plog = json.load(open(plog_fn)) if os.path.exists(plog_fn) else None
+        modes_src = {m: {"parlays": v["parlays"]} for m, v in plog.items()} if plog else d.get("parlays", {}).get("modes", {})
+        for mode, v in modes_src.items():
             paper = [c for c in v.get("parlays", []) if c.get("paper")]
             if paper and all(any(l["team"] == t for t in set(pl.team)) for c in paper for l in c["legs"]):
                 graded, legs = PL.grade(paper, th)

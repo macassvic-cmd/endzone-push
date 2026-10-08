@@ -14,6 +14,9 @@ SERIES = {"player_anytime_td": "KXNFLTD", "player_1st_td": "KXNFLFIRSTTD", "play
 TAKER_FEE, MAKER_FEE = 0.07, 0.0175
 BOOK = "Kalshi"
 MIN_DOLLARS_AT_ASK = 100.0      # Kalshi counts as a real price (best/median/EV) only with >= $100 available at the ask; else reference only
+MIN_ASK, MAX_SPREAD, MIN_VOLUME = 0.04, 0.02, 100.0   # and only when the ask is at least 4c (a 1c tick is half the price at 2c), the bid sits within 2c of it,
+                                                      # and the market has traded (24h volume, or 100+ contracts all-time): a resting 2c/1c quote with $489 at
+                                                      # the ask and no trades for a day (week 4, Hutchinson 2+ TD at +4893) is a market-maker placeholder
 # Kalshi event tickers end in <AWAY><HOME> with its own 3-letter codes; map the ones that differ from nflverse
 KALSHI_ABBR = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS", "ARZ": "ARI", "BLT": "BAL", "CLV": "CLE", "HST": "HOU", "SL": "LA"}
 CODES = sorted({v for v in TEAM_ABBR.values()} | set(KALSHI_ABBR), key=len, reverse=True)
@@ -100,6 +103,15 @@ def fetch_board():
     return board, raw
 
 
+def is_liquid(r):
+    """A Kalshi quote that can stand in for a book price: enough dollars at the ask, a real (not placeholder) price level,
+       a tight bid-ask, and some trading."""
+    ask, bid = r.get("yes_ask"), r.get("yes_bid")
+    if ask is None or r["dollars_at_ask"] < MIN_DOLLARS_AT_ASK or ask < MIN_ASK: return False
+    if bid is None or bid <= 0 or ask - bid > MAX_SPREAD + 1e-9: return False
+    return (r.get("volume_24h") or 0) > 0 or (r.get("volume") or 0) >= MIN_VOLUME
+
+
 def attach(events, board=None, min_volume=0.0):
     """Add Kalshi as a bookmaker on each Odds API event's props (same shape as the Odds API books).
        Price = fee-adjusted American price of the yes ask; description = player name. Outcomes with less than
@@ -116,7 +128,7 @@ def attach(events, board=None, min_volume=0.0):
         for key, rows in k.items():
             oc = [dict(name="Over" if key == "player_tds_over" else "Yes", description=r["player"], price=fee_adjusted_american(r["yes_ask"]),
                        **({"point": 1.5} if key == "player_tds_over" else {}),
-                       reference=r["dollars_at_ask"] < MIN_DOLLARS_AT_ASK,
+                       reference=not is_liquid(r),
                        kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_ask_size=r["ask_size"],
                        kalshi_dollars_at_ask=r["dollars_at_ask"], kalshi_volume=r["volume"], kalshi_volume_24h=r["volume_24h"],
                        kalshi_ticker=r["ticker"])
