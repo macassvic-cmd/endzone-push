@@ -24,6 +24,7 @@ def calib_buckets(p, y, min_n=CAL_MIN_N):
 
 
 BLEND_W, MIN_BOOKS, MIN_EV = 0.5, 2, 0.05            # same rules as run_week.py's Edge Board
+RULES_WEEK = 4                                        # first week graded under the current Edge Board rules (yards, 2+ TD, parlay log)
 
 
 def price_backfill(pl, season, week):
@@ -259,23 +260,35 @@ def main():
                     for i, r in agg.iterrows()]
 
     # ---- calibration, current season, 5-point buckets ----
-    cal, cal_season = [], None
+    # live weeks = graded from a slate built before the games with flag-time prices; backfill weeks were rebuilt after the fact
+    # (weeks 1-2, closing prices). RULES_WEEK = first week under the current Edge Board rules (yards, 2+ TD, parlays frozen).
+    backfill_weeks = {(w["season"], w["week"]) for w in weeks if w.get("backfill")}
+    live_from = min([w["week"] for w in weeks if not w.get("backfill")], default=None)
+    record_scopes = dict(live_from=live_from, rules_from=RULES_WEEK, backfill_weeks=sorted(wk for _, wk in backfill_weeks))
+    for b_ in bets: b_["backfill"] = (int(b_["season"]), int(b_["week"])) in backfill_weeks      # tag: rebuilt after the fact at closing prices, never in the live record
+    cal, cal_live, cal_season = [], [], None
     if len(allp):
         cal_season = int(allp.season.max())
         cur = allp[allp.season == cal_season]
         cal = calib_buckets(cur.p_any, cur.hit)
+        live = cur[~cur.week.isin([wk for sn, wk in backfill_weeks if sn == cal_season])]
+        cal_live = calib_buckets(live.p_any, live.hit) if len(live) else []
 
-    # season total across graded weeks (Brier weighted by players)
-    season_total = None
+    # season total across graded weeks (Brier weighted by players), all weeks and live weeks only
+    def _season_total(cur, label):
+        n_pl = sum(w["players"] for w in cur)
+        return dict(season=cur[0]["season"], weeks=len(cur), label=label, games=sum(w["games"] for w in cur), games_total=sum(w["games_total"] for w in cur),
+                    exp_scorers=round(sum(w["exp_scorers"] for w in cur), 1), act_scorers=sum(w["act_scorers"] for w in cur),
+                    top15_hit=sum(w["top15_hit"] for w in cur), top15_n=15 * len(cur), top15_exp=round(sum(w["top15_exp"] for w in cur), 1),
+                    strong_hit=sum(w["strong_hit"] for w in cur), strong_n=sum(w["strong_n"] for w in cur), strong_exp=round(sum(w["strong_exp"] for w in cur), 1),
+                    first_top3=sum(w["first_top3"] for w in cur), first_games=sum(w["first_games"] for w in cur), first_top3_exp=round(sum(w["first_top3_exp"] for w in cur), 1),
+                    brier=round(sum(w["brier"] * w["players"] for w in cur) / n_pl, 4) if n_pl else None)
+    season_total = season_total_live = None
     if weeks:
         cur = [w for w in weeks if w["season"] == max(x["season"] for x in weeks)]
-        n_pl = sum(w["players"] for w in cur)
-        season_total = dict(season=cur[0]["season"], weeks=len(cur), games=sum(w["games"] for w in cur), games_total=sum(w["games_total"] for w in cur),
-                            exp_scorers=round(sum(w["exp_scorers"] for w in cur), 1), act_scorers=sum(w["act_scorers"] for w in cur),
-                            top15_hit=sum(w["top15_hit"] for w in cur), top15_n=15 * len(cur), top15_exp=round(sum(w["top15_exp"] for w in cur), 1),
-                            strong_hit=sum(w["strong_hit"] for w in cur), strong_n=sum(w["strong_n"] for w in cur), strong_exp=round(sum(w["strong_exp"] for w in cur), 1),
-                            first_top3=sum(w["first_top3"] for w in cur), first_games=sum(w["first_games"] for w in cur), first_top3_exp=round(sum(w["first_top3_exp"] for w in cur), 1),
-                            brier=round(sum(w["brier"] * w["players"] for w in cur) / n_pl, 4) if n_pl else None)
+        season_total = _season_total(cur, "all weeks")
+        live = [w for w in cur if not w.get("backfill")]
+        season_total_live = _season_total(live, "live weeks only") if live else None
     last = weeks[-1] if weeks else None
     detail = []
     if last:
@@ -308,7 +321,7 @@ def main():
             m = allp[allp[pcol].notna()]
             if len(m):
                 market_brier[mk] = dict(**mb(m, mk), weeks=int(m[["season", "week"]].drop_duplicates().shape[0]),
-                                        by_week=[dict(season=int(sn), week=int(wk), **mb(g, mk)) for (sn, wk), g in m.groupby(["season", "week"])])
+                                        by_week=[dict(season=int(sn), week=int(wk), backfill=(int(sn), int(wk)) in backfill_weeks, **mb(g, mk)) for (sn, wk), g in m.groupby(["season", "week"])])
 
     # TD singles stay paper-only until the season-to-date 50/50 blend beats the market by at least 0.001 Brier (anytime TD)
     _a = market_brier.get("any")
@@ -356,7 +369,8 @@ def main():
     bets_cum = dict(all=agg(rows_bw), short=agg([r for r in rows_bw if not r["longshot"]]),
                     by_market={m: dict(all=agg([r for r in rows_bw if r["market"] == m]), short=agg([r for r in rows_bw if r["market"] == m and not r["longshot"]]))
                                for m in ("any", "first", "two", "yds", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
-    out = dict(weeks=weeks, season_total=season_total, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum, calibration=cal, cal_season=cal_season, last_week=detail, bets=bets,
+    out = dict(weeks=weeks, season_total=season_total, season_total_live=season_total_live, record_scopes=record_scopes, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum,
+               calibration=cal, calibration_live=cal_live, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
                top15_regulars=regulars,
                bet_summary=dict(**tally(b), by_role=by_role, by_market=by_market, by_price=by_price), market_brier=market_brier,

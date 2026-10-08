@@ -689,3 +689,25 @@ close over 49 edges). Nothing on the Edge Board changed. `confirm_filter.py` rer
 **Model vs books Brier, season to date (4 weeks):** anytime TD model 0.1272 vs books 0.1264 (50/50 0.1260,
 n 1,310); first TD 0.0390 vs 0.0387 (n 1,307); 2+ TD 0.0531 vs 0.0524 (n 230, one week); yards 0.2549 vs 0.2524
 (n 273, one week). The books lead every market; the 50/50 blend edges the books only on anytime TD.
+
+## 2026-10-08 — Bet record split: live weeks vs backfill
+
+Weeks 1–2 were never bet live: they were rebuilt after the fact at closing prices under the pre-fix rules that
+overrated bench players (7–147, −70.9u against +64.6u expected). They now sit outside the record:
+
+- Every week 1–2 bet carries a `backfill` tag (results.json `bets`, also the `backfill_price` flag from before).
+- **Priced Bets** headline, cumulative row, role split, ROI, expected units, parlay lines and the units chart cover
+  live weeks only (week 3 onward: 17–69, +91.2u, expected +60.1u), with a toggle "Since current rules (week 4+)"
+  (12–37, +15.8u). The scope is remembered in the browser. Weeks 1–2 live in a collapsed **Backfill** section
+  under the table with their own rows and cumulative line, excluded from everything above. The bet log is split
+  the same way (live log, collapsed backfill log).
+- **Market Brier, calibration and CLV** default to live weeks, with a checkbox to include the backfill weeks.
+  Live weeks only (659 priced anytime rows over weeks 3–4): model 0.1323 vs books 0.1329, 50/50 blend 0.1318 — the
+  model is a hair ahead of the books on the weeks it was actually live; all weeks: 0.1272 vs 0.1264. Season
+  figures are re-weighted from the per-week rows in the page. CLV rows exist only for live weeks (backfill has no
+  flag time), so that card only changes its label.
+- **Weekly scorecard** keeps every week (it measures projections, not bets) and gains a second total row, "live
+  weeks only" (2 weeks: Brier 0.131, top-15 hits 17 of 30), next to the all-weeks total.
+- results.json: `record_scopes` (live_from 3, rules_from 4, backfill_weeks [1, 2]), `season_total_live`,
+  `calibration_live`, and a `backfill` flag on each market-Brier week. "Under current rules" stays a re-score of
+  every week including backfill and is labelled as such.
