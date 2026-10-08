@@ -775,3 +775,7 @@ an eligible curve):
 yields 4.) Every flagged band is positive; the +150 to +300 band is the thin one (11–20, carried by prices). The
 research set beyond +300 lost 48 units against +37 expected: the model's tails are too fat on yards, same as on
 TDs, and the cap keeps them off the board.
+
+Note: the 23:42 UTC scheduled run on the previous commit failed in results.py (`clv.py`: the yard-rung closing path
+variable was shadowed by the curve probability, `os.path.basename(float)`); fixed in this commit, and that run
+committed nothing, so the board and record were untouched.
