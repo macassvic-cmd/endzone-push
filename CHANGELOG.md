@@ -742,3 +742,36 @@ alternate rungs**, 69 graded: **19–50, −7.2u against +17.4u expected** (aver
 kinds of rung make the board: short rungs where the model is far above the curve (Jeanty over 14.5 rush at −185,
 model 96% vs curve 77%: these mostly won) and tail rungs at +600 to +1700 where a 20% model sits over a 10% curve
 (these mostly lost). The frozen week-4 record is unchanged; this is a replay, not a re-score.
+
+## 2026-10-08 — Yard ladders, second pass: main lines kept, alt rungs capped at +300 and 2× the curve
+
+The first curve rule let the best-EV rung replace the main line and flagged tail rungs at +600 to +1700 that lost
+the way TD longshots do. Now two categories, both always evaluated:
+
+- **Main line** (`yds`): the original rule at the book's main line — 2+ books at that line, EV ≥ 5% at the median
+  and best book, model-anchored cross-book check — unchanged from the rule that went 6–1 in week 4.
+- **Alt rung** (`yds_alt`): every other rung against the pooled curve, flagged only at prices shorter than +300 and
+  when the model's P(≥ line) is at most 2× the curve's; best-EV rung per player and stat. Candidates that clear 5%
+  EV but fail the price or ratio test are written to `research/alt_rungs_<season>_w<week>.json` (first sighting,
+  committed by the workflow), never flagged; results.py grades them by price band (`research_alt`).
+- Yard edges are now graded from the edge log (first flag, flag-time prices, whichever rule flagged them) instead
+  of the slate's final edge list, so a rule change between runs cannot drop or replace them. Week 5's 14 alt-rung
+  edges flagged under the first rule stay in the log (no `rule` tag) and are graded next to the new rule's edges,
+  which carry `rule = "alt rung v2"`.
+
+**Week 4 replay** (`yard_alt_replay.py --week 4 --pull 20261003T1852Z`, Saturday pull, 610 player-stats, 249 with
+an eligible curve):
+
+| Category | n | Record | Units | Expected |
+|---|---|---|---|---|
+| Main line | 4 | 3–1 | +1.7 | +0.3 |
+| Alt rungs flagged | 48 | 26–22 | +13.0 | +9.3 |
+| … shorter than −150 | 9 | 7–2 | +1.8 | +2.1 |
+| … −150 to +150 | 8 | 8–0 | +6.9 | +2.6 |
+| … +150 to +300 | 31 | 11–20 | +4.2 | +4.6 |
+| Research (not flagged) | 173 | 18–155 | −48.3 | +37.1 |
+
+(The frozen week-4 record's 7 main-line yard bets, 6–1, came from the Sunday pulls; the Saturday pull alone
+yields 4.) Every flagged band is positive; the +150 to +300 band is the thin one (11–20, carried by prices). The
+research set beyond +300 lost 48 units against +37 expected: the model's tails are too fat on yards, same as on
+TDs, and the cap keeps them off the board.

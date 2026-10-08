@@ -279,7 +279,7 @@ vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
 
 # ---------- yard ladders: rushing / receiving / passing yards from the same sim games ----------
 YARD_KINDS = [k for k, ok in Y.SHIP.items() if ok]        # kinds that passed the backtest gate (yards.SHIP)
-yard_rows, yard_edges = [], []
+yard_rows, yard_edges, alt_research = [], [], []
 if YARD_KINDS:
     _yc = Y.prep(_cache["past"], season)
     _tv, _plv, _qv = Y.build(p, s2, season, week, active, qbo, depth, snaps3, rookies, _cache, _yc, wind=wind)
@@ -308,23 +308,41 @@ if YARD_KINDS:
                 cb = float(BL.predict(_coef.get(r["kind"]), [prob], [cp])[0])
                 obk, opr = max(offered, key=lambda x: O.decimal(x[1])); evc = cb * O.decimal(opr) - 1
                 rung.update(curve_p=round(cp, 4), curve_blend=round(cb, 4), offer=int(opr), offer_book=obk, ev_curve=round(evc, 4))
-                if curve["eligible"] and line >= Y.MIN_EDGE_LINE[r["kind"]] and evc >= 0.05 and not text(m, "weak_spot") and (best_edge is None or evc > best_edge["ev"]):
-                    best_edge = dict(bet=f"{_name[r['pid']]} Over {line:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=line, team=m["team"], model_p=round(prob, 4),
-                                     mkt_p=round(cp, 4), blend_p=round(cb, 4), best=int(opr), book=obk, ev=round(evc, 4), med=int(opr), ev_med=round(evc, 4),
-                                     nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False)
             rungs.append(rung)
         main = [g for g in rungs if g.get("two_sided")]
         main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
-        if best_edge:
-            best_edge["alt"] = main is None or best_edge["line"] != main["line"]           # an alternate rung, judged against the pooled curve
-            if best_edge["alt"]: best_edge["market"] = "yds_alt"; best_edge["bet"] += " (alt)"
+        if text(m, "weak_spot"): main_ok = False
+        else: main_ok = True
+        # (1) main-line category: the original rule at the book's main line (2+ books at that line, EV >= 5% at the median and best book)
+        if main_ok and main and main.get("nbooks", 0) >= 2 and main["line"] >= Y.MIN_EDGE_LINE[r["kind"]] and main.get("ev", -1) >= 0.05 and main.get("ev_med", -1) >= 0.05:
+            yard_edges.append(dict(bet=f"{_name[r['pid']]} Over {main['line']:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=main["line"], team=m["team"],
+                                   model_p=main["p"], mkt_p=main["mkt_p"], blend_p=main["blend"], best=int(main["best"]), book=main["book"], ev=main["ev"], med=int(main["med"]), ev_med=main["ev_med"],
+                                   nbooks=int(main["nbooks"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=False, rule="main line"))
+        # (2) alt-rung category: every other rung against the pooled curve; flagged only at prices shorter than +300 with model <= 2x curve, the rest logged for research
+        best_alt = None
+        for g in rungs:
+            if g.get("ev_curve") is None or (main and g["line"] == main["line"]): continue
+            if not (curve and curve["eligible"]) or g["line"] < Y.MIN_EDGE_LINE[r["kind"]] or g["ev_curve"] < 0.05 or not main_ok: continue
+            cand = dict(bet=f"{_name[r['pid']]} Over {g['line']:g} {r['kind']} yds (alt)", pid=r["pid"], market="yds_alt", kind=r["kind"], line=g["line"], team=m["team"], model_p=g["p"],
+                        mkt_p=g["curve_p"], blend_p=g["curve_blend"], best=int(g["offer"]), book=g["offer_book"], ev=g["ev_curve"], med=int(g["offer"]), ev_med=g["ev_curve"],
+                        nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=True, rule=Y.ALT_RULE)
+            reasons = [x for x, bad in (("price", g["offer"] >= Y.ALT_MAX_PRICE), ("ratio", g["p"] > Y.ALT_MAX_RATIO * g["curve_p"])) if bad]
+            if reasons: alt_research.append(dict(cand, reasons=reasons)); continue
+            if best_alt is None or g["ev_curve"] > best_alt["ev"]: best_alt = cand
+        if best_alt: yard_edges.append(best_alt)
+        best_edge = None
         yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=val(m, "pos"), role=val(m, "role", "Unknown"), kind=r["kind"], mean=round(r["mean"], 1),
                               median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
                               main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot"),
                               curve_books=curve["books"] if curve else [], curve_rungs=curve["n_rungs"] if curve else 0, curve_ok=bool(curve and curve["eligible"])))
-        if best_edge: yard_edges.append(best_edge)
     print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {sum(1 for r in yard_rows if r['curve_ok'])} with a market curve, "
-          f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if e.get('alt'))} alt rungs)")
+          f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if not e.get('alt'))} main line, {sum(1 for e in yard_edges if e.get('alt'))} alt rungs); {len(alt_research)} alt candidates logged for research")
+    if alt_research and not os.environ.get("ODDS_MOCK"):
+        os.makedirs("research", exist_ok=True); _rfn = f"research/alt_rungs_{season}_w{week}.json"
+        _rlog = json.load(open(_rfn)) if os.path.exists(_rfn) else {}
+        _rstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+        for c in alt_research: _rlog.setdefault(f"{c['pid']}|{c['kind']}|{c['line']}", dict(c, flagged=_rstamp))   # first sighting kept
+        json.dump(_rlog, open(_rfn, "w"), indent=0)
 
 # ---------- sim draws for the slip pricer: N sim games per player, every stat from the same game-environment draw ----------
 import slips as SL

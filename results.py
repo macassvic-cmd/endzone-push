@@ -1,5 +1,5 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
-import glob, json, os, numpy as np, pandas as pd
+import glob, json, os, re, numpy as np, pandas as pd
 import clv as C, parlay as PL, blend as BL
 from nansafe import val, flag, text, num, isnan
 
@@ -155,16 +155,39 @@ def main():
         print(f"  blend {mk}: coef {m['coef']} n {m['n']} | Brier model {m['brier']['model']} market {m['brier']['market']} 50/50 {m['brier']['half']} fitted {m['brier']['fitted']}"
               + (f" | leave-one-week-out: fitted {m['loo']['fitted']} 50/50 {m['loo']['half']} market {m['loo']['market']} model {m['loo']['model']}" if m.get("loo") else ""))
     bets = rescore_edges(allp, models)
-    # yard edges come straight from each slate's edge list (flag-time prices), graded on actual yards
+    # yard edges are graded from the edge log (first flag, flag-time prices; both the main-line and alt-rung categories, whichever
+    # rule flagged them), so a later run that changes the rule cannot drop them; the slate's edge list is the fallback
+    def yard_edge_source(d):
+        fn = f"{C.EDGE_DIR}/{d['season']}_w{d['week']}.json"
+        if os.path.exists(fn):
+            log = json.load(open(fn)); rows = [v for v in log.values() if v.get("market") in ("yds", "yds_alt")]
+            if rows: return rows
+        return [e for e in d.get("edges", []) if e.get("market") in ("yds", "yds_alt")]
     for fn in sorted(glob.glob("slate_*_w*.json")):
         d = json.load(open(fn))
         if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
-        for e in d.get("edges", []):
-            if e.get("market") not in ("yds", "yds_alt") or (d["week"], e["pid"], e.get("kind")) not in ymap: continue
+        for e in yard_edge_source(d):
+            if (d["week"], e["pid"], e.get("kind")) not in ymap: continue
             won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
                              model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=text(e, "role") or "Unknown", market=e["market"],
-                             longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
+                             longshot=e["best"] >= 1000, backfill_price=False, fitted=False, rule=e.get("rule")))
+    # research: alt-rung candidates that failed the price / ratio filters, graded by price band (never bets)
+    research = []
+    for fn in sorted(glob.glob("research/alt_rungs_*_w*.json")):
+        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
+        if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+        for c in json.load(open(fn)).values():
+            y = ymap.get((wk, c["pid"], c["kind"]))
+            if y is None: continue
+            dec = 1 + (c["best"] / 100 if c["best"] > 0 else 100 / -c["best"]); won = y >= float(c["line"])
+            research.append(dict(week=wk, price=c["best"], won=won, profit=dec - 1 if won else -1.0, ev=c["ev"], reasons=c.get("reasons", [])))
+    def band(pr): return "shorter than -150" if pr <= -150 else "-150 to +150" if pr < 150 else "+150 to +300" if pr < 300 else "longer than +300"
+    research_alt = None
+    if research:
+        rd = pd.DataFrame(research); rd["band"] = rd.price.apply(band)
+        t = lambda g: dict(n=int(len(g)), won=int(g.won.sum()), units=round(float(g.profit.sum()), 2), expected=round(float(g.ev.sum()), 2))
+        research_alt = dict(all=t(rd), by_band={k: t(g) for k, g in rd.groupby("band")}, by_week={int(k): t(g) for k, g in rd.groupby("week")})
 
     # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
     #      then and never recomputed; "under current rules" is a separate re-score of every week with today's rule and blend ----
@@ -379,7 +402,7 @@ def main():
                backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
                actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
-               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt)
+               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")

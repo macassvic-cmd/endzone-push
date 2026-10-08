@@ -28,7 +28,7 @@ def log_edges(edges, season, week, stamp):
             continue
         log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
                         flagged=stamp, best=e["best"], book=e["book"], med=e["med"], mkt_p=e["mkt_p"],
-                        blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"])
+                        blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"], rule=e.get("rule"))
         n += 1
     json.dump(log, open(fn, "w"), indent=0)
     return n
@@ -94,9 +94,9 @@ def closing_summary(season, week, log=None):
             _nm = e["bet"].split(" Over ")[0]
             ps = YP.price_rung(yb, yh, e["kind"], _nm, float(e["line"]))
             if not ps:                                                       # alt rung not quoted at the close: the pooled curve at that line
-                cp = YP.curve_at(YP.market_curve(yb, yh, e["kind"], _nm), float(e["line"]))
-                if cp is None: continue
-                ps = dict(best=None, book="curve", median=None, market_p=cp)
+                cpv = YP.curve_at(YP.market_curve(yb, yh, e["kind"], _nm), float(e["line"]))
+                if cpv is None: continue
+                ps = dict(best=None, book="curve", median=None, market_p=cpv)
             e["close_pull"] = os.path.basename(cp); e["close_best"] = ps["best"]; e["close_book"] = ps["book"]; e["close_med"] = ps["median"]
             e["close_mkt_p"] = round(ps["market_p"], 4); e["clv"] = round(ps["market_p"] - e["mkt_p"], 4); e["beat_close"] = ps["market_p"] > e["mkt_p"]
             continue

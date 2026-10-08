@@ -39,6 +39,9 @@ VOL_PRIOR = {('rec', 'QB', 1): 0.001, ('rec', 'QB', 2): 0.0, ('rec', 'RB', 1): 0
 VOL_QB_PRIOR = (0.05, 0.04)                   # QB1 carries share = a + b * designed runs per game
 DEFAULT_LADDER = {"rush": [25, 40, 50, 60, 75, 100], "rec": [25, 40, 50, 60, 75, 100], "pass": [200, 225, 250, 275, 300]}
 MIN_EDGE_LINE = {"rush": 10, "rec": 10, "pass": 100}   # rungs below this are shown on the ladder but never flagged as edges
+ALT_MAX_PRICE, ALT_MAX_RATIO = 300, 2.0                # alt-rung edges: price shorter than +300 and model P <= 2x the market curve (tails are overconfident);
+                                                       # candidates outside that are logged for research (research/alt_rungs_<season>_w<week>.json), not flagged
+ALT_RULE = "alt rung v2: curve-judged, price < +300, model <= 2x curve"
 DIST = "gamma"                                # "normal" (clipped) or "gamma": chosen by the backtest (gamma)
 SHIP = {"rush": True, "rec": True, "pass": True}  # per-kind backtest gate (yards_backtest.py); False keeps a kind off the page and board
 
