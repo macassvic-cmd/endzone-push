@@ -89,6 +89,104 @@ def price_rung(board, hold, kind, player, line, model_p=None):
     return dict(best=int(best), book=best_bk, median=med, n_books=len(overs), market_p=float(np.median(fair)), two_sided=any("under" in c for c in books.values()))
 
 
+MIN_CURVE_BOOKS, MIN_CURVE_RUNGS = 2, 4      # a market curve counts when 2+ books contribute, or one book posts 4+ rungs
+CROSS_BAND, MODEL_BAND_CURVE = 0.30, 0.35     # a quote more than 30 pts from the other books' curve at that line (35 from the model when no other
+                                              # book covers it) is a bad row: SharpAPI carries DraftKings alternates like "Over 14.5 rec yds +2200"
+
+
+def book_points(board, hold, kind, player):
+    """Every quoted Over for this player and stat after the sanity filters: [(line, book, no-vig P(over), price)].
+       Two-sided rungs are de-vigged against their own Under; one-sided alternates against the book's main-line hold."""
+    nn = norm_name(player); pts = []
+    for (k, n, line), books in board.items():
+        if k != kind or n != nn: continue
+        for bk, c in books.items():
+            if "over" not in c: continue
+            if "under" in c:
+                po, pu = implied(c["over"]), implied(c["under"]); p = po / (po + pu)
+            else:
+                p = implied(c["over"]) / hold.get((kind, bk), 1.06)
+            pts.append((float(line), bk, float(min(max(p, 0.001), 0.999)), int(c["over"])))
+    return pts
+
+
+def _pav_decreasing(xs, ys):
+    """Pool-adjacent-violators: the closest non-increasing sequence to ys (in order of xs)."""
+    blocks = [[y, 1] for y in ys]
+    i = 0
+    while i < len(blocks) - 1:
+        if blocks[i][0] < blocks[i + 1][0] - 1e-12:          # a later line more likely than an earlier one: pool
+            a, b = blocks[i], blocks[i + 1]
+            blocks[i] = [(a[0] * a[1] + b[0] * b[1]) / (a[1] + b[1]), a[1] + b[1]]; del blocks[i + 1]
+            i = max(i - 1, 0)
+        else:
+            i += 1
+    out = []
+    for v, n in blocks: out += [v] * n
+    return out
+
+
+def _book_curve(pts_bk):
+    xs = sorted({l for l, *_ in pts_bk}); by = {}
+    for l, _, p, _ in pts_bk: by.setdefault(l, []).append(p)
+    return xs, _pav_decreasing(xs, [float(np.mean(by[l])) for l in xs])
+
+
+def market_curve(board, hold, kind, player, model=None):
+    """Smooth monotone P(over line) from both books' main line and every alternate rung, pooled. Each quote is first
+       checked against the other books' own monotone curve at that line (CROSS_BAND), or against the model knots
+       `model=(lines, probs)` when no other book covers the line (MODEL_BAND_CURVE); survivors are averaged per line,
+       made non-increasing (PAV) and joined linearly in log-odds. No extrapolation: curve_at() is None outside [lo, hi].
+       `eligible` = 2+ books or one book with 4+ rungs. `quotes` = {line: [(book, price, p)]} of the surviving quotes."""
+    pts = book_points(board, hold, kind, player)
+    if not pts: return None
+    by_book = {}
+    for q in pts: by_book.setdefault(q[1], []).append(q)
+    curves = {bk: _book_curve(v) for bk, v in by_book.items()}
+    kept, dropped = [], 0
+    for line, bk, p, price in pts:
+        refs = [interp_logit(*curves[o], line) for o in curves if o != bk]
+        refs = [r for r in refs if r is not None]
+        if refs:
+            ok = abs(p - float(np.mean(refs))) <= CROSS_BAND
+        elif model:
+            mp = interp_logit(model[0], model[1], line); ok = mp is None or abs(p - mp) <= MODEL_BAND_CURVE
+        else:
+            ok = True
+        if ok: kept.append((line, bk, p, price))
+        else: dropped += 1
+    if not kept: return None
+    by_line, per_book, quotes = {}, {}, {}
+    for line, bk, p, price in kept:
+        by_line.setdefault(line, []).append(p); per_book[bk] = per_book.get(bk, 0) + 1; quotes.setdefault(line, []).append((bk, price, round(p, 4)))
+    lines = sorted(by_line); probs = _pav_decreasing(lines, [float(np.mean(by_line[l])) for l in lines])
+    return dict(lines=lines, probs=[round(p, 4) for p in probs], books=sorted(per_book), per_book=per_book, n_rungs=len(lines), lo=lines[0], hi=lines[-1],
+                eligible=len(per_book) >= MIN_CURVE_BOOKS or max(per_book.values()) >= MIN_CURVE_RUNGS, quotes=quotes, dropped=dropped)
+
+
+def interp_logit(xs, ps, x):
+    """Linear interpolation in log-odds between knots; None outside the knots' range."""
+    if x < xs[0] - 1e-9 or x > xs[-1] + 1e-9: return None
+    lg = lambda p: np.log(min(max(p, 1e-4), 1 - 1e-4) / (1 - min(max(p, 1e-4), 1 - 1e-4)))
+    for i in range(len(xs) - 1):
+        if xs[i] - 1e-9 <= x <= xs[i + 1] + 1e-9:
+            if xs[i + 1] == xs[i]: return float(ps[i])
+            t = (x - xs[i]) / (xs[i + 1] - xs[i]); z = lg(ps[i]) + t * (lg(ps[i + 1]) - lg(ps[i]))
+            return float(1 / (1 + np.exp(-z)))
+    return float(ps[-1]) if abs(x - xs[-1]) <= 1e-9 else None
+
+
+def curve_at(curve, line):
+    if not curve: return None
+    return interp_logit(curve["lines"], curve["probs"], float(line))
+
+
+def offered_at(board, kind, player, line):
+    """[(book, Over price)] quoted at exactly this line (after the sanity filters)."""
+    books = board.get((kind, norm_name(player), float(line))) or {}
+    return [(bk, int(c["over"])) for bk, c in books.items() if "over" in c]
+
+
 def offered_lines(board, kind, player):
     """All lines the books offer for this player and kind."""
     nn = norm_name(player)

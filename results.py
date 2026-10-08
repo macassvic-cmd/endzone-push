@@ -160,10 +160,10 @@ def main():
         d = json.load(open(fn))
         if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
         for e in d.get("edges", []):
-            if e.get("market") != "yds" or (d["week"], e["pid"], e.get("kind")) not in ymap: continue
+            if e.get("market") not in ("yds", "yds_alt") or (d["week"], e["pid"], e.get("kind")) not in ymap: continue
             won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
             bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
-                             model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=text(e, "role") or "Unknown", market="yds",
+                             model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=text(e, "role") or "Unknown", market=e["market"],
                              longshot=e["best"] >= 1000, backfill_price=False, fitted=False))
 
     # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
@@ -365,10 +365,10 @@ def main():
         bets_by_week.append(dict(season=sn, week=wk, priced="closing" if all(r["closing"] for r in rs if r["market"] != "parlay") else "live" if not any(r["closing"] for r in rs) else "mixed",
                                  all=agg(rs), short=agg([r for r in rs if not r["longshot"]]),
                                  by_market={m: dict(all=agg([r for r in rs if r["market"] == m]), short=agg([r for r in rs if r["market"] == m and not r["longshot"]]))
-                                            for m in ("any", "first", "two", "yds", "parlay") if any(r["market"] == m for r in rs)}))
+                                            for m in ("any", "first", "two", "yds", "yds_alt", "parlay") if any(r["market"] == m for r in rs)}))
     bets_cum = dict(all=agg(rows_bw), short=agg([r for r in rows_bw if not r["longshot"]]),
                     by_market={m: dict(all=agg([r for r in rows_bw if r["market"] == m]), short=agg([r for r in rows_bw if r["market"] == m and not r["longshot"]]))
-                               for m in ("any", "first", "two", "yds", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
+                               for m in ("any", "first", "two", "yds", "yds_alt", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
     out = dict(weeks=weeks, season_total=season_total, season_total_live=season_total_live, record_scopes=record_scopes, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum,
                calibration=cal, calibration_live=cal_live, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),

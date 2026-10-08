@@ -711,3 +711,34 @@ overrated bench players (7–147, −70.9u against +64.6u expected). They now si
 - results.json: `record_scopes` (live_from 3, rules_from 4, backfill_weeks [1, 2]), `season_total_live`,
   `calibration_live`, and a `backfill` flag on each market-Brier week. "Under current rules" stays a re-score of
   every week including backfill and is labelled as such.
+
+## 2026-10-08 — Yard ladders: pooled market curve, every rung judged, alt-rung edges
+
+Why there were no yard edges: alternate rungs rarely share an exact line across DraftKings and FanDuel, so almost
+every rung failed the 2-book / median-book rule. Now (`yard_prices.market_curve`):
+
+- **Market curve per player and stat.** Both books' main line and every alternate rung, no-vig (two-sided rungs
+  against their own Under, one-sided alternates against the book's main-line hold), pooled: duplicate lines are
+  averaged, the sequence is made non-increasing (pool-adjacent-violators) and joined linearly in log-odds. No
+  extrapolation outside the lines the books priced. The curve counts when 2+ books contribute or one book posts
+  4+ rungs.
+- **Bad rows.** The replay first produced 142 "edges" at +1200 to +2200 with EV above +700%: SharpAPI's DraftKings
+  alternates include rows like "Over 14.5 rec yds +2200" (a line the book cannot mean) that the per-book monotone
+  filter misses when DK has no two-sided main line to anchor on. Each quote is now checked against the other
+  books' own monotone curve at that line (drop if more than 30 pts away), or against the model's ladder when no
+  other book covers the line (35 pts). On week 4's Saturday pull that drops 769 quotes; the surviving quotes are
+  the only ones a rung can be offered at.
+- **Rule.** Every offered rung: 50/50 (fitted when gated) blend of the model's P(≥ line) and the curve at that exact
+  line; edge if EV ≥ 5% at the offered price, the line is inside the priced range, the curve is eligible, line ≥ 10
+  (100 passing), no weak spot; best-EV rung per player and stat. A rung that is not the book's main line is tagged
+  "alt rung", carried as its own market (`yds_alt`) on the Edge Board, in the bets-by-week toggle, CLV (closed on the
+  curve when the rung is no longer quoted) and the Results record, graded separately from main-line yard edges.
+- **Yards tab** shows per rung: model / market-curve / blend %, offered price and book, EV; plus the curve's rung
+  count and books. Hover a rung for the long form.
+
+**Week 4 replay** (`yard_alt_replay.py --week 4 --pull 20261003T1852Z`, model P per rung from the week's slate
+interpolated in log-odds, graded on actual yards): 610 player-stats, 249 with an eligible curve, **80 edges, all
+alternate rungs**, 69 graded: **19–50, −7.2u against +17.4u expected** (average EV +25%, average price +577). Two
+kinds of rung make the board: short rungs where the model is far above the curve (Jeanty over 14.5 rush at −185,
+model 96% vs curve 77%: these mostly won) and tail rungs at +600 to +1700 where a 20% model sits over a 10% curve
+(these mostly lost). The frozen week-4 record is unchanged; this is a replay, not a re-score.

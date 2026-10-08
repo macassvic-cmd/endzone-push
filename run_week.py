@@ -292,6 +292,8 @@ if YARD_KINDS:
     for r in Y.summarize({k: v for k, v in _yd.items() if k[1] in YARD_KINDS}, _lines):
         if r["pid"] not in _meta: continue
         m = _meta[r["pid"]]; rungs = []; best_edge = None
+        _knots = sorted(((float(l), pr) for l, pr in r["ladder"].items()))
+        curve = YP.market_curve(_yb, _yh, r["kind"], _name[r["pid"]], model=([k[0] for k in _knots], [k[1] for k in _knots])) if _yb else None   # pooled DK + FD, bad rows cross-checked
         for line, prob in sorted(((float(l), pr) for l, pr in r["ladder"].items())):
             ps = YP.price_rung(_yb, _yh, r["kind"], _name[r["pid"]], line, model_p=prob) if _yb else None
             rung = dict(line=line, p=round(prob, 4), fair=int(M.fair_american(np.array([prob]))[0]))
@@ -300,18 +302,29 @@ if YARD_KINDS:
                 ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
                 rung.update(best=ps["best"], book=ps["book"], med=ps["median"], nbooks=ps["n_books"], mkt_p=round(ps["market_p"], 4), blend=round(blend, 4),
                             ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"])
-                if line >= Y.MIN_EDGE_LINE[r["kind"]] and ev >= 0.05 and ev_med >= 0.05 and ps["n_books"] >= 2 and not text(m, "weak_spot") and (best_edge is None or ev_med > best_edge["ev_med"]):
+            cp = YP.curve_at(curve, line)                                                    # market curve at this exact line (no extrapolation)
+            offered = [(bk, pr) for bk, pr, _ in (curve["quotes"].get(line, []) if curve else [])]   # only quotes that survived the cross-check
+            if cp is not None and offered:
+                cb = float(BL.predict(_coef.get(r["kind"]), [prob], [cp])[0])
+                obk, opr = max(offered, key=lambda x: O.decimal(x[1])); evc = cb * O.decimal(opr) - 1
+                rung.update(curve_p=round(cp, 4), curve_blend=round(cb, 4), offer=int(opr), offer_book=obk, ev_curve=round(evc, 4))
+                if curve["eligible"] and line >= Y.MIN_EDGE_LINE[r["kind"]] and evc >= 0.05 and not text(m, "weak_spot") and (best_edge is None or evc > best_edge["ev"]):
                     best_edge = dict(bet=f"{_name[r['pid']]} Over {line:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=line, team=m["team"], model_p=round(prob, 4),
-                                     mkt_p=round(ps["market_p"], 4), blend_p=round(blend, 4), best=int(ps["best"]), book=ps["book"], ev=round(ev, 4), med=int(ps["median"]),
-                                     ev_med=round(ev_med, 4), nbooks=int(ps["n_books"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False)
+                                     mkt_p=round(cp, 4), blend_p=round(cb, 4), best=int(opr), book=obk, ev=round(evc, 4), med=int(opr), ev_med=round(evc, 4),
+                                     nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False)
             rungs.append(rung)
         main = [g for g in rungs if g.get("two_sided")]
         main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
+        if best_edge:
+            best_edge["alt"] = main is None or best_edge["line"] != main["line"]           # an alternate rung, judged against the pooled curve
+            if best_edge["alt"]: best_edge["market"] = "yds_alt"; best_edge["bet"] += " (alt)"
         yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=val(m, "pos"), role=val(m, "role", "Unknown"), kind=r["kind"], mean=round(r["mean"], 1),
                               median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
-                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot")))
+                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot"),
+                              curve_books=curve["books"] if curve else [], curve_rungs=curve["n_rungs"] if curve else 0, curve_ok=bool(curve and curve["eligible"])))
         if best_edge: yard_edges.append(best_edge)
-    print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {len(yard_edges)} edges")
+    print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {sum(1 for r in yard_rows if r['curve_ok'])} with a market curve, "
+          f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if e.get('alt'))} alt rungs)")
 
 # ---------- sim draws for the slip pricer: N sim games per player, every stat from the same game-environment draw ----------
 import slips as SL

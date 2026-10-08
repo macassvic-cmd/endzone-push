@@ -23,7 +23,7 @@ def log_edges(edges, season, week, stamp):
         key = f"{e['pid']}|{e['market']}"
         if key in log:
             continue
-        if e["market"] == "yds": key = f"{e['pid']}|yds|{e.get('kind')}|{e.get('line')}"
+        if e["market"] in ("yds", "yds_alt"): key = f"{e['pid']}|yds|{e.get('kind')}|{e.get('line')}"
         if key in log:
             continue
         log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
@@ -85,14 +85,18 @@ def closing_summary(season, week, log=None):
         ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
         if not ev:
             continue
-        if e["market"] == "yds":
+        if e["market"] in ("yds", "yds_alt"):
             import yard_prices as YP
             before = [(st, fn) for st, fn in pulls(season, week) if st < ev["commence_time"].replace("-", "").replace(":", "")[:13]]
             if not before: continue
             cp = before[-1][1]; cev = _load(cp, cache)
             yb, yh = cache.setdefault(("yboard", cp), YP.ladder_board(cev))
-            ps = YP.price_rung(yb, yh, e["kind"], e["bet"].split(" Over ")[0], float(e["line"]))
-            if not ps: continue
+            _nm = e["bet"].split(" Over ")[0]
+            ps = YP.price_rung(yb, yh, e["kind"], _nm, float(e["line"]))
+            if not ps:                                                       # alt rung not quoted at the close: the pooled curve at that line
+                cp = YP.curve_at(YP.market_curve(yb, yh, e["kind"], _nm), float(e["line"]))
+                if cp is None: continue
+                ps = dict(best=None, book="curve", median=None, market_p=cp)
             e["close_pull"] = os.path.basename(cp); e["close_best"] = ps["best"]; e["close_book"] = ps["book"]; e["close_med"] = ps["median"]
             e["close_mkt_p"] = round(ps["market_p"], 4); e["clv"] = round(ps["market_p"] - e["mkt_p"], 4); e["beat_close"] = ps["market_p"] > e["mkt_p"]
             continue
