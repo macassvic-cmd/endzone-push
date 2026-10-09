@@ -183,6 +183,13 @@ def main():
             dec = 1 + (c["best"] / 100 if c["best"] > 0 else 100 / -c["best"]); won = y >= float(c["line"])
             research.append(dict(week=wk, price=c["best"], won=won, profit=dec - 1 if won else -1.0, ev=c["ev"], reasons=c.get("reasons", [])))
     def band(pr): return "shorter than -150" if pr <= -150 else "-150 to +150" if pr < 150 else "+150 to +300" if pr < 300 else "longer than +300"
+    # alt-rung edges by the rule that flagged them (week 5 carries both: the first curve rule, untagged, and "alt rung v2")
+    alt_rules = None
+    ab = [b_ for b_ in bets if b_.get("market") == "yds_alt"]
+    if ab:
+        ad = pd.DataFrame(ab); ad["rule"] = ad["rule"].apply(lambda v: v if isinstance(v, str) and v else "old rule (curve-judged, no cap)"); ad["band"] = ad.price.apply(band)
+        t2 = lambda g: dict(n=int(len(g)), won=int(g.won.sum()), units=round(float(g.profit.sum()), 2), expected=round(float(g.ev.sum()), 2))
+        alt_rules = {rule: dict(all=t2(g), by_band={k: t2(x) for k, x in g.groupby("band")}, by_week={int(k): t2(x) for k, x in g.groupby("week")}) for rule, g in ad.groupby("rule")}
     research_alt = None
     if research:
         rd = pd.DataFrame(research); rd["band"] = rd.price.apply(band)
@@ -402,7 +409,7 @@ def main():
                backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
                actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
-               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt)
+               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules)
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")

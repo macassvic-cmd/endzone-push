@@ -18,4 +18,5 @@ for name, fn in jobs.items():
         if name in ("pbp", "sched", "dc", "rosters"): raise
         if not os.path.exists(f"data/{name}.parquet"):
             import pandas as pd; pd.DataFrame(columns=["week", "gsis_id", "report_status"]).to_parquet(f"data/{name}.parquet")
-subprocess.run([sys.executable, "run_week.py", *sys.argv[1:]], check=True)
+if "--data-only" not in sys.argv:                      # CI refreshes data, smoke-tests results.py, then runs the week separately
+    subprocess.run([sys.executable, "run_week.py", *[a for a in sys.argv[1:] if a != "--data-only"]], check=True)

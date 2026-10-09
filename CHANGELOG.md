@@ -779,3 +779,20 @@ TDs, and the cap keeps them off the board.
 Note: the 23:42 UTC scheduled run on the previous commit failed in results.py (`clv.py`: the yard-rung closing path
 variable was shadowed by the curve probability, `os.path.basename(float)`); fixed in this commit, and that run
 committed nothing, so the board and record were untouched.
+
+## 2026-10-08 — Pre-registered rule for alt rungs, old-vs-v2 comparison, CI smoke step
+
+**Pre-registered before week 5 grades:** if v2 alt-rung edges in the +150 to +300 price band lose units in week 5,
+the alt-rung price cap tightens to +150 from week 6 on. (Week 4's replay had that band at 11–20 for +4.2u, carried
+by prices; the shorter bands were 7–2 and 8–0.)
+
+- Week 5 carries both alt-rung rules on the same games: the 14 edges flagged under the first curve rule (frozen in
+  the edge log, untagged) and the v2 edges (`rule = "alt rung v2"`). results.py grades them side by side
+  (`alt_rules`: n, record, units, expected, by week and by price band) and the Results tab shows the comparison in
+  an "Alt-rung rules · old vs v2" card under Yards vs book, with the research set (not flagged) underneath.
+- CI: the workflow now runs the NaN-safety tests, refreshes data (`refresh.py --data-only`), smoke-tests
+  `results.py` on the committed slates *before* any odds are pulled, then runs the week, grades, and publishes.
+  The publish step runs even when grading crashes (`if: always()`), so a finished board is never left unpublished,
+  while the job still fails loudly. The 23:42 UTC crash would have stopped at the smoke step with no odds spent.
+- NaN-safety audit, helper and tests: already in place since the audit commit (nansafe.py, rules.py,
+  test_nan_safety.py fast + `--slow` end to end); nothing further changed there.
