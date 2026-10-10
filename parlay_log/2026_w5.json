@@ -88,5 +88,136 @@
 }
 ],
 "source": "git 4fc7814 2026-10-06T21:39:55Z"
+},
+"likely": {
+"flagged": "20261010T1933Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_05_DET_ARI",
+"prob": 0.3206,
+"model_p": 0.3206,
+"mkt_p": 0.3224,
+"price": 132,
+"book": "BetRivers",
+"dec": 2.32,
+"ev": -0.2562,
+"fair": 212
+},
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_05_BUF_LA",
+"prob": 0.195,
+"model_p": 0.195,
+"mkt_p": 0.1759,
+"price": 394,
+"book": "Kalshi",
+"dec": 4.94,
+"ev": -0.0367,
+"fair": 413
+}
+],
+"n": 2,
+"prob": 0.06252,
+"fair": 1500,
+"offered": 1046,
+"dec": 11.46,
+"ev": -0.2835,
+"stake": 0.0,
+"hits_every": 16,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_05_DET_ARI",
+"prob": 0.3206,
+"model_p": 0.3206,
+"mkt_p": 0.3224,
+"price": 132,
+"book": "BetRivers",
+"dec": 2.32,
+"ev": -0.2562,
+"fair": 212
+},
+{
+"pid": "00-0038542",
+"name": "Bijan Robinson",
+"team": "ATL",
+"game_id": "2026_05_BAL_ATL",
+"prob": 0.1891,
+"model_p": 0.1891,
+"mkt_p": 0.2112,
+"price": 252,
+"book": "Kalshi",
+"dec": 3.52,
+"ev": -0.3344,
+"fair": 429
+}
+],
+"n": 2,
+"prob": 0.06063,
+"fair": 1549,
+"offered": 717,
+"dec": 8.17,
+"ev": -0.5049,
+"stake": 0.0,
+"hits_every": 16,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_05_DET_ARI",
+"prob": 0.3206,
+"model_p": 0.3206,
+"mkt_p": 0.3224,
+"price": 132,
+"book": "BetRivers",
+"dec": 2.32,
+"ev": -0.2562,
+"fair": 212
+},
+{
+"pid": "00-0036275",
+"name": "D'Andre Swift",
+"team": "CHI",
+"game_id": "2026_05_CHI_GB",
+"prob": 0.1523,
+"model_p": 0.1523,
+"mkt_p": 0.1677,
+"price": 482,
+"book": "Kalshi",
+"dec": 5.82,
+"ev": -0.1136,
+"fair": 557
+}
+],
+"n": 2,
+"prob": 0.04883,
+"fair": 1948,
+"offered": 1250,
+"dec": 13.5,
+"ev": -0.3407,
+"stake": 0.0,
+"hits_every": 20,
+"paper": true
+}
+]
 }
 }
