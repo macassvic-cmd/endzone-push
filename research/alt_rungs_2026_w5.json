@@ -1333,5 +1333,65 @@
 "price"
 ],
 "flagged": "20261010T1933Z"
+},
+"00-0040719|rush|44.5": {
+"bet": "Bhayshul Tuten Over 44.5 rush yds (alt)",
+"pid": "00-0040719",
+"market": "yds_alt",
+"kind": "rush",
+"line": 44.5,
+"team": "JAX",
+"model_p": 0.4479,
+"mkt_p": 0.0996,
+"blend_p": 0.2738,
+"best": 850,
+"book": "DraftKings",
+"ev": 1.6008,
+"med": 850,
+"ev_med": 1.6008,
+"nbooks": 1,
+"curve_rungs": 9,
+"games": 19,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"reasons": [
+"price",
+"ratio"
+],
+"flagged": "20261010T2014Z"
+},
+"00-0040719|rush|54.5": {
+"bet": "Bhayshul Tuten Over 54.5 rush yds (alt)",
+"pid": "00-0040719",
+"market": "yds_alt",
+"kind": "rush",
+"line": 54.5,
+"team": "JAX",
+"model_p": 0.3353,
+"mkt_p": 0.0412,
+"blend_p": 0.1883,
+"best": 2200,
+"book": "DraftKings",
+"ev": 3.3297,
+"med": 2200,
+"ev_med": 3.3297,
+"nbooks": 1,
+"curve_rungs": 9,
+"games": 19,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"reasons": [
+"price",
+"ratio"
+],
+"flagged": "20261010T2014Z"
 }
 }
