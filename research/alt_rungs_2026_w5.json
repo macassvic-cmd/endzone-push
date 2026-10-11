@@ -2673,5 +2673,63 @@
 "price"
 ],
 "flagged": "20261011T2023Z"
+},
+"00-0032392|rec|24.5": {
+"bet": "Austin Hooper Over 24.5 rec yds (alt)",
+"pid": "00-0032392",
+"market": "yds_alt",
+"kind": "rec",
+"line": 24.5,
+"team": "ATL",
+"model_p": 0.1985,
+"mkt_p": 0.1594,
+"blend_p": 0.179,
+"best": 490,
+"book": "FanDuel",
+"ev": 0.0559,
+"med": 490,
+"ev_med": 0.0559,
+"nbooks": 1,
+"curve_rungs": 7,
+"games": 16,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"reasons": [
+"price"
+],
+"flagged": "20261011T2343Z"
+},
+"00-0037741|rec|39.5": {
+"bet": "Jahan Dotson Over 39.5 rec yds (alt)",
+"pid": "00-0037741",
+"market": "yds_alt",
+"kind": "rec",
+"line": 39.5,
+"team": "ATL",
+"model_p": 0.312,
+"mkt_p": 0.2351,
+"blend_p": 0.2735,
+"best": 300,
+"book": "FanDuel",
+"ev": 0.0942,
+"med": 300,
+"ev_med": 0.0942,
+"nbooks": 1,
+"curve_rungs": 9,
+"games": 18,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"reasons": [
+"price"
+],
+"flagged": "20261011T2343Z"
 }
 }
