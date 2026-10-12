@@ -2553,5 +2553,24 @@
 "ev": 0.057,
 "ev_med": 0.057,
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+},
+"00-0036244|yds|rec|24.5": {
+"pid": "00-0036244",
+"bet": "Colby Parkinson Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261012T2209Z",
+"best": 162,
+"book": "FanDuel",
+"med": 162,
+"mkt_p": 0.3582,
+"blend_p": 0.423,
+"model_p": 0.4879,
+"ev": 0.1084,
+"ev_med": 0.1084,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
 }
 }
