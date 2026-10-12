@@ -796,3 +796,14 @@ by prices; the shorter bands were 7–2 and 8–0.)
   while the job still fails loudly. The 23:42 UTC crash would have stopped at the smoke step with no odds spent.
 - NaN-safety audit, helper and tests: already in place since the audit commit (nansafe.py, rules.py,
   test_nan_safety.py fast + `--slow` end to end); nothing further changed there.
+
+## 2026-10-12 — Pre-registered gates (written before the week-5 studies were run)
+
+- **Alt-rung cap test (+350 / +400).** The cap only rises above +300 if the incremental price band (+301 to +350 for a
+  +350 cap, +351 to +400 for +400) holds at least 30 bets across at least 3 weeks AND its actual units are at least
+  its expected units. Otherwise the cap stays at +300. Written before `alt_cap_study.py` was run on weeks 4–5.
+- **Passing-yard rungs** come back onto the Edge Board only when the passing model's Brier beats the books at the
+  main lines over at least 3 graded weeks combined (week 5 alone: model 0.2805 vs books 0.2499, our median closer on
+  34%). Until then they are hidden and logged to `research/pass_yds_<season>_w<week>.json`.
+- **Bench stake** goes back from 0.25u to 1u only after at least 100 bench bets with positive average CLV AND positive
+  units once the single biggest win is removed.
