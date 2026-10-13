@@ -1,0 +1,33 @@
+{
+"00-0033873|yds_alt|pass|274.5": {
+"bet": "Patrick Mahomes Over 274.5 pass yds (alt)",
+"pid": "00-0033873",
+"market": "yds_alt",
+"kind": "pass",
+"line": 274.5,
+"team": "KC",
+"model_p": 0.3537,
+"mkt_p": 0.2571,
+"blend_p": 0.3054,
+"best": 265,
+"book": "FanDuel",
+"ev": 0.1147,
+"med": 265,
+"ev_med": 0.1147,
+"nbooks": 2,
+"curve_rungs": 11,
+"games": 17,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.38,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261013T2017Z"
+}
+}
