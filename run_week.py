@@ -369,16 +369,27 @@ if YARD_KINDS:
 MIN_BOOKS, MIN_EV = RU.MIN_BOOKS, RU.MIN_EV
 edges = RU.td_edges(df)                                       # shared rule (rules.py), every field read NaN-safely
 edges += yard_edges
+# board rules (rules.py): passing-yard rungs hidden (research log), Rotational players over 2.5x the market blocked (research log),
+# Bench plays kept in their own section at 0.25u; the headline board is Starter + Rotational
+_parts = RU.split_board(edges)
+edges = _parts["main"] + _parts["bench"]
+print(f"board: {len(_parts['main'])} main, {len(_parts['bench'])} bench at {RU.BENCH_STAKE}u | hidden passing-yard rungs {len(_parts['hidden'])} | "
+      f"blocked rotational > {RU.MAX_RATIO_ROT}x {len(_parts['blocked'])}")
 clean = lambda d: d.replace({np.nan: None})
-if edges and not os.environ.get("ODDS_MOCK"):
+if not os.environ.get("ODDS_MOCK"):
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
-    print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
+    if edges: print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
+    if _parts["hidden"]: print("passing-yard rungs newly logged for research:", C.log_research("pass_yds", _parts["hidden"], season, week, _flag))
+    if _parts["blocked"]: print("ratio-blocked rotational edges newly logged for research:", C.log_research("ratio_block", _parts["blocked"], season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
 print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
 if not os.environ.get("ODDS_MOCK"):
     _pstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
     print("paper parlays newly logged:", PL.log_paper(_pl["modes"], season, week, _pstamp))
-data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx,
+# the live thresholds, published so the page labels rungs with the same numbers the board and grading use (never re-defined in display code)
+RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
+                 bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK)
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),

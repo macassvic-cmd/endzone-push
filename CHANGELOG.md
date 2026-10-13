@@ -807,3 +807,186 @@ by prices; the shorter bands were 7–2 and 8–0.)
   34%). Until then they are hidden and logged to `research/pass_yds_<season>_w<week>.json`.
 - **Bench stake** goes back from 0.25u to 1u only after at least 100 bench bets with positive average CLV AND positive
   units once the single biggest win is removed.
+
+## 2026-10-12 — Week 5 consolidated: headline fix, passing yards hidden, bench section at 0.25u, alt-rung cap decision, Results additions, EV / cap / ladder studies
+
+No model changes: projections, shares, priors, sim, blend and yard models are untouched. Accounting, display, Edge Board
+filters and research only. Every rule below is in `rules.py` (one place) and published to the page in `latest.json`
+(`rules`) and `results.json` (`board_rules`), so the display never re-defines a threshold.
+
+### A. Fixes
+
+**1. Headline vs cumulative mismatch.** The Priced Bets headline (44–132, +127.12u) was built from `results.json`
+`bets`, which holds singles only, while the market breakdown under it and the week table were built from
+`bets_by_week`, which also carried the 8 paper parlays (44–140, +119.12u): the label said parlays were included, the
+number did not. Now results.py builds one set of rows per week with three groups that are never mixed: **singles,
+Starter + Rotational** (the headline), **Bench** and **Parlays**; by-market splits are per group; the cumulative row and
+a server-side `record` object come from the same rows. Corrected headline (live weeks 3–5, as the week-5 record stood
+before MNF): **singles, Starter + Rotational 36–77, +41.23u (expected +21.50u); shorter than +1000 33–49, +33.96u
+(expected +13.81u)**; Bench 8–55, +85.89u (one +66u first-TD hit, expected +25.09u); parlays 0–8, −8.00u (expected
++2.60u). The three add back to the old 44–140, +119.12u. `test_reconcile.py` (52 checks) fails the run if the headline,
+its market breakdown, the week-table cumulative and an independent recount of `bets` / the parlay log disagree by more
+than 0.01u; the workflow runs it after the smoke grading step and after the real one.
+
+**2. Passing-yard edges off the board.** Week 5 at the main lines: passing model Brier 0.2805 vs books 0.2499, our
+median closer on 34% (16 of 47); rushing 0.2474 vs 0.2505, receiving 0.2562 vs 0.2555. Passing-yard rungs (main line
+and alt) are now `HIDDEN_KINDS` in rules.py: run_week.py routes them out of the Edge Board, the edge log and the
+record into `research/pass_yds_<season>_w<week>.json` (first sighting, committed by the workflow); results.py grades
+that log silently (`research_pass`) and the Yards-vs-book card shows the gate. The Yards tab no longer lists passing
+ladders (the slip pricer still prices pass yards). **Gate to re-enable (pre-registered above): the passing model's
+Brier beats the books at the main lines over at least 3 graded weeks combined.** `yards_h2h.pass_gate` tracks it (2
+weeks so far). Rushing and receiving are unchanged. Week 5's four passing-yard rungs already in the record stay there
+(frozen rules); the "under current rules" view drops them.
+
+**3. Alt-rung cap decision (pre-registered 2026-10-08).** Rule: if v2's +150 to +300 band lost units in week 5 the cap
+would tighten to +150 from week 6. Week 5, v2 edges graded from the edge log at flag-time prices: all 18–6, +20.08u
+(expected +3.69u); **+150 to +300: 8–6, +12.30u (expected +1.15u)**; −150 to +150: 4–0, +4.30u; shorter than −150:
+6–0, +3.48u. The band did not lose, so **the cap stays at +300** (`yards.ALT_MAX_PRICE` unchanged). Beyond +300 stays
+research-only: week 5's research set at +300 or longer went 20–64 (+82.1u on two long hits, expected +20.7u), and the
++350 / +400 test below failed its gate. The old-rule edges (first 14, no cap) went 2–11, +10.2u.
+
+**4. Bench plays: kept, separate, 0.25u.** From 2026 week 6 (`rules.BOARD_RULES_WEEK`): Bench edges stay on the Edge
+Board in their own **Bench / longshot** section at `BENCH_STAKE` = 0.25u (stake logged with the edge and used by the
+grading); the headline record is Starter + Rotational singles; Bench has its own line on Results with record, units,
+expected, ROI, CLV (average and % beating the close), CLV by week and the luck band. **2.5× block (newly added; it was
+not in place before):** a Rotational player whose model probability is more than `MAX_RATIO_ROT` = 2.5× the no-vig
+market probability is blocked from the board and logged to `research/ratio_block_<season>_w<week>.json`; Bench plays
+that trip it sit in the bench section; Starters are not blocked. Every edge now carries `ratio` (model ÷ market) and
+`stake`. **Bench gate (pre-registered above):** back to 1u only after 100+ bench bets with positive CLV and positive
+units once the single biggest win is removed; `bench_gate` in results.json tracks it (63 bets, CLV +0.08 pts, 48%
+beat the close, +19.89u without the +66u hit). Bench CLV by week: W3 +0.30 pts (71% of 38), W4 +0.40 (50% of 42), W5
+−0.74 (12% of 26). The frozen records are untouched (bets_frozen.json unchanged, week 5 still open until MNF grades);
+Results gains a **"weeks 3–5 under current rules"** view next to them: the same bets at the same prices with
+passing-yard rungs out (4), Rotational plays over 2.5× out (2), Bench at 0.25u and parlays separate: singles 34–73,
++30.68u (expected +19.28u; shorter than +1000 32–48, +32.41u); bench 8–55, +21.47u at 0.25u (expected +6.27u);
+parlays 0–8, −8.0u. The plain blend re-score (every week, 1u, no board rules) stays as its own labelled line.
+
+### B. Results page additions
+
+5. **Shorter than +1000 is the primary record** at the top of Results (33–49, +33.96u), with an "All prices" toggle
+   (remembered in the browser); the chart, role table, market lines and the current-rules view follow the toggle.
+6. **Luck band** next to actual vs expected: ±2σ with σ computed from the bet prices only (a bet that is exactly fair
+   at decimal odds d has variance d − 1 per unit staked, so σ = √Σ stake²(d − 1)); each aggregate in results.json
+   carries `var`. Headline singles: actual +41.2u vs expected +21.5u, band ±57.8u (0.7σ, inside). Shorter than
+   +1000: +34.0u vs +13.8u, band ±37.4u (1.1σ, inside). Bench: +85.9u vs +25.1u, band ±80.8u (1.5σ, inside).
+7. **Alt rungs by player:** each player's alt rungs combined into one line per week, net units (rungs on one player
+   are correlated). Live weeks: 27 player-weeks, 17 won / 10 lost, +30.3u (expected +5.8u); shorter than +1000: 25,
+   17 / 8, +22.3u. Rows are in `record.*.alt_players` (Drake Maye 2 rungs +14.55u, Justice Hill +9.20u, Jahan Dotson
+   3 rungs +3.68u … five players with two rungs each −2.0u).
+
+### C. Research (no board changes)
+
+**8. Expected-value check.** Full re-score (every week including the backfill weeks, today's blend and edge rule, 1u
+every role, 297 bets): actual +29.55u vs expected +85.12u. By market:
+
+| Market (full re-score) | All: record | Actual | Expected | Actual − expected | Shorter than +1000: record | Actual | Expected | Actual − expected |
+|---|---|---|---|---|---|---|---|---|
+| Anytime TD | 16–166 | −23.29 | +64.49 | −87.78 | 11–65 | +1.06 | +15.92 | −14.86 |
+| First TD | 10–46 | +19.89 | +11.51 | +8.38 | 8–25 | +17.62 | +6.47 | +11.15 |
+| 2+ TD | 0–2 | −2.00 | +1.29 | −3.29 | – | – | – | – |
+| Yards (main line) | 13–7 | +4.67 | +2.05 | +2.62 | 13–7 | +4.67 | +2.05 | +2.62 |
+| Alt rungs | 20–17 | +30.28 | +5.78 | +24.50 | 19–13 | +22.28 | +4.68 | +17.60 |
+| **All** | **59–238** | **+29.55** | **+85.12** | **−55.57** | **51–110** | **+45.63** | **+29.12** | **+16.51** |
+
+The whole overstatement sits in anytime TD at +1000 or longer (101 bets, 5 won, −24.4u against +48.6u expected,
+mostly bench players in the backfill weeks); every other market is at or above its expected units. Live weeks only
+(the record), Starter + Rotational singles: anytime 3–27, −16.28u vs +7.12u expected; first TD 7–32, +22.87u vs
++7.93u; yards 6–1, +4.36u vs +0.67u; alt rungs 20–17, +30.28u vs +5.78u. Bench live: anytime 7–44, +30.89u vs
++19.75u; first TD 1–9, +57.0u vs +4.05u; 2+ TD 0–2. Nothing changed on the back of this.
+
+**9. Alt-rung cap test, +350 / +400** (`alt_cap_study.py`; gate pre-registered above before the run). First-flag replay
+over every saved pull of weeks 4 and 5 (the only weeks with alternate-line prices; weeks 1–3 have no yard markets or
+ladders), oldest first, skipping games already kicked off: per pull every offered alternate rung is priced against the
+pooled DK+FD curve, model P from the slate ladder interpolated in log-odds, 50/50 blend (what the live week-5 flags
+used), EV at the best surviving quote; a rung qualifies with an eligible curve, line ≥ floor, EV ≥ 5%, model ≤ 2×
+curve and price < cap; the best-EV rung per player-stat is recorded the first time its (player, stat, line) appears,
+at that pull's price. The week-5 +300 replay reproduces 27 of the 28 live v2 edge-log keys (live 18–6 +20.08u,
+replay 17–7 +18.69u).
+
+| Cap | Week | Bets | Record | Units | Expected | ROI |
+|---|---|---|---|---|---|---|
+| +300 | 4–5 | 91 | 52–39 | +33.74 | +16.06 | +37.1% |
+| +300 | 4 | 67 | 35–32 | +15.05 | +12.40 | +22.5% |
+| +300 | 5 | 24 | 17–7 | +18.69 | +3.66 | +77.9% |
+| +350 | 4–5 | 100 | 53–47 | +37.73 | +17.89 | +37.7% |
+| +350 | 4 | 74 | 35–39 | +14.16 | +13.87 | +19.1% |
+| +350 | 5 | 26 | 18–8 | +23.57 | +4.02 | +90.6% |
+| +400 | 4–5 | 107 | 50–57 | +24.30 | +19.35 | +22.7% |
+| +400 | 4 | 80 | 34–46 | +7.96 | +14.94 | +10.0% |
+| +400 | 5 | 27 | 16–11 | +16.34 | +4.41 | +60.5% |
+
+Incremental bands (bets flagged under the +400 run, by price; "displaced" = the longer rung replaced a sub-+300 rung
+for the same player-stat rather than adding a player):
+
+| Band | Week | Bets | Distinct players | Weeks | Record | Units | Expected | ROI | Displaced |
+|---|---|---|---|---|---|---|---|---|---|
+| +301 to +350 | 4–5 | 22 | 22 | 2 | 7–15 | +7.10 | +2.61 | +32.3% | 11 |
+| | 4 | 17 | 17 | 1 | 4–13 | −0.50 | +2.15 | −2.9% | |
+| | 5 | 5 | 5 | 1 | 3–2 | +7.60 | +0.46 | +152.0% | |
+| +351 to +400 | 4–5 | 27 | 24 | 2 | 3–24 | −13.10 | +4.18 | −48.5% | 18 |
+| | 4 | 19 | 19 | 1 | 3–16 | −5.10 | +2.98 | −26.8% | |
+| | 5 | 8 | 8 | 1 | 0–8 | −8.00 | +1.19 | −100.0% | |
+
+**Verdict: gate not met for either band** (+301 to +350: 22 bets over 2 weeks, ahead of expected only on 5 week-5
+bets; +351 to +400: 27 bets over 2 weeks, −13.1u against +4.2u). **Cap stays at +300.**
+
+**10. Ladder replay** (`ladder_replay.py`). For every player-stat with a flagged alt rung in the +300 replay (61 in week
+4, 25 in week 5), at the pull where its lowest rung was flagged: rungs every 10 yards from that lowest flagged rung up
+to the highest alternate line offered, each 10-yard step taking the offered line nearest to it within 2.5 yards (steps
+with no quote that close are skipped: 192 in week 4, 43 in week 5), price = best surviving quote at that line in the
+flag pull, model / curve / blend / EV as in item 9. "+300" drops rungs priced +300 or longer. Staking: (a) flat 1u per
+rung; (b) 1u per player-stat split evenly across its rungs; (c) only rungs with EV ≥ 5%, 1u each. 79 ladders graded
+(7 without actual yards skipped), 286 rungs uncapped, 123 under the cap.
+
+| Cap | Staking | Week | Rungs | Record | Units | Expected | ROI | Biggest player win | Biggest player loss |
+|---|---|---|---|---|---|---|---|---|---|
+| +300 | (a) flat 1u/rung | 4–5 | 123 | 70–53 | +27.77 | +2.90 | +22.6% | K. Walker III rush W4 +5.99 | S. Barkley rush W4 −7.00 |
+| +300 | (a) | 4 | 99 | 53–46 | +11.64 | +0.37 | +11.8% | | |
+| +300 | (a) | 5 | 24 | 17–7 | +16.13 | +2.53 | +67.2% | | |
+| +300 | (b) 1u/player split | 4–5 | 123 | 70–53 | +25.79 | +7.80 | +32.6% | M. Washington rec W4 +2.90 | O. Hampton rush W5 −1.00 |
+| +300 | (b) | 4 | 99 | 53–46 | +11.17 | +5.28 | +19.6% | | |
+| +300 | (b) | 5 | 24 | 17–7 | +14.63 | +2.53 | +66.5% | | |
+| +300 | (c) EV ≥ 5% only | 4–5 | 79 | 47–32 | +32.28 | +13.73 | +40.9% | M. Washington rec W4 +2.90 | O. Hampton rush W5 −1.00 |
+| +300 | (c) | 4 | 57 | 32–25 | +17.94 | +10.80 | +31.5% | | |
+| +300 | (c) | 5 | 22 | 15–7 | +14.34 | +2.93 | +65.2% | | |
+| uncapped | (a) flat 1u/rung | 4–5 | 286 | 93–193 | +22.07 | +25.87 | +7.7% | DK Metcalf rec W4 +30.70 | S. Barkley rush W4 −10.00 |
+| uncapped | (a) | 4 | 219 | 68–151 | −2.16 | +16.49 | −1.0% | | |
+| uncapped | (a) | 5 | 67 | 25–42 | +24.23 | +9.38 | +36.2% | | |
+| uncapped | (b) 1u/player split | 4–5 | 286 | 93–193 | +11.41 | +8.77 | +14.4% | DK Metcalf rec W4 +6.14 | O. Hampton rush W5 −1.00 |
+| uncapped | (b) | 4 | 219 | 68–151 | −1.21 | +5.58 | −2.1% | | |
+| uncapped | (b) | 5 | 67 | 25–42 | +12.62 | +3.19 | +57.4% | | |
+| uncapped | (c) EV ≥ 5% only | 4–5 | 213 | 68–145 | +36.08 | +43.86 | +16.9% | R. Odunze rec W4 +23.80 | B. Thomas Jr. rec W4 −7.00 |
+| uncapped | (c) | 4 | 153 | 45–108 | +8.64 | +33.71 | +5.7% | | |
+| uncapped | (c) | 5 | 60 | 23–37 | +27.44 | +10.15 | +45.7% | | |
+
+Per-player net units, top and bottom: +300 flat: Walker III rush W4 +5.99, M. Washington rec W4 +2.90, Metcalf rec W4
++2.90, G. Wilson rec W5 +2.90, Jeudy rec W4 +2.60 / Barkley rush W4 −7.00, Gibbs rush W4 −3.29, Montgomery rush W4
+−1.17. Uncapped flat: Metcalf +30.70, Odunze +23.80, O. Gordon II rush W4 +21.35, Bateman rec W5 +18.64, Walker III
++13.49 / Barkley −10.00, B. Thomas Jr. −7.00, Hampton −6.00, Egbuka −6.00 (W4 and W5). Reading: under the +300 cap the
+ladder adds 44 rungs beyond the 79 flagged and every staking version stays ahead of expected; uncapped, the extra 163
+tail rungs went 23–140, turned week 4 negative under flat staking and the totals rest on four 7–10-rung ladders
+(Metcalf, Odunze, Gordon II, Bateman), which is the correlation the per-player line exists to show. Nothing changes.
+
+### Yards tab cleanup (display only)
+
+**Actionable** card at the top: only the rungs currently flagged under the live rules, read straight from the slate's
+edge list (the output of `rules.py` / run_week.py, the same list the Edge Board shows and Results grades; nothing is
+re-filtered on the page), one row per bet (player, stat, rung and side, best price and book, EV, blend probability,
+stake with a Bench tag), grouped main line → alt rung v2 → bench, "No yard edges right now." when empty; it wraps on a
+phone with no horizontal scroll. Player table below: All / Rushing / Receiving, search and position kept; default
+columns Player, Team, Role, Stat, Median, Line (book), Lean, P(over), Market; players with no book line hidden unless
+"Show unpriced" is ticked; click a player for its priced rungs (Rung | Model | Market | Blend | Best price | Book | EV
+plus mean and curve), with rungs that fail the live rules greyed and labelled "outside rules: …" (the reasons use the
+thresholds published in `latest.json` `rules`: +300 or longer, model over 2× the curve, EV under 5%, below the line
+floor, fewer than 2 books, Rotational over 2.5× the market, thin curve, not the best rung). Passing ladders are not
+listed while passing yards are hidden.
+
+### Files changed
+
+`rules.py` (board rules: BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS, stake_for / ratio_of /
+ratio_blocked / split_board), `clv.py` (stake and ratio in the edge log; `log_research`), `run_week.py` (board split,
+research logs, `rules` published in latest.json), `results.py` (groups, stakes, parlays separate, per-player alt
+lines, price variance, `record`, `record_current_rules`, `bench_gate`, `clv_by_week`, pass gate, research grading,
+`board_rules`), `test_reconcile.py` (new), `.github/workflows/update.yml` (reconcile check after both grading steps),
+`template.html` and `index.html` (Results card, Edge Board bench section, Yards tab), `alt_cap_study.py` and
+`ladder_replay.py` (new, research only), `CHANGELOG.md`, plus the regenerated `results.json`.

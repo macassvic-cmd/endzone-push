@@ -28,9 +28,25 @@ def log_edges(edges, season, week, stamp):
             continue
         log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
                         flagged=stamp, best=e["best"], book=e["book"], med=e["med"], mkt_p=e["mkt_p"],
-                        blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"], rule=e.get("rule"))
+                        blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"], rule=e.get("rule"),
+                        stake=e.get("stake", 1.0), ratio=e.get("ratio"))
         n += 1
     json.dump(log, open(fn, "w"), indent=0)
+    return n
+
+
+def log_research(tag, rows, season, week, stamp):
+    """First sighting of each (pid, market, kind, line) appended to research/<tag>_<season>_w<week>.json; never a bet.
+       Used for the hidden passing-yard rungs and the Rotational ratio block. Returns the number newly logged."""
+    os.makedirs("research", exist_ok=True)
+    fn = f"research/{tag}_{season}_w{week}.json"
+    log = json.load(open(fn)) if os.path.exists(fn) else {}
+    n = 0
+    for e in rows:
+        key = f"{e['pid']}|{e['market']}|{e.get('kind')}|{e.get('line')}"
+        if key in log: continue
+        log[key] = dict(e, flagged=stamp); n += 1
+    if n: json.dump(log, open(fn, "w"), indent=0)
     return n
 
 

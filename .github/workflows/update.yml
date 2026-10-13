@@ -63,16 +63,20 @@ jobs:
           python test_nan_safety.py
           python refresh.py --data-only
       - name: Smoke-test grading on the committed slates (fails loudly before any odds are pulled)
-        run: python results.py
+        run: |
+          python results.py
+          python test_reconcile.py
       - name: Run model
         env:
           ODDS_API_KEY: ${{ steps.odds.outputs.use_odds == 'true' && secrets.ODDS_API_KEY || '' }}
           ODDS_SAVE: odds_raw.json
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
         run: python run_week.py
-      - name: Grade
+      - name: Grade (then check the headline, its breakdown and the week table reconcile)
         id: grade
-        run: python results.py
+        run: |
+          python results.py
+          python test_reconcile.py
       - name: Save raw odds (download from the run's Artifacts to rerun locally with ODDS_MOCK)
         uses: actions/upload-artifact@v4
         if: always()

@@ -1,6 +1,6 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
 import glob, json, os, re, numpy as np, pandas as pd
-import clv as C, parlay as PL, blend as BL
+import clv as C, parlay as PL, blend as BL, rules as RU, yards as Y
 from nansafe import val, flag, text, num, isnan
 
 CAL_EDGES = [i / 100 for i in range(0, 75, 5)] + [1.0]     # 0–5, 5–10, …, 65–70, 70+
@@ -51,10 +51,12 @@ def price_backfill(pl, season, week):
     return pl
 
 
-def rescore_edges(allp, models):
+def rescore_edges(allp, models, rules_from=RU.BOARD_RULES_WEEK):
     """Edge Board rule applied to every graded, priced row with the fitted blend: EV >= MIN_EV at the median book
        AND at the best book, 2+ books, no weak-spot players. Live weeks use flag-time prices stored in the slate;
-       backfilled weeks use closing prices. Returns bet records."""
+       backfilled weeks use closing prices. Returns bet records.
+       Board rules (rules.py: Bench at 0.25u, Rotational blocked over 2.5x the market) apply from week rules_from
+       (BOARD_RULES_WEEK for the record; 0 = every week; None = never, the plain 1u blend re-score)."""
     import odds as O
     out = []
     for mk, (pcol, kcol, ycol, pre, lbl) in {"any": ("p_any", "any_mkt_p", "hit", "any_", "Anytime TD"), "first": ("p_first", "first_mkt_p", "first_hit", "first_", "First TD"),
@@ -71,12 +73,34 @@ def rescore_edges(allp, models):
             ev, ev_med = float(r.blend) * O.decimal(r[pre + "best"]) - 1, float(r.blend) * O.decimal(r[pre + "med"]) - 1
             if ev < MIN_EV or ev_med < MIN_EV:
                 continue
+            role = text(r, "role") or "Unknown"; rules_on = rules_from is not None and int(r.week) >= rules_from
+            if rules_on and RU.ratio_blocked(role, float(r[pcol]), float(r[kcol])):
+                continue
+            stake = RU.stake_for(role) if rules_on else 1.0
             won = bool(r[ycol]); dec = O.decimal(r[pre + "best"])
-            out.append(dict(season=int(r.season), week=int(r.week), bet=f"{r['name']} {lbl}", price=int(r[pre + "best"]), book=val(r, pre + "book"),
+            out.append(dict(season=int(r.season), week=int(r.week), bet=f"{r['name']} {lbl}", pid=val(r, "pid"), price=int(r[pre + "best"]), book=val(r, pre + "book"),
                             ev=round(ev, 4), ev_med=round(ev_med, 4), blend_p=round(float(r.blend), 4), model_p=round(float(r[pcol]), 4), mkt_p=round(float(r[kcol]), 4),
-                            won=won, profit=round(dec - 1 if won else -1.0, 3), role=text(r, "role") or "Unknown", market=mk,
-                            longshot=int(r[pre + "best"]) >= 1000, backfill_price=flag(r, "backfill_price"), fitted=coef is not None))
+                            won=won, profit=round(stake * (dec - 1) if won else -stake, 3), stake=stake, ratio=RU.ratio_of(float(r[pcol]), float(r[kcol])),
+                            role=role, market=mk, longshot=int(r[pre + "best"]) >= 1000, backfill_price=flag(r, "backfill_price"), fitted=coef is not None))
     return out
+
+
+def kind_of(b):
+    """Yard kind of a bet (rush / rec / pass) from its field or its text; None for TD markets."""
+    k = b.get("kind") if isinstance(b.get("kind"), str) else None
+    if k: return k
+    m = re.search(r" (rush|rec|pass) yds", b.get("bet") or "")
+    return m.group(1) if m else None
+
+
+def under_current_rules(b):
+    """The recorded bet as today's board rules would carry it: passing-yard rungs out, Rotational players over 2.5x the
+       market out, Bench at BENCH_STAKE units (profit and expected rescaled), everything else unchanged. None = dropped."""
+    role = b.get("role") if isinstance(b.get("role"), str) and b.get("role") else "Unknown"; kind = kind_of(b)
+    if kind in RU.HIDDEN_KINDS: return None
+    if RU.ratio_blocked(role, b.get("model_p"), b.get("mkt_p")): return None
+    old = float(b.get("stake") or 1.0); stake = RU.stake_for(role)
+    return dict(b, stake=stake, profit=round(float(b["profit"]) / old * stake, 3), kind=kind, role=role)
 
 
 def main():
@@ -163,25 +187,45 @@ def main():
             log = json.load(open(fn)); rows = [v for v in log.values() if v.get("market") in ("yds", "yds_alt")]
             if rows: return rows
         return [e for e in d.get("edges", []) if e.get("market") in ("yds", "yds_alt")]
-    for fn in sorted(glob.glob("slate_*_w*.json")):
-        d = json.load(open(fn))
-        if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
-        for e in yard_edge_source(d):
-            if (d["week"], e["pid"], e.get("kind")) not in ymap: continue
-            won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
-            bets.append(dict(season=d["season"], week=d["week"], bet=e["bet"], price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
-                             model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(dec - 1 if won else -1.0, 3), role=text(e, "role") or "Unknown", market=e["market"],
-                             longshot=e["best"] >= 1000, backfill_price=False, fitted=False, rule=e.get("rule")))
-    # research: alt-rung candidates that failed the price / ratio filters, graded by price band (never bets)
-    research = []
-    for fn in sorted(glob.glob("research/alt_rungs_*_w*.json")):
-        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
-        if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
-        for c in json.load(open(fn)).values():
-            y = ymap.get((wk, c["pid"], c["kind"]))
-            if y is None: continue
-            dec = 1 + (c["best"] / 100 if c["best"] > 0 else 100 / -c["best"]); won = y >= float(c["line"])
-            research.append(dict(week=wk, price=c["best"], won=won, profit=dec - 1 if won else -1.0, ev=c["ev"], reasons=c.get("reasons", [])))
+    def yard_bets(rules_from=RU.BOARD_RULES_WEEK):
+        out = []
+        for fn in sorted(glob.glob("slate_*_w*.json")):
+            d = json.load(open(fn))
+            if not any(w["season"] == d["season"] and w["week"] == d["week"] for w in weeks): continue
+            for e in yard_edge_source(d):
+                if (d["week"], e["pid"], e.get("kind")) not in ymap: continue
+                role = text(e, "role") or "Unknown"; rules_on = rules_from is not None and int(d["week"]) >= rules_from
+                if rules_on and (e.get("kind") in RU.HIDDEN_KINDS or RU.ratio_blocked(role, val(e, "model_p"), val(e, "mkt_p"))): continue
+                stake = (RU.stake_for(role) if rules_on else 1.0) if rules_from != RU.BOARD_RULES_WEEK else float(val(e, "stake", 1.0))   # the record keeps the stake the edge was logged at
+                won = ymap[(d["week"], e["pid"], e["kind"])] >= float(e["line"]); dec = 1 + (e["best"] / 100 if e["best"] > 0 else 100 / -e["best"])
+                out.append(dict(season=d["season"], week=d["week"], bet=e["bet"], pid=e["pid"], kind=e.get("kind"), price=e["best"], book=e["book"], ev=e["ev"], ev_med=e.get("ev_med"), blend_p=e.get("blend_p"),
+                                model_p=val(e, "model_p"), mkt_p=val(e, "mkt_p"), won=bool(won), profit=round(stake * (dec - 1) if won else -stake, 3), stake=stake,
+                                ratio=RU.ratio_of(val(e, "model_p"), val(e, "mkt_p")), role=role, market=e["market"],
+                                longshot=e["best"] >= 1000, backfill_price=False, fitted=False, rule=e.get("rule")))
+        return out
+    bets += yard_bets()
+    # research logs (never bets): alt-rung candidates that failed the price / ratio filters, hidden passing-yard rungs, ratio-blocked
+    # Rotational edges. Yard rows grade on actual yards, TD rows on the graded slate rows.
+    tdhit = {(int(r.week), r.pid): (bool(r.hit), bool(r.first_hit), bool(r.two_hit)) for r in allp.itertuples()} if len(allp) else {}
+    def research_rows(pattern):
+        rows = []
+        for fn in sorted(glob.glob(pattern)):
+            sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
+            if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+            for c in json.load(open(fn)).values():
+                if c.get("market") in ("yds", "yds_alt"):
+                    y = ymap.get((wk, c["pid"], c["kind"]))
+                    if y is None: continue
+                    won = y >= float(c["line"])
+                else:
+                    h = tdhit.get((wk, c["pid"]))
+                    if h is None: continue
+                    won = {"any": h[0], "first": h[1], "two": h[2]}.get(c.get("market"), h[0])
+                dec = 1 + (c["best"] / 100 if c["best"] > 0 else 100 / -c["best"])
+                rows.append(dict(week=wk, pid=c["pid"], bet=c.get("bet"), market=c.get("market"), kind=c.get("kind"), role=c.get("role"), price=c["best"], won=bool(won),
+                                 profit=dec - 1 if won else -1.0, ev=c["ev"], reasons=c.get("reasons", [])))
+        return rows
+    research = research_rows("research/alt_rungs_*_w*.json")
     def band(pr): return "shorter than -150" if pr <= -150 else "-150 to +150" if pr < 150 else "+150 to +300" if pr < 300 else "longer than +300"
     # alt-rung edges by the rule that flagged them (week 5 carries both: the first curve rule, untagged, and "alt rung v2")
     alt_rules = None
@@ -191,16 +235,23 @@ def main():
         t2 = lambda g: dict(n=int(len(g)), won=int(g.won.sum()), units=round(float(g.profit.sum()), 2), expected=round(float(g.ev.sum()), 2))
         alt_rules = {rule: dict(all=t2(g), by_band={k: t2(x) for k, x in g.groupby("band")}, by_week={int(k): t2(x) for k, x in g.groupby("week")}) for rule, g in ad.groupby("rule")}
     research_alt = None
+    t = lambda g: dict(n=int(len(g)), won=int(g.won.sum()), units=round(float(g.profit.sum()), 2), expected=round(float(g.ev.sum()), 2))
     if research:
         rd = pd.DataFrame(research); rd["band"] = rd.price.apply(band)
-        t = lambda g: dict(n=int(len(g)), won=int(g.won.sum()), units=round(float(g.profit.sum()), 2), expected=round(float(g.ev.sum()), 2))
         research_alt = dict(all=t(rd), by_band={k: t(g) for k, g in rd.groupby("band")}, by_week={int(k): t(g) for k, g in rd.groupby("week")})
+    def research_summary(rows):
+        if not rows: return None
+        rd = pd.DataFrame(rows)
+        return dict(all=t(rd), by_week={int(k): t(g) for k, g in rd.groupby("week")}, by_market={k: t(g) for k, g in rd.groupby("market")},
+                    rows=[{k: v for k, v in r.items() if k != "reasons"} for r in rows])
+    research_pass = research_summary(research_rows("research/pass_yds_*_w*.json"))       # hidden passing-yard rungs, graded silently
+    research_ratio = research_summary(research_rows("research/ratio_block_*_w*.json"))   # Rotational edges over 2.5x the market
 
     # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
     #      then and never recomputed; "under current rules" is a separate re-score of every week with today's rule and blend ----
     FROZEN = "bets_frozen.json"
     frozen = json.load(open(FROZEN)) if os.path.exists(FROZEN) else {}
-    bets_current = list(bets)                                           # today's rule applied to every week
+    bets_current = rescore_edges(allp, models, rules_from=None) + yard_bets(rules_from=None)   # plain blend re-score: today's blend and edge rule, 1u for every role, no board rules
     partial = {(w["season"], w["week"]) for w in weeks if w.get("partial")}
     rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, " + ("fitted" if any(BL.coef_for(models, m) for m in ("any", "first", "two")) else "50/50")
                 + " model-market blend; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor")
@@ -212,6 +263,9 @@ def main():
             frozen[key] = dict(rule=rule_now, frozen_at=pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%dT%H:%MZ"), bets=by_wk.get(key, []))
     json.dump(frozen, open(FROZEN, "w"), indent=0)
     bets = [b_ for key in sorted(frozen) for b_ in frozen[key]["bets"]] + [b_ for key, rows in by_wk.items() if key not in frozen for b_ in rows]
+    for b_ in bets:                                                      # frozen weeks predate the stake / kind fields: 1u, kind from the text
+        b_.setdefault("stake", 1.0); b_["kind"] = kind_of(b_); b_.setdefault("ratio", RU.ratio_of(b_.get("model_p"), b_.get("mkt_p")))
+        b_["group"] = "bench" if b_.get("role") == "Bench" else "main"
     print(f"  bet record: {len(bets)} bets ({sum(len(v['bets']) for v in frozen.values())} frozen over {len(frozen)} weeks); under current rules {len(bets_current)}")
 
     # ---- yards head-to-head at the books' main lines, from week 4 on: model P(over) vs no-vig book P(over) vs 50/50,
@@ -244,6 +298,12 @@ def main():
         if yards_h2h["season"]["weeks"] >= 3:                                # fitted blend for yards, same gate as the TD markets
             rec = BL.fit_market(ydf, "yds")
             if rec: models["yds"] = rec; BL.save(models)
+        pdf = ydf[ydf.kind == "pass"]
+        if len(pdf):                                                         # passing-yard gate (rules.HIDDEN_KINDS): back on the board only when the
+            pw = int(pdf[["season", "week"]].drop_duplicates().shape[0]); ph = yh2h(pdf)   # passing model beats the books over 3+ graded weeks combined
+            yards_h2h["pass_gate"] = dict(weeks=pw, **ph, open=bool(pw >= 3 and ph["model"] < ph["book"]),
+                                          rule="passing-yard rungs return to the board when the passing model's Brier beats the books at the main lines over 3 or more graded weeks combined",
+                                          by_week=[dict(season=int(sn), week=int(wk), **yh2h(g)) for (sn, wk), g in pdf.groupby(["season", "week"])])
         s_ = yards_h2h["season"]; print(f"  yards vs book: n {s_['n']} weeks {s_['weeks']} | Brier model {s_['model']} book {s_['book']} 50/50 {s_['blend']} | median closer {s_['median_closer']} of {s_['median_closer'] + s_['book_closer']} | paper only: {yards_h2h['paper_only']}")
 
     # ---- actual stats per fully graded week, for grading slips in the browser (Slips tab log) ----
@@ -328,13 +388,16 @@ def main():
     if len(b): b["role"] = b["role"].apply(lambda v: v if isinstance(v, str) and v else "Unknown")
 
     def tally(g):
+        stk = float(g.stake.sum()) if len(g) and "stake" in g else float(len(g))
         return dict(n=int(len(g)), won=int(g.won.sum()) if len(g) else 0,
                     units=round(float(g.profit.sum()), 2) if len(g) else 0.0,
-                    expected_units=round(float(g.ev.sum()), 2) if len(g) else 0.0,     # sum of EV at the price taken
-                    roi=round(float(g.profit.mean()), 4) if len(g) else None)
+                    expected_units=round(float((g.ev * (g.stake if "stake" in g else 1.0)).sum()), 2) if len(g) else 0.0,     # sum of stake x EV at the price taken
+                    roi=round(float(g.profit.sum()) / stk, 4) if len(g) and stk else None, staked=round(stk, 2))
     bc = pd.DataFrame(bets_current)
-    rescore_current = dict(**tally(bc), short=tally(bc[~bc.longshot]) if len(bc) else tally(bc), rule=rule_now,
-                           by_market={k: tally(g) for k, g in bc.groupby("market")} if len(bc) else {}) if len(bc) else None
+    rescore_current = dict(**tally(bc), short=tally(bc[~bc.longshot]) if len(bc) else tally(bc), rule=rule_now + "; 1u for every role, no board rules (the board-rules view is record_current_rules)",
+                           by_market={k: tally(g) for k, g in bc.groupby("market")} if len(bc) else {},
+                           by_market_short={k: tally(g) for k, g in bc[~bc.longshot].groupby("market")} if len(bc) else {},
+                           by_role={k: tally(g) for k, g in bc.groupby("role")} if len(bc) else {}) if len(bc) else None
     by_role = {k: tally(g) for k, g in b.groupby("role")} if len(b) else {}
     by_market = {k: tally(g) for k, g in b.groupby("market")} if len(b) else {}
     by_price = {"under_1000": tally(b[~b.longshot]), "1000_plus": tally(b[b.longshot])} if len(b) else {}
@@ -369,6 +432,13 @@ def main():
         log = C.closing_summary(sn, wk)
         clv_rows += [dict(season=sn, week=wk, **e) for e in log.values()]
     clv_summary = C.aggregate(clv_rows) if clv_rows else None
+    clv_by_week = {}                                                     # {role: {week: n / avg_clv / beat_close}} for the bench CLV gate
+    for r in clv_rows:
+        if "clv" not in r: continue
+        rl = r.get("role") if isinstance(r.get("role"), str) and r.get("role") else "Unknown"
+        clv_by_week.setdefault(rl, {}).setdefault(int(r["week"]), []).append(r)
+    clv_by_week = {rl: {wk: dict(n=len(g), avg_clv=round(sum(x["clv"] for x in g) / len(g), 4), beat_close=round(sum(x["beat_close"] for x in g) / len(g), 3)) for wk, g in sorted(v.items())}
+                   for rl, v in clv_by_week.items()}
     # written once by `python backtest.py 0.35` (walk-forward over 2025), committed alongside the code
     backtest = json.load(open("backtest_2025.json")) if os.path.exists("backtest_2025.json") else None
     slips_bt = json.load(open("slips_backtest.json")) if os.path.exists("slips_backtest.json") else None
@@ -380,25 +450,76 @@ def main():
                     legs_hit=sum(w["legs_hit"] for w in ws), legs_expected=round(sum(w["legs_expected"] for w in ws), 2))
     parlay_summary = {m: psum([w for w in parlays if w["mode"] == m]) for m in PL.MODES if any(w["mode"] == m for w in parlays)} if parlays else None
     if parlay_summary: parlay_summary["by_week"] = parlays
-    # ---- bets by week: edges by market plus parlay paper trades, with a cumulative row; priced = closing (backfill) or live ----
-    rows_bw = [dict(season=b["season"], week=b["week"], market=b["market"], won=b["won"], profit=b["profit"], ev=b["ev"], longshot=b["longshot"],
-                    closing=bool(b.get("backfill_price"))) for b in bets]
-    for w in (parlays or []):
-        for c in w["parlays"]:
-            if c.get("dec"): rows_bw.append(dict(season=w["season"], week=w["week"], market="parlay", won=c["won"], profit=c["profit"], ev=c["ev"] or 0.0, longshot=False, closing=False))
+    # ---- bets by week. Singles split by group (main = Starter + Rotational, the headline; bench = Bench plays) and market,
+    #      parlays as their own group, never mixed into the singles. Every aggregate carries n, record, units, expected
+    #      (stake x EV), ROI (units / staked) and var = sum of stake^2 x (decimal - 1): the variance of a bet that is exactly
+    #      fair at its price, so +-2 sqrt(var) is the luck band around expected. alt_players combines a player's alt rungs
+    #      into one line per player-week (rungs on the same player are correlated). ----
+    def bet_row(b, market=None):
+        stake = float(b.get("stake") or 1.0); price = b.get("price")
+        dec = float(b["dec"]) if b.get("dec") else 1 + (price / 100 if price > 0 else 100 / -price)
+        role = b.get("role") if isinstance(b.get("role"), str) and b.get("role") else "Unknown"
+        return dict(season=int(b["season"]), week=int(b["week"]), market=market or b["market"], group="parlay" if market == "parlay" else "bench" if role == "Bench" else "main",
+                    role=role, pid=b.get("pid"), bet=b.get("bet"), won=bool(b["won"]), profit=float(b["profit"]), expected=stake * float(b.get("ev") or 0.0),
+                    var=stake * stake * (dec - 1), stake=stake, longshot=bool(b.get("longshot")), closing=bool(b.get("backfill_price")))
+    def parlay_rows(ws):
+        return [bet_row(dict(c, season=w["season"], week=w["week"], stake=1.0, role=None, backfill_price=False, longshot=False), market="parlay")
+                for w in ws for c in w["parlays"] if c.get("dec")]
     def agg(rs):
-        return dict(n=len(rs), won=sum(r["won"] for r in rs), units=round(sum(r["profit"] for r in rs), 2), expected=round(sum(r["ev"] for r in rs), 2),
-                    roi=round(sum(r["profit"] for r in rs) / len(rs), 4) if rs else None)
-    bets_by_week = []
-    for (sn, wk) in sorted({(r["season"], r["week"]) for r in rows_bw}):
-        rs = [r for r in rows_bw if r["season"] == sn and r["week"] == wk]
-        bets_by_week.append(dict(season=sn, week=wk, priced="closing" if all(r["closing"] for r in rs if r["market"] != "parlay") else "live" if not any(r["closing"] for r in rs) else "mixed",
-                                 all=agg(rs), short=agg([r for r in rs if not r["longshot"]]),
-                                 by_market={m: dict(all=agg([r for r in rs if r["market"] == m]), short=agg([r for r in rs if r["market"] == m and not r["longshot"]]))
-                                            for m in ("any", "first", "two", "yds", "yds_alt", "parlay") if any(r["market"] == m for r in rs)}))
-    bets_cum = dict(all=agg(rows_bw), short=agg([r for r in rows_bw if not r["longshot"]]),
-                    by_market={m: dict(all=agg([r for r in rows_bw if r["market"] == m]), short=agg([r for r in rows_bw if r["market"] == m and not r["longshot"]]))
-                               for m in ("any", "first", "two", "yds", "yds_alt", "parlay") if any(r["market"] == m for r in rows_bw)}) if rows_bw else None
+        staked = sum(r["stake"] for r in rs); units = sum(r["profit"] for r in rs)
+        return dict(n=len(rs), won=sum(r["won"] for r in rs), units=round(units, 2), expected=round(sum(r["expected"] for r in rs), 2),
+                    roi=round(units / staked, 4) if staked else None, staked=round(staked, 2), var=round(sum(r["var"] for r in rs), 4))
+    def alt_by_player(rs):
+        per = {}
+        for r in rs:
+            if r["market"] != "yds_alt": continue
+            per.setdefault((r["week"], r["pid"] or (r["bet"] or "").split(" Over ")[0]), []).append(r)
+        rows = [dict(week=wk, player=(g[0]["bet"] or "").split(" Over ")[0], rungs=len(g), won=sum(x["won"] for x in g), units=round(sum(x["profit"] for x in g), 2),
+                     expected=round(sum(x["expected"] for x in g), 2), staked=round(sum(x["stake"] for x in g), 2), var=round(sum(x["var"] for x in g), 4)) for (wk, _), g in per.items()]
+        units = sum(x["units"] for x in rows); staked = sum(x["staked"] for x in rows)
+        return dict(players=len(rows), won=sum(1 for x in rows if x["units"] > 0), lost=sum(1 for x in rows if x["units"] < 0), flat=sum(1 for x in rows if x["units"] == 0),
+                    units=round(units, 2), expected=round(sum(x["expected"] for x in rows), 2), roi=round(units / staked, 4) if staked else None, staked=round(staked, 2),
+                    var=round(sum(x["var"] for x in rows), 4), rows=sorted(rows, key=lambda x: (x["week"], -x["units"])))
+    MKTS = ("any", "first", "two", "yds", "yds_alt")
+    both = lambda rs: dict(all=agg(rs), short=agg([r for r in rs if not r["longshot"]]))
+    def summarize(rs, keep_rows=True):
+        main = [r for r in rs if r["group"] == "main"]; bench = [r for r in rs if r["group"] == "bench"]; par = [r for r in rs if r["group"] == "parlay"]
+        ap = dict(all=alt_by_player(main), short=alt_by_player([r for r in main if not r["longshot"]]))
+        if not keep_rows:
+            for v in ap.values(): v.pop("rows")
+        return dict(main=both(main), bench=both(bench), parlay=both(par),
+                    by_market={m: both([r for r in main if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in main)},
+                    bench_by_market={m: both([r for r in bench if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in bench)},
+                    by_role={k: both([r for r in rs if r["role"] == k]) for k in sorted({r["role"] for r in rs if r["group"] != "parlay"})}, alt_players=ap)
+    def week_table(rows):
+        out = []
+        for (sn, wk) in sorted({(r["season"], r["week"]) for r in rows}):
+            rs = [r for r in rows if r["season"] == sn and r["week"] == wk]; singles = [r for r in rs if r["group"] != "parlay"]
+            out.append(dict(season=sn, week=wk, priced="closing" if singles and all(r["closing"] for r in singles) else "live" if not any(r["closing"] for r in singles) else "mixed",
+                            **summarize(rs, keep_rows=False)))
+        return out, (summarize(rows) if rows else None)
+    rows_all = [bet_row(b) for b in bets] + parlay_rows(parlays or [])
+    bets_by_week, bets_cum = week_table(rows_all)
+    live_rows = [r for r in rows_all if (r["season"], r["week"]) not in backfill_weeks]
+    # the headline figures, computed here from the same rows the week table is built from (test_reconcile.py checks they agree)
+    record = {sc: dict(weeks=sorted({r["week"] for r in rs}), **summarize(rs)) if rs else None
+              for sc, rs in (("live", live_rows), ("rules", [r for r in live_rows if r["week"] >= RULES_WEEK]))}
+    # the same live bets under today's board rules (passing yards out, Rotational > 2.5x out, Bench at 0.25u, parlays separate): a view, not the record
+    cr_src = [b for b in bets if (int(b["season"]), int(b["week"])) not in backfill_weeks]
+    cr_kept = [(b, under_current_rules(b)) for b in cr_src]
+    cr_rows = [bet_row(x) for _, x in cr_kept if x] + parlay_rows([w for w in (parlays or []) if (w["season"], w["week"]) not in backfill_weeks])
+    cr_weeks, cr_cum = week_table(cr_rows) if cr_rows else ([], None)
+    record_current_rules = dict(weeks=cr_weeks, cum=cr_cum,
+                                dropped=dict(pass_yds=sum(1 for b, x in cr_kept if not x and kind_of(b) in RU.HIDDEN_KINDS),
+                                             ratio=sum(1 for b, x in cr_kept if not x and kind_of(b) not in RU.HIDDEN_KINDS)),
+                                rule=f"same bets at the same prices; passing-yard rungs removed, Rotational players over {RU.MAX_RATIO_ROT}x the no-vig market removed, Bench at {RU.BENCH_STAKE}u, parlays separate") if cr_rows else None
+    bench_bets = [b for b in bets if b.get("role") == "Bench" and (int(b["season"]), int(b["week"])) not in backfill_weeks]
+    big = max((float(b["profit"]) for b in bench_bets), default=0.0)
+    _bclv = ((clv_summary or {}).get("by_role", {}) or {}).get("Bench")
+    bench_gate = dict(n=len(bench_bets), units=round(sum(float(b["profit"]) for b in bench_bets), 2), units_ex_best=round(sum(float(b["profit"]) for b in bench_bets) - big, 2), biggest_win=round(big, 2),
+                      clv=_bclv, clv_by_week=clv_by_week.get("Bench", {}),
+                      rule="Bench returns to 1u only after 100+ bench bets with positive CLV and positive units once the single biggest win is removed",
+                      open=bool(len(bench_bets) >= 100 and (_bclv or {}).get("avg_clv") is not None and _bclv["avg_clv"] > 0 and sum(float(b["profit"]) for b in bench_bets) - big > 0))
     out = dict(weeks=weeks, season_total=season_total, season_total_live=season_total_live, record_scopes=record_scopes, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum,
                calibration=cal, calibration_live=cal_live, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
@@ -409,7 +530,11 @@ def main():
                backtest_2025=backtest, blend=models, yards_h2h=yards_h2h, paper_only=paper_only,
                actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
-               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules)
+               slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules,
+               record=record, record_current_rules=record_current_rules, bench_gate=bench_gate, clv_by_week=clv_by_week,
+               research_pass=research_pass, research_ratio=research_ratio,
+               board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
+                                min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE))
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")
