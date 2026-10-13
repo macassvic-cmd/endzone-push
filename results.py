@@ -520,6 +520,21 @@ def main():
                       clv=_bclv, clv_by_week=clv_by_week.get("Bench", {}),
                       rule="Bench returns to 1u only after 100+ bench bets with positive CLV and positive units once the single biggest win is removed",
                       open=bool(len(bench_bets) >= 100 and (_bclv or {}).get("avg_clv") is not None and _bclv["avg_clv"] > 0 and sum(float(b["profit"]) for b in bench_bets) - big > 0))
+    # ---- pre-registered gate (CHANGELOG 2026-10-12): anytime TD singles priced +1000 or longer, live weeks (no backfill), every role.
+    #      Decision after week 8 grades: still below expected units -> research-only (logged, not on the Edge Board). Tracked here; nothing changes yet. ----
+    LONGSHOT_PRICE, LONGSHOT_DECISION_WEEK = 1000, 8
+    ls_rows = [r for r in live_rows if r["market"] == "any" and r["longshot"]]
+    ls_clv = [r for r in clv_rows if "clv" in r and r["market"] == "any" and int(r.get("best") or 0) >= LONGSHOT_PRICE and (int(r["season"]), int(r["week"])) not in backfill_weeks]
+    def clv_agg(g):
+        return dict(n=len(g), avg_clv=round(sum(x["clv"] for x in g) / len(g), 4), beat_close=round(sum(x["beat_close"] for x in g) / len(g), 3)) if g else None
+    ls_all = agg(ls_rows)
+    longshot_gate = dict(market="any", min_price=LONGSHOT_PRICE, decision_week=LONGSHOT_DECISION_WEEK, status="pre-registered, tracking only",
+                         all=ls_all, main=agg([r for r in ls_rows if r["group"] == "main"]), bench=agg([r for r in ls_rows if r["group"] == "bench"]),
+                         clv=clv_agg(ls_clv), clv_main=clv_agg([r for r in ls_clv if r.get("role") != "Bench"]), clv_bench=clv_agg([r for r in ls_clv if r.get("role") == "Bench"]),
+                         by_week=[dict(week=wk, **agg([r for r in ls_rows if r["week"] == wk]), clv=clv_agg([r for r in ls_clv if int(r["week"]) == wk])) for wk in sorted({r["week"] for r in ls_rows})],
+                         below_expected=bool(ls_rows) and ls_all["units"] < ls_all["expected"],
+                         rule=f"anytime TD singles priced +{LONGSHOT_PRICE} or longer, live weeks only (no backfill), every role, graded as logged. If after week {LONGSHOT_DECISION_WEEK} grades "
+                              f"the group's units are still below its expected units it moves to research-only: logged, graded, not on the Edge Board. Pre-registered 2026-10-12; nothing changes before then")
     out = dict(weeks=weeks, season_total=season_total, season_total_live=season_total_live, record_scopes=record_scopes, parlays=parlay_summary, bets_by_week=bets_by_week, bets_cum=bets_cum,
                calibration=cal, calibration_live=cal_live, cal_season=cal_season, last_week=detail, bets=bets,
                top15_by_week=sorted(top15_weeks, key=lambda w: (-w["season"], -w["week"])),
@@ -531,7 +546,7 @@ def main():
                actuals=actuals, actuals_cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"],
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
                slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules,
-               record=record, record_current_rules=record_current_rules, bench_gate=bench_gate, clv_by_week=clv_by_week,
+               record=record, record_current_rules=record_current_rules, bench_gate=bench_gate, longshot_gate=longshot_gate, clv_by_week=clv_by_week,
                research_pass=research_pass, research_ratio=research_ratio,
                board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
                                 min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE))

@@ -990,3 +990,55 @@ lines, price variance, `record`, `record_current_rules`, `bench_gate`, `clv_by_w
 `board_rules`), `test_reconcile.py` (new), `.github/workflows/update.yml` (reconcile check after both grading steps),
 `template.html` and `index.html` (Results card, Edge Board bench section, Yards tab), `alt_cap_study.py` and
 `ladder_replay.py` (new, research only), `CHANGELOG.md`, plus the regenerated `results.json`.
+
+## 2026-10-12 — Pre-registered gate: anytime TD at +1000 or longer (no change yet) · blend_model.json synced
+
+### Gate (written before any decision, nothing changes before week 8 grades)
+
+**Group:** anytime TD singles priced +1000 or longer at the price taken (the existing `longshot` flag, the same
+cutoff as the "shorter than +1000" primary record), live weeks only (weeks 3+, no backfill), every role (Starter,
+Rotational, Bench), graded as logged at the stake logged (1u; Bench 0.25u from week 6). One group, no sub-slicing.
+
+**Test:** once week 8 is graded and frozen (the Tuesday grading run after week 8's Monday game), compare the group's
+units to its expected units (EV at the price taken × stake) over live weeks 3–8.
+
+**Decision:** units below expected → the group moves to **research-only**: anytime TD edges at +1000 or longer are
+routed off the Edge Board and out of the bet record into a research log (the same mechanism as passing-yard rungs:
+logged, graded, shown on Results, never staked). Units at or above expected → it stays on the board and the line keeps
+tracking. Frozen records are not rewritten either way.
+
+**Tracking (live, Results → Priced bets):** a line "Anytime TD at +1000 or longer" with record, units, expected, ROI,
+CLV (flag-time vs closing no-vig probability on the logged edges), luck band, the Starter + Rotational / Bench split,
+the by-week figures and the gate status. `results.py` publishes it as `longshot_gate`; `test_reconcile.py` checks it
+against an independent recount of the bet list (overall, main, bench) and against its own week rows (56 checks now).
+These bets are already inside the singles and bench lines; the line is a view, not an extra stake.
+
+**Where it stands today** (live weeks 3–5, week 5 before MNF; CLV counts logged edges, the record counts graded bets,
+as on the bench line):
+
+| | Bets | Record | Units | Expected | CLV (logged edges) |
+|---|---|---|---|---|---|
+| All roles | 40 | 3–37 | +6.65u | +17.81u | +0.25 pts, 55% beat the close (53) |
+| Starter + Rotational | 8 | 0–8 | −8.00u | +2.97u | −0.19 pts, 30% (10) |
+| Bench | 32 | 3–29 | +14.65u | +14.84u | +0.36 pts, 61% (43) |
+| Week 3 | 16 | 2–14 | +19.60u | +8.27u | +0.44 pts, 90% (20) |
+| Week 4 | 13 | 1–12 | −1.95u | +6.35u | +0.77 pts, 53% (17) |
+| Week 5 | 11 | 0–11 | −11.00u | +3.19u | −0.53 pts, 13% (16) |
+
+Status: below expected (−11.2u against a ±54.5u luck band, 0.4σ). The full re-score in the week-5 entry (any TD at
++1000 or longer carrying the whole actual-vs-expected gap) is what prompted this gate; the decision waits for week 8.
+
+### blend_model.json: which fit the site uses
+
+`run_week.py` loads `blend_model.json` for every EV on the board, and in the workflow `results.py` runs **before**
+`run_week.py` (the smoke step) and refits the file in the runner from the committed slates. So the live site has
+always used the fresh refit, never the committed file, which was stale (last committed with the week-3 fit: weeks 1–3,
+n 950, no 2+ TD fit). The uncommitted local refit was byte-for-byte the `blend` block CI wrote into `results.json`
+(weeks 1–5; anytime n 1624 50/50 in use, first TD n 1590 fitted in use, 2+ TD n 335 50/50 in use). Committed it so the
+repo matches what runs. Still to do so it stays in sync: add `blend_model.json` to the workflow's `git add` list in
+the Publish step (a one-word change to `.github/workflows/update.yml`, not applied in this session).
+
+### Files changed
+
+`results.py` (`longshot_gate`), `test_reconcile.py` (4 more checks), `template.html` and `index.html` (the tracking
+line), `blend_model.json` (synced to the fit in use), `results.json` (regenerated), `CHANGELOG.md`.

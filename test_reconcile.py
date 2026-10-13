@@ -8,6 +8,7 @@ Checks, for the live and since-current-rules scopes:
   3. record.<scope>.main/bench == an independent recount of results.json `bets` (singles) by role group; parlay == parlays.by_week
   4. the same for the shorter-than-+1000 split
   5. record_current_rules.cum == sum of its own week rows
+  6. longshot_gate (anytime TD at +1000 or longer, live weeks) == recount of `bets` overall / main / bench, and == its own week rows
 Fails loudly (exit 1) with the numbers that disagree. Units compare to 0.01u, expected to 0.01u.
 """
 import json, sys
@@ -87,6 +88,16 @@ def main():
         # the singles headline must not contain parlays
         assert S["main"]["all"]["n"] + S["bench"]["all"]["n"] == recount(R["bets"], in_scope)["n"], f"{sc}: singles count differs from the bet list"
         checks += 1
+    LG = R.get("longshot_gate")
+    if LG and LG.get("all"):
+        live = lambda b: int(b["week"]) not in bf
+        anyls = lambda b: live(b) and b["market"] == "any" and bool(b.get("longshot"))
+        same("longshot gate: all vs recount of bets", LG["all"], recount(R["bets"], anyls)); checks += 1
+        same("longshot gate: main vs recount of bets", LG["main"], recount(R["bets"], lambda b: anyls(b) and b.get("role") != "Bench")); checks += 1
+        same("longshot gate: bench vs recount of bets", LG["bench"], recount(R["bets"], lambda b: anyls(b) and b.get("role") == "Bench")); checks += 1
+        acc = zero()
+        for w in LG["by_week"]: add(acc, w)
+        same("longshot gate: all vs its week rows", LG["all"], acc); checks += 1
     CR = R.get("record_current_rules")
     if CR and CR.get("cum"):
         for g in ("main", "bench", "parlay"):
