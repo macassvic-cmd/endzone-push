@@ -60,5 +60,36 @@
 "pass-yds hidden"
 ],
 "flagged": "20261013T2151Z"
+},
+"00-0041251|yds_alt|pass|224.5": {
+"bet": "Jalon Daniels Over 224.5 pass yds (alt)",
+"pid": "00-0041251",
+"market": "yds_alt",
+"kind": "pass",
+"line": 224.5,
+"team": "TB",
+"model_p": 0.3623,
+"mkt_p": 0.2407,
+"blend_p": 0.3015,
+"best": 290,
+"book": "FanDuel",
+"ev": 0.1759,
+"med": 290,
+"ev_med": 0.1759,
+"nbooks": 2,
+"curve_rungs": 11,
+"games": 3,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.51,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261015T2209Z"
 }
 }

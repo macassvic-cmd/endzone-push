@@ -1,0 +1,133 @@
+{
+"likely": {
+"flagged": "20261015T2209Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_06_WAS_SF",
+"prob": 0.2503,
+"model_p": 0.2503,
+"mkt_p": 0.2685,
+"price": 198,
+"book": "Kalshi",
+"dec": 2.98,
+"ev": -0.2541,
+"fair": 300
+}
+],
+"n": 2,
+"prob": 0.08155,
+"fair": 1126,
+"offered": 1077,
+"dec": 11.77,
+"ev": -0.0401,
+"stake": 0.0,
+"hits_every": 12,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0038542",
+"name": "Bijan Robinson",
+"team": "ATL",
+"game_id": "2026_06_CHI_ATL",
+"prob": 0.2218,
+"model_p": 0.2218,
+"mkt_p": 0.2516,
+"price": 218,
+"book": "Kalshi",
+"dec": 3.18,
+"ev": -0.2947,
+"fair": 351
+}
+],
+"n": 2,
+"prob": 0.07226,
+"fair": 1284,
+"offered": 1156,
+"dec": 12.56,
+"ev": -0.0923,
+"stake": 0.0,
+"hits_every": 14,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_06_DAL_GB",
+"prob": 0.2166,
+"model_p": 0.2166,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": -0.1444,
+"fair": 362
+}
+],
+"n": 2,
+"prob": 0.07057,
+"fair": 1317,
+"offered": 1460,
+"dec": 15.6,
+"ev": 0.101,
+"stake": 0.00086,
+"hits_every": 14,
+"paper": true
+}
+]
+}
+}
