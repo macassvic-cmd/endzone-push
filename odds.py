@@ -123,6 +123,7 @@ def prop_board(events):
                         if side == "yes": REFERENCE.setdefault(key, {})[b["title"]] = o["price"]
                         continue
                     board[key][b["title"]][side] = o["price"]
+                    if o.get("ts"): board[key][b["title"]]["ts"] = max(board[key][b["title"]].get("ts") or "", str(o["ts"]))   # capture time, for price age
     return board
 
 
@@ -183,4 +184,4 @@ def price_summary(board, market, player, point=None, hold=None):
         elif "yes" in v:                                   # one-sided: divide by that book's measured overround
             over = hold.get((market, bk)) or hold.get(market) or DEFAULT_OVERROUND.get(market, 1.05)
             fair.append(implied(v["yes"]) / over)
-    return dict(best=int(best), book=best_book, median=med, n_books=len(yes), market_p=float(np.median(fair)))
+    return dict(best=int(best), book=best_book, median=med, n_books=len(yes), market_p=float(np.median(fair)), captured=books[best_book].get("ts"))

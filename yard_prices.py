@@ -11,8 +11,10 @@ from odds import norm_name, implied, decimal, american
 KIND_MARKET = {"rush": "player_rush_yds", "rec": "player_reception_yds", "pass": "player_pass_yds"}
 
 
-def ladder_board(events):
-    """{(kind, norm_name, line): {book: {"over": price, "under": price, "main": bool}}}, plus each book's main-line hold."""
+def ladder_board(events, rejected=None):
+    """{(kind, norm_name, line): {book: {"over": price, "under": price, "main": bool, "ts": capture time}}}, plus each book's
+       main-line hold. Only verified ladders survive (verify_ladders); `rejected`, when a dict is passed, receives the
+       one-sided ladders that failed verification, keyed (kind, norm_name, book), for the research view."""
     board, hold = {}, {}
     for ev in events or []:
         for b in ev.get("props", {}).get("bookmakers", []):
@@ -26,38 +28,88 @@ def ladder_board(events):
                     cell = board.setdefault(key, {}).setdefault(b["title"], {})
                     cell["over" if o["name"] == "Over" else "under"] = o["price"]
                     if o.get("main") or m["key"] == base: cell["main"] = True
+                    if o.get("ts"): cell["ts"] = max(cell.get("ts") or "", str(o["ts"]))
     for key, books in board.items():
         for bk, c in books.items():
             if "over" in c and "under" in c and c.get("main"):
                 hold.setdefault((key[0], bk), []).append(implied(c["over"]) + implied(c["under"]))
     hold = {k: float(np.median(v)) for k, v in hold.items()}
-    _sanity(board)
+    verify_ladders(board, rejected)
     return board, hold
 
 
-def _sanity(board):
-    """Drop alternate rungs that contradict the ladder: within one book and player, P(over) must fall as the line rises.
-       Anchored on the book's main line when it has one (SharpAPI has shown DraftKings alternate rows like 'Over 9.5
-       +2000' next to a main 25.5 at -113). Rows that violate the order are removed from that book."""
+MAIN_TOL, STEP_TOL = 0.03, 0.02      # a one-sided rung may sit this far (no-vig P) on the wrong side of the book's two-sided line / of the rung below it
+LADDER_RULE = ("a book's alternate rungs count as listed only when the whole ladder is consistent with that book's own two-sided line "
+               "(every lower rung at least as likely, every higher rung at most as likely, within 3 pts) and never rises with the line; "
+               "otherwise the ladder is unverified and research-only")
+
+
+def verify_ladders(board, rejected=None):
+    """Keep a book's one-sided alternate rungs for a player only when the whole ladder can be verified against that book's
+       own two-sided line in the same pull: every rung below it at least as likely (no-vig, within MAIN_TOL), every rung
+       above it at most as likely, and P(over) never rising with the line (STEP_TOL). One violation rejects every one-sided
+       rung of that book for that player: the feed has carried whole ladders under the wrong market (SharpAPI's DraftKings
+       'alternate' yardage rows in 2026 weeks 5-6 were a different ladder entirely: 'Emanuel Wilson Over 54.5 rush +2000'
+       next to his two-sided 66.5 at -110), so the surviving rows of a broken ladder are not evidence that the book lists
+       them. A ladder with no two-sided line at the book cannot be verified and is rejected too. Two-sided lines always
+       stay. Rejected ladders go to `rejected[(kind, player, book)] = {reason, rungs}` when a dict is given."""
     by = {}
     for (kind, player, line), books in board.items():
         for bk, c in books.items():
             if "over" in c: by.setdefault((kind, player, bk), []).append((line, c))
-    dropped = 0
+    n_lad = n_bad = 0
     for (kind, player, bk), rungs in by.items():
         rungs.sort(key=lambda x: x[0])
-        probs = [implied(c["over"]) for _, c in rungs]
-        main = next((i for i, (_, c) in enumerate(rungs) if c.get("main") and "under" in c), None)
-        bad = set()
-        for i, (line, c) in enumerate(rungs):
-            if main is not None and i != main:
-                if (i < main and probs[i] < probs[main]) or (i > main and probs[i] > probs[main]): bad.add(i)
-            for j in range(i):
-                if j not in bad and probs[i] > probs[j] + 0.02: bad.add(i); break      # a higher line can't be likelier than a lower one
-        for i in bad:
-            board[(kind, player, rungs[i][0])].pop(bk, None); dropped += 1
+        anchors = [(l, c) for l, c in rungs if "under" in c]
+        alts = [(l, c) for l, c in rungs if "under" not in c]
+        if not alts: continue
+        n_lad += 1
+        why = ladder_fault(anchors, alts)
+        if why is None: continue
+        n_bad += 1
+        for l, c in alts:
+            board[(kind, player, l)].pop(bk, None)
+            if rejected is not None:
+                rejected.setdefault((kind, player, bk), dict(reason=why, rungs=[]))["rungs"].append(dict(line=l, over=int(c["over"]), ts=c.get("ts")))
     for k in [k for k, v in board.items() if not v]: board.pop(k)
-    if dropped: print(f"yard ladders: dropped {dropped} inconsistent alternate rungs")
+    if n_bad: print(f"yard ladders: {n_bad} of {n_lad} one-sided alternate ladders rejected as unverifiable against the book's own two-sided line")
+    return board
+
+
+def ladder_fault(anchors, alts):
+    """None when a book's ladder verifies, else the reason. anchors = [(line, cell)] two-sided rows, alts = one-sided rows."""
+    if not anchors: return "no two-sided line at this book to verify the ladder against"
+    an = [(l, implied(c["over"]) / (implied(c["over"]) + implied(c["under"])), implied(c["over"]) + implied(c["under"])) for l, c in anchors]
+    hold = float(np.median([h for _, _, h in an]))
+    pts = [(l, min(implied(c["over"]) / hold, 0.999)) for l, c in alts]
+    for ml, pm, _ in an:
+        bad = [(l, p) for l, p in pts if (l < ml and p < pm - MAIN_TOL) or (l > ml and p > pm + MAIN_TOL)]
+        if bad:
+            return f"contradicts the book's own line (Over {ml:g} at {pm:.0%}): " + ", ".join(f"Over {l:g} at {p:.0%}" for l, p in bad[:3]) + (f" and {len(bad) - 3} more" if len(bad) > 3 else "")
+    seq = sorted(pts + [(l, p) for l, p, _ in an])
+    steps = [(seq[i][0], seq[i][1], seq[i - 1][0]) for i in range(1, len(seq)) if seq[i][1] > seq[i - 1][1] + STEP_TOL]
+    if steps:
+        return "P(over) rises with the line: " + ", ".join(f"Over {l:g} at {p:.0%} above Over {lo:g}" for l, p, lo in steps[:3])
+    return None
+
+
+def book_ranges(board, kind, player):
+    """{book: (lowest, highest listed line)} over the verified board for this player and stat."""
+    nn = norm_name(player); rng = {}
+    for (k, n, line), books in board.items():
+        if k != kind or n != nn: continue
+        for bk, c in books.items():
+            if "over" not in c: continue
+            lo, hi = rng.get(bk, (line, line)); rng[bk] = (min(lo, line), max(hi, line))
+    return rng
+
+
+def monotone_violations(xs, ps, tol=0.0):
+    """[(x, p, previous x, previous p)] wherever P(over) rises as the line rises; [] when the sequence is non-increasing."""
+    seq = sorted(zip(xs, ps)); out = []
+    for i in range(1, len(seq)):
+        if seq[i][1] > seq[i - 1][1] + tol: out.append((seq[i][0], seq[i][1], seq[i - 1][0], seq[i - 1][1]))
+    return out
 
 
 DISAGREE, MODEL_BAND, LONE_BAND = 0.30, 0.15, 0.35   # disagreeing books: keep quotes within MODEL_BAND of the model; a lone quote within LONE_BAND
@@ -86,7 +138,8 @@ def price_rung(board, hold, kind, player, line, model_p=None):
             po, pu = implied(c["over"]), implied(c["under"]); fair.append(po / (po + pu))
         else:
             fair.append(implied(c["over"]) / hold.get((kind, bk), 1.06))
-    return dict(best=int(best), book=best_bk, median=med, n_books=len(overs), market_p=float(np.median(fair)), two_sided=any("under" in c for c in books.values()))
+    return dict(best=int(best), book=best_bk, median=med, n_books=len(overs), market_p=float(np.median(fair)), two_sided=any("under" in c for c in books.values()),
+                captured=books[best_bk].get("ts"))
 
 
 MIN_CURVE_BOOKS, MIN_CURVE_RUNGS = 2, 4      # a market curve counts when 2+ books contribute, or one book posts 4+ rungs
@@ -95,7 +148,7 @@ CROSS_BAND, MODEL_BAND_CURVE = 0.30, 0.35     # a quote more than 30 pts from th
 
 
 def book_points(board, hold, kind, player):
-    """Every quoted Over for this player and stat after the sanity filters: [(line, book, no-vig P(over), price)].
+    """Every quoted Over for this player and stat on the verified board: [(line, book, no-vig P(over), price, capture ts)].
        Two-sided rungs are de-vigged against their own Under; one-sided alternates against the book's main-line hold."""
     nn = norm_name(player); pts = []
     for (k, n, line), books in board.items():
@@ -106,7 +159,7 @@ def book_points(board, hold, kind, player):
                 po, pu = implied(c["over"]), implied(c["under"]); p = po / (po + pu)
             else:
                 p = implied(c["over"]) / hold.get((kind, bk), 1.06)
-            pts.append((float(line), bk, float(min(max(p, 0.001), 0.999)), int(c["over"])))
+            pts.append((float(line), bk, float(min(max(p, 0.001), 0.999)), int(c["over"]), c.get("ts")))
     return pts
 
 
@@ -128,7 +181,7 @@ def _pav_decreasing(xs, ys):
 
 def _book_curve(pts_bk):
     xs = sorted({l for l, *_ in pts_bk}); by = {}
-    for l, _, p, _ in pts_bk: by.setdefault(l, []).append(p)
+    for l, _, p, *_ in pts_bk: by.setdefault(l, []).append(p)
     return xs, _pav_decreasing(xs, [float(np.mean(by[l])) for l in xs])
 
 
@@ -137,14 +190,15 @@ def market_curve(board, hold, kind, player, model=None):
        checked against the other books' own monotone curve at that line (CROSS_BAND), or against the model knots
        `model=(lines, probs)` when no other book covers the line (MODEL_BAND_CURVE); survivors are averaged per line,
        made non-increasing (PAV) and joined linearly in log-odds. No extrapolation: curve_at() is None outside [lo, hi].
-       `eligible` = 2+ books or one book with 4+ rungs. `quotes` = {line: [(book, price, p)]} of the surviving quotes."""
+       `eligible` = 2+ books or one book with 4+ rungs. `quotes` = {line: [(book, price, p)]} of the surviving quotes,
+       `captured` = {(line, book): capture ts}."""
     pts = book_points(board, hold, kind, player)
     if not pts: return None
     by_book = {}
     for q in pts: by_book.setdefault(q[1], []).append(q)
     curves = {bk: _book_curve(v) for bk, v in by_book.items()}
     kept, dropped = [], 0
-    for line, bk, p, price in pts:
+    for line, bk, p, price, ts in pts:
         refs = [interp_logit(*curves[o], line) for o in curves if o != bk]
         refs = [r for r in refs if r is not None]
         if refs:
@@ -153,15 +207,16 @@ def market_curve(board, hold, kind, player, model=None):
             mp = interp_logit(model[0], model[1], line); ok = mp is None or abs(p - mp) <= MODEL_BAND_CURVE
         else:
             ok = True
-        if ok: kept.append((line, bk, p, price))
+        if ok: kept.append((line, bk, p, price, ts))
         else: dropped += 1
     if not kept: return None
-    by_line, per_book, quotes = {}, {}, {}
-    for line, bk, p, price in kept:
+    by_line, per_book, quotes, cap = {}, {}, {}, {}
+    for line, bk, p, price, ts in kept:
         by_line.setdefault(line, []).append(p); per_book[bk] = per_book.get(bk, 0) + 1; quotes.setdefault(line, []).append((bk, price, round(p, 4)))
+        if ts: cap[(line, bk)] = ts
     lines = sorted(by_line); probs = _pav_decreasing(lines, [float(np.mean(by_line[l])) for l in lines])
     return dict(lines=lines, probs=[round(p, 4) for p in probs], books=sorted(per_book), per_book=per_book, n_rungs=len(lines), lo=lines[0], hi=lines[-1],
-                eligible=len(per_book) >= MIN_CURVE_BOOKS or max(per_book.values()) >= MIN_CURVE_RUNGS, quotes=quotes, dropped=dropped)
+                eligible=len(per_book) >= MIN_CURVE_BOOKS or max(per_book.values()) >= MIN_CURVE_RUNGS, quotes=quotes, captured=cap, dropped=dropped)
 
 
 def interp_logit(xs, ps, x):
@@ -182,9 +237,15 @@ def curve_at(curve, line):
 
 
 def offered_at(board, kind, player, line):
-    """[(book, Over price)] quoted at exactly this line (after the sanity filters)."""
+    """[(book, Over price)] listed at exactly this line on the verified board (a two-sided line or a verified alternate rung)."""
     books = board.get((kind, norm_name(player), float(line))) or {}
     return [(bk, int(c["over"])) for bk, c in books.items() if "over" in c]
+
+
+def captured_at(board, kind, player, line, book):
+    """Capture timestamp (ISO, from the feed) of this book's quote at exactly this line, or None."""
+    c = (board.get((kind, norm_name(player), float(line))) or {}).get(book) or {}
+    return c.get("ts")
 
 
 def offered_lines(board, kind, player):

@@ -19,6 +19,14 @@ MARKETS = [("any_", "Anytime TD", "p_any"), ("first_", "First TD", "p_first"), (
 #   - Passing-yard rungs (main line and alt) are hidden from the board and the record and logged to
 #     research/pass_yds_<season>_w<week>.json until the passing model beats the books on Brier over 3+ graded weeks.
 BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS = 6, 0.25, 2.5, ("pass",)
+# Timing rules (2026-10-15): an edge is actionable only while its game is more than KICKOFF_CUTOFF_MIN minutes from kickoff
+# and, once MAX_PRICE_AGE_MIN is set, only while the price it was flagged at is younger than that. Edges that fail are held
+# off the board (shown with the reason, never logged, never graded). MAX_PRICE_AGE_MIN = None shows the price age on every
+# row without enforcing a limit; the user sets the number.
+KICKOFF_CUTOFF_MIN, MAX_PRICE_AGE_MIN = 30, None
+# Listing rule (2026-10-15): an alternate yard rung is actionable only when the named book lists that exact rung at that
+# price on the verified board (yard_prices.verify_ladders); curve values never stand in for a price.
+LISTED_RULE = "actionable alt rungs are listed at the named book at the named price; unlisted or unverified rungs are research-only"
 
 
 def stake_for(role):
@@ -35,6 +43,41 @@ def ratio_of(model_p, mkt_p):
 def ratio_blocked(role, model_p, mkt_p):
     r = ratio_of(model_p, mkt_p)
     return role == "Rotational" and r is not None and r > MAX_RATIO_ROT
+
+
+def minutes_to_kick(kick_utc, now):
+    """Minutes from `now` (tz-aware pandas Timestamp) to an ISO kickoff like '2026-10-16T00:15Z'; None when unknown."""
+    if not kick_utc: return None
+    try:
+        return float((pd.to_datetime(kick_utc, utc=True) - now) / pd.Timedelta(minutes=1))
+    except (TypeError, ValueError):
+        return None
+
+
+def price_age_min(captured, now):
+    """Minutes between a quote's capture timestamp (ISO, from the feed) and `now`; None when the feed gave no timestamp."""
+    if not captured: return None
+    try:
+        return float((now - pd.to_datetime(captured, utc=True)) / pd.Timedelta(minutes=1))
+    except (TypeError, ValueError):
+        return None
+
+
+def not_actionable(e, now, kickoff_cutoff=None, max_age=None):
+    """Reasons an edge cannot be acted on at `now`: kickoff within the cutoff (or underway), or a price older than the age limit.
+       [] when it is actionable. Sets e['kick_min'] and e['age_min'] as a side effect so the page can show them."""
+    cut = KICKOFF_CUTOFF_MIN if kickoff_cutoff is None else kickoff_cutoff
+    lim = MAX_PRICE_AGE_MIN if max_age is None else max_age
+    why = []
+    km = minutes_to_kick(e.get("kick_utc"), now); e["kick_min"] = None if km is None else round(km, 1)
+    if km is None: why.append("kickoff unknown")
+    elif km <= 0: why.append("game underway")
+    elif km < cut: why.append(f"kickoff in {km:.0f} min (under {cut})")
+    age = price_age_min(e.get("captured"), now); e["age_min"] = None if age is None else round(age, 1)
+    if lim is not None:
+        if age is None: why.append("price age unknown")
+        elif age > lim: why.append(f"price captured {age:.0f} min ago (over {lim})")
+    return why
 
 
 def split_board(edges):
@@ -70,7 +113,7 @@ def td_edges(df, min_books=MIN_BOOKS, min_ev=MIN_EV):
                 edges.append(dict(bet=f"{r['name']} {lbl}", pid=r["pid"], market=m[:-1], team=r["team"], model_p=val(r, pcol), mkt_p=val(r, m + "mkt_p"),
                                   blend_p=val(r, m + "blend_p"), best=int(r[m + "best"]), book=val(r, m + "book"), ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
                                   nbooks=int(num(r, m + "nbooks", 0)), games=int(num(r, "games", 0)), w=val(r, m + "w", 0.5), role=val(r, "role", "Unknown"),
-                                  kalshi=None if kal is None else int(kal), kalshi_liquid=flag(r, m + "kalshi_liquid")))
+                                  kalshi=None if kal is None else int(kal), kalshi_liquid=flag(r, m + "kalshi_liquid"), captured=val(r, m + "captured")))
     return edges
 
 

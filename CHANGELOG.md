@@ -1042,3 +1042,86 @@ the Publish step (a one-word change to `.github/workflows/update.yml`, not appli
 
 `results.py` (`longshot_gate`), `test_reconcile.py` (4 more checks), `template.html` and `index.html` (the tracking
 line), `blend_model.json` (synced to the fit in use), `results.json` (regenerated), `CHANGELOG.md`.
+
+
+## 2026-10-15 — Phantom alt rungs: listed-only board, ladder verification, kickoff and staleness rules
+
+Reported (week 6, verified on the books' sites): the Yards tab showed "Emanuel Wilson Over 19.5 rush yds, BEST -135,
+BOOK DraftKings" while DraftKings listed no Wilson rushing rung below 30+ (-2200) and FanDuel none below 30+ (-1400).
+Model projections untouched in this ticket.
+
+### Step 0: the exact computation behind the row (from the saved 22:09 UTC pull)
+
+The three numbers come from three different places, which is why they do not reconcile with each other:
+
+- **BEST -135, BOOK DraftKings** is a raw row in the SharpAPI feed: DraftKings `player_rushing_yards` non-main rows for
+  Wilson were 4.5 -1800, 9.5 -575, 14.5 -260, **19.5 -135**, 24.5 +125, 29.5 +210, 34.5 +340, 39.5 +550, 44.5 +850,
+  49.5 +1300, 54.5 +2000, next to DraftKings' own two-sided 66.5 at -110/-114. That ladder says P(over 54.5) ≈ 5% while
+  the main line says P(over 66.5) ≈ 50%: it is not a rushing-yards ladder (it has the shape of a longest-rush ladder
+  flattened under the yards market). The old per-row sanity filter dropped only the rows that sat on the wrong side of
+  the main (24.5–54.5) and kept 4.5–19.5 because -135 (57%) is above -110 (52%). Its own no-vig P was
+  0.5745 / 1.0565 (DraftKings' measured hold) = **0.5437**.
+- **MARKET 67.7%** is not the de-vig of -135. It is the pooled DK+FD curve after the cross-check and pool-adjacent-
+  violators: FanDuel's genuine 29.5 at -1450 (0.878) was dropped by the cross-check because it sat 0.34 from
+  DraftKings' phantom curve interpolated at 29.5, and PAV then pooled the phantom 19.5 (0.5437) with FanDuel's 39.5
+  (0.7942) and 49.5 (0.6916): (0.5437 + 0.7942 + 0.6916) / 3 = **0.6765** at all three lines.
+- **BLEND 74.2%** = 50/50 of model 0.8067 and curve 0.6765 (no fitted yards blend) = **0.7416**;
+  EV = 0.7416 × 1.7407 − 1 = **+29.1%**. The alt rule then passed it: -135 is shorter than +300 and 0.8067 ≤ 2 × 0.6765.
+- **RJ Harvey Over 24.5 (+235 FanDuel)**: listed in all three week-6 pulls (FanDuel 4.5 -650, 9.5 -235, 14.5 -113/-113,
+  19.5 +152, 24.5 +235, 29.5 +350 …, a consistent ladder). 0.2985 / 1.0654 = **0.2802** is both the quote's no-vig P and
+  the curve value (only quote at that line); blend (0.4796 + 0.2802) / 2 = **0.3799**; EV 0.3799 × 3.35 − 1 = **+27.3%**.
+  Nothing phantom about it; it was removed from the live board later only by the kickoff rule.
+
+How widespread: anchored on each book's two-sided line, **every DraftKings one-sided yardage ladder in the week 5 and
+week 6 pulls contradicted DraftKings' own main line (19 of 19 in the 22:09 pull, 54/55, 118/120, 45/46 … in the
+week-5 pulls); FanDuel's did not (0 of 208 in the 22:09 pull, 1 ladder in one week-5 pull).** The feed's
+`is_main_line` flag is also unreliable (it lands on rows like "Cooper Kupp Over 39.5 +280" next to a two-sided 21.5), so
+the two-sided row, not the flag, is the anchor everywhere now. Javonte Williams Over 19.5 rush (-165 DraftKings) on the
+same board was the same defect.
+
+### Fixes (yard_prices.py, rules.py, run_week.py, odds.py, template.html)
+
+1. **Listed-only.** `yard_prices.verify_ladders` replaces the per-row `_sanity`: a book's one-sided rungs for a player
+   count only when the whole ladder is consistent with that book's own two-sided line in the same pull (every lower rung
+   at least as likely, every higher rung at most as likely, within 3 pts no-vig) and never rises with the line (2 pts).
+   One violation rejects every one-sided rung of that book for that player; a ladder with no two-sided line at the book
+   cannot be verified and is rejected too; two-sided lines always stay. Rejected ladders are kept for the research view
+   (`yards[].unverified`, with the reason) and never priced. An alt-rung edge additionally requires that the named book
+   lists that exact rung on the verified board (`listed`), so BEST/BOOK are always a listed quote; the curve stays the
+   judge of the rung (unchanged alt rule v2), and the Yards tab now shows the quote's own no-vig P next to the curve value
+   when they differ ("Market 67.7% (quote 54.4%)" is exactly the kind of row this exposes).
+2. **No extrapolation.** The pooled curve was already undefined outside its range; it is now built only from verified
+   ladders, so a phantom ladder can no longer extend the range downward (Wilson's curve now starts at 29.5 and
+   `curve_at(19.5)` is None). Every rung carries `range_ok` and `listed`; unlisted rungs are tagged "not listed · research
+   only" and rungs outside every verified range "outside every listed range".
+3. **Monotonicity gate.** After the yard rows are built, `run_week.py` checks that P(over) never rises with the line on
+   the model ladder, the pooled market curve and the blend for every player (research-only rungs included), and on every
+   verified per-book ladder (2-pt tolerance, the verifier's). Any violation prints the offending points and fails the
+   build (`SystemExit`). `yard_prices.monotone_violations` is the shared helper.
+4. **Kickoff cutoff.** `rules.KICKOFF_CUTOFF_MIN = 30`: an edge whose game starts within 30 minutes, or is underway, is
+   held off the board (`data.held`, with the reason), never logged for CLV and never graded. Every edge carries
+   `kick_utc`; the page re-checks the rule on the viewer's clock, so a board built at 3 PM greys the 5:15 game out at
+   4:45 without a rebuild.
+5. **Staleness.** Every quote keeps the feed's capture timestamp (`captured`, SharpAPI row timestamps; Odds API market
+   `last_update`), every edge and rung shows its price age, and `rules.MAX_PRICE_AGE_MIN` enforces a limit once set.
+   **It is `None` (not enforced, age shown) until the user sets the number.**
+
+Replay harness: `AS_OF=<ISO UTC>` fixes "now" for a build (which games are ahead, the cutoff, every age) and
+`OUT_DIR=<dir>` writes the slate files elsewhere, so a saved pull can be rebuilt as of its own time:
+`ODDS_MOCK=odds_history/2026_w6_20261015T2209Z.json AS_OF=2026-10-15T22:09:00Z OUT_DIR=/tmp/replay KALSHI=off python run_week.py 2026 6`.
+`test_ladder_integrity.py` (in the CI test step) covers the Wilson ladder, a consistent ladder, the no-anchor case, a
+rising ladder, the monotone helper, the timing rules and a regression on the saved week-6 pull.
+
+### Verification on the week-6 snapshot (22:09 UTC pull, rebuilt as of 22:09 with the old and the new code on the same data)
+
+| Check | Result |
+|---|---|
+| Zero actionable yard rows whose rung is not in the named book's verified ladder | **PASS** — 18 of 18 yard edges (1 main, 17 alt) match a raw feed row at the named book, line and price |
+| Wilson 19.5 and every other unlisted / unverified rung absent from the board | **PASS** — no Wilson yard row, no DraftKings alt-rung edge (19 DraftKings ladders rejected, 0 FanDuel) |
+| Monotonicity on every player curve | **PASS** — 541 player curves (model, market curve, blend) and every verified ladder |
+| Kickoff cutoff | **PASS** — as of 22:09 nothing held (SEA@DEN 126 min away); as of 23:50 the five SEA/DEN edges are held "kickoff in 25 min"; as of 00:20 "game underway" |
+| Removed vs. the old code (same data, same sim draws) | Exactly 2: **Emanuel Wilson Over 19.5 rush (-135 DraftKings)** and **Javonte Williams Over 19.5 rush (-165 DraftKings)**, both "DraftKings ladder unverified: contradicts the book's own line". No FanDuel-listed rung dropped. (The TD edge "Emanuel Wilson First TD +608 Kalshi" differs between the two replays only because the old-code worktree still had the stale blend_model.json; TD edges are outside this ticket.) |
+
+Open item: `edge_log/2026_w6.json` already holds the Wilson 19.5 (-135) and Javonte Williams 19.5 (-165) entries from the
+22:09 run, and `results.py` grades yard edges from that log. They were never placeable; decision needed on voiding them
+(not changed here).

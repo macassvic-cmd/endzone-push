@@ -61,6 +61,7 @@ jobs:
       - name: Tests and data
         run: |
           python test_nan_safety.py
+          python test_ladder_integrity.py
           python refresh.py --data-only
       - name: Smoke-test grading on the committed slates (fails loudly before any odds are pulled)
         run: |

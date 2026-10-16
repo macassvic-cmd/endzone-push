@@ -4,15 +4,18 @@
     python run_week.py 2026 4          # explicit
 Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
-import sys, os, json, numpy as np, pandas as pd
+import sys, os, json, collections, numpy as np, pandas as pd
 import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
 import rules as RU
 from nansafe import val, flag, text, num, isnan
 
-DATA, OUT = "data", "."
+DATA, OUT = "data", os.environ.get("OUT_DIR", ".")       # OUT_DIR: write the slate files elsewhere (replays never touch the published ones)
 os.makedirs(OUT, exist_ok=True)
 p, s = M.load()
-now_et = pd.Timestamp.now(tz="America/New_York").tz_localize(None)
+# AS_OF=<ISO UTC> replays a build as of that moment (which games are still ahead, the kickoff cutoff, every price age); default = now
+NOW_UTC = pd.Timestamp(os.environ["AS_OF"]) if os.environ.get("AS_OF") else pd.Timestamp.now(tz="UTC")
+NOW_UTC = NOW_UTC.tz_localize("UTC") if NOW_UTC.tzinfo is None else NOW_UTC.tz_convert("UTC")
+now_et = NOW_UTC.tz_convert("America/New_York").tz_localize(None)
 s["kick"] = pd.to_datetime(s.gameday + " " + s.gametime.fillna("13:00"))
 
 if len(sys.argv) >= 3:
@@ -83,7 +86,7 @@ if events is None:
     _pulls = C.pulls(season, week)
     if _pulls:
         _stamp, _fn = _pulls[-1]
-        _now = pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
+        _now = NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ")
         events = [e for e in json.load(open(_fn)) if e["commence_time"] > _now]
         odds_asof = pd.Timestamp(f"{_stamp[:4]}-{_stamp[4:6]}-{_stamp[6:8]}T{_stamp[9:11]}:{_stamp[11:13]}Z").tz_convert("America/Los_Angeles").strftime("%a %b %d %I:%M %p PT")
         print(f"live odds off: reusing {_fn} ({odds_asof}) for {len(events)} games not yet kicked off")
@@ -217,7 +220,7 @@ def attach(row, market, prob, point=None, prefix=""):
             f"{prefix}kalshi": kal if kal is not None else kref, f"{prefix}kalshi_liquid": kal is not None,
             f"{prefix}ev": round(blend * O.decimal(ps["best"]) - 1, 4), f"{prefix}model_ev": round(ev, 4),
             f"{prefix}med": ps["median"], f"{prefix}ev_med": round(blend * O.decimal(ps["median"]) - 1, 4),
-            f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w}
+            f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w, f"{prefix}captured": ps.get("captured")}
 
 ext = [dict(**attach(r, "player_anytime_td", r.p_any, prefix="any_"),
             **attach(r, "player_first_td", r.p_first, prefix="first_"),
@@ -256,6 +259,18 @@ for t, (qid, qn) in qbs.items():
                 bring.append(dict(game=f"{t}-{o}", a=x["name"], a_team=t, b=y["name"], b_team=o, joint=j,
                                   lift=j / (xa.mean() * yb.mean()), fair=int(M.fair_american(np.array([j]))[0])))
 
+def _ladders_by_book(board, hold):
+    """{(kind, norm_name, book): [(line, no-vig P(over))]} over the verified yard board (two-sided rows de-vigged against their Under,
+       one-sided rows against the book's measured main-line hold, as yard_prices.book_points does)."""
+    out = {}
+    for (k, n, line), books in board.items():
+        for bk, c in books.items():
+            if "over" not in c: continue
+            p = O.implied(c["over"]) / (O.implied(c["over"]) + O.implied(c["under"])) if "under" in c else O.implied(c["over"]) / hold.get((k, bk), 1.06)
+            out.setdefault((k, n, bk), []).append((line, p))
+    return out
+
+
 def kick_utc(et):
     """'2026-10-04 13:00' (Eastern, as nflverse lists it) -> '2026-10-04T17:00Z' so the page can sort and show local time."""
     return pd.Timestamp(et).tz_localize("America/New_York").tz_convert("UTC").strftime("%Y-%m-%dT%H:%MZ")
@@ -285,7 +300,9 @@ if YARD_KINDS:
     _tv, _plv, _qv = Y.build(p, s2, season, week, active, qbo, depth, snaps3, rookies, _cache, _yc, wind=wind)
     _posof = lambda pid: M.POS_MAP.get(pos.get(pid, "WR"), pos.get(pid, "WR"))
     _yd = Y.simulate(teams, _plv, qbs, _yc, sim, _posof)
-    _yb, _yh = YP.ladder_board(events) if events else ({}, {})
+    _yrej = {}                                                                     # (kind, player, book) -> one-sided ladders that failed verification (research view)
+    _yb, _yh = YP.ladder_board(events, rejected=_yrej) if events else ({}, {})
+    _kick = {t: kick_utc(teams[t]["gametime"]) for t in teams}
     _name = {r.pid: r["name"] for _, r in df.iterrows()}; _meta = {r.pid: r for _, r in df.iterrows()}
     _lines = {(pid, k): YP.offered_lines(_yb, k, _name.get(pid, "")) for (pid, k) in _yd if pid in _name}
     _coef = {k: BL.coef_for(BLENDS, "yds_" + k) or BL.coef_for(BLENDS, "yds") for k in Y.DEFAULT_LADDER}   # pooled yards fit when gated in (3+ weeks, beats 50/50 held out)
@@ -293,21 +310,28 @@ if YARD_KINDS:
         if r["pid"] not in _meta: continue
         m = _meta[r["pid"]]; rungs = []; best_edge = None
         _knots = sorted(((float(l), pr) for l, pr in r["ladder"].items()))
+        _rng = YP.book_ranges(_yb, r["kind"], _name[r["pid"]]) if _yb else {}                           # verified listed range per book
+        _unv = [dict(book=bk, reason=v["reason"], n=len(v["rungs"])) for (k, n, bk), v in _yrej.items() if k == r["kind"] and n == O.norm_name(_name[r["pid"]])]
         curve = YP.market_curve(_yb, _yh, r["kind"], _name[r["pid"]], model=([k[0] for k in _knots], [k[1] for k in _knots])) if _yb else None   # pooled DK + FD, bad rows cross-checked
         for line, prob in sorted(((float(l), pr) for l, pr in r["ladder"].items())):
             ps = YP.price_rung(_yb, _yh, r["kind"], _name[r["pid"]], line, model_p=prob) if _yb else None
             rung = dict(line=line, p=round(prob, 4), fair=int(M.fair_american(np.array([prob]))[0]))
+            _listed = YP.offered_at(_yb, r["kind"], _name[r["pid"]], line) if _yb else []
+            rung["listed"] = sorted(bk for bk, _ in _listed)                                            # books listing this exact rung on the verified board
+            rung["range_ok"] = any(lo <= line <= hi for lo, hi in _rng.values())                         # inside at least one book's verified listed range
             if ps:
                 blend = float(BL.predict(_coef.get(r["kind"]), [prob], [ps["market_p"]])[0])
                 ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
                 rung.update(best=ps["best"], book=ps["book"], med=ps["median"], nbooks=ps["n_books"], mkt_p=round(ps["market_p"], 4), blend=round(blend, 4),
-                            ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"])
+                            ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"], captured=ps.get("captured"))
             cp = YP.curve_at(curve, line)                                                    # market curve at this exact line (no extrapolation)
             offered = [(bk, pr) for bk, pr, _ in (curve["quotes"].get(line, []) if curve else [])]   # only quotes that survived the cross-check
             if cp is not None and offered:
                 cb = float(BL.predict(_coef.get(r["kind"]), [prob], [cp])[0])
                 obk, opr = max(offered, key=lambda x: O.decimal(x[1])); evc = cb * O.decimal(opr) - 1
-                rung.update(curve_p=round(cp, 4), curve_blend=round(cb, 4), offer=int(opr), offer_book=obk, ev_curve=round(evc, 4))
+                rung.update(curve_p=round(cp, 4), curve_blend=round(cb, 4), offer=int(opr), offer_book=obk, ev_curve=round(evc, 4),
+                            offer_p=round(float(next((p for bk, _, p in curve["quotes"].get(line, []) if bk == obk), cp)), 4),   # the named quote's own no-vig P (the curve is the judge, this is the price)
+                            captured=curve["captured"].get((line, obk)) or rung.get("captured"))
             rungs.append(rung)
         main = [g for g in rungs if g.get("two_sided")]
         main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
@@ -317,15 +341,18 @@ if YARD_KINDS:
         if main_ok and main and main.get("nbooks", 0) >= 2 and main["line"] >= Y.MIN_EDGE_LINE[r["kind"]] and main.get("ev", -1) >= 0.05 and main.get("ev_med", -1) >= 0.05:
             yard_edges.append(dict(bet=f"{_name[r['pid']]} Over {main['line']:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=main["line"], team=m["team"],
                                    model_p=main["p"], mkt_p=main["mkt_p"], blend_p=main["blend"], best=int(main["best"]), book=main["book"], ev=main["ev"], med=int(main["med"]), ev_med=main["ev_med"],
-                                   nbooks=int(main["nbooks"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=False, rule="main line"))
+                                   nbooks=int(main["nbooks"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=False, rule="main line",
+                                   listed=main["listed"], captured=main.get("captured"), kick_utc=_kick.get(m["team"])))
         # (2) alt-rung category: every other rung against the pooled curve; flagged only at prices shorter than +300 with model <= 2x curve, the rest logged for research
         best_alt = None
         for g in rungs:
             if g.get("ev_curve") is None or (main and g["line"] == main["line"]): continue
             if not (curve and curve["eligible"]) or g["line"] < Y.MIN_EDGE_LINE[r["kind"]] or g["ev_curve"] < 0.05 or not main_ok: continue
+            if g["offer_book"] not in g["listed"]: continue                                            # the named book must list this exact rung on the verified board
             cand = dict(bet=f"{_name[r['pid']]} Over {g['line']:g} {r['kind']} yds (alt)", pid=r["pid"], market="yds_alt", kind=r["kind"], line=g["line"], team=m["team"], model_p=g["p"],
                         mkt_p=g["curve_p"], blend_p=g["curve_blend"], best=int(g["offer"]), book=g["offer_book"], ev=g["ev_curve"], med=int(g["offer"]), ev_med=g["ev_curve"],
-                        nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=True, rule=Y.ALT_RULE)
+                        nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=True, rule=Y.ALT_RULE,
+                        listed=g["listed"], listed_p=g.get("offer_p"), captured=g.get("captured"), kick_utc=_kick.get(m["team"]))
             reasons = [x for x, bad in (("price", g["offer"] >= Y.ALT_MAX_PRICE), ("ratio", g["p"] > Y.ALT_MAX_RATIO * g["curve_p"])) if bad]
             if reasons: alt_research.append(dict(cand, reasons=reasons)); continue
             if best_alt is None or g["ev_curve"] > best_alt["ev"]: best_alt = cand
@@ -334,7 +361,22 @@ if YARD_KINDS:
         yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=val(m, "pos"), role=val(m, "role", "Unknown"), kind=r["kind"], mean=round(r["mean"], 1),
                               median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
                               main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot"),
-                              curve_books=curve["books"] if curve else [], curve_rungs=curve["n_rungs"] if curve else 0, curve_ok=bool(curve and curve["eligible"])))
+                              curve_books=curve["books"] if curve else [], curve_rungs=curve["n_rungs"] if curve else 0, curve_ok=bool(curve and curve["eligible"]),
+                              ranges={bk: list(v) for bk, v in _rng.items()}, unverified=_unv))
+    # monotonicity gate: P(over) must never rise with the line, on the model ladder, the pooled market curve and the blend (research-only rungs included)
+    _viol = []
+    for yrow in yard_rows:
+        for lbl, key in (("model", "p"), ("market curve", "curve_p"), ("blend", "curve_blend")):
+            pts = [(g["line"], g[key]) for g in yrow["rungs"] if g.get(key) is not None]
+            _viol += [(yrow["name"], yrow["kind"], lbl, v) for v in YP.monotone_violations([x for x, _ in pts], [p for _, p in pts])]
+    for (k_, n_, bk_), rows_ in _ladders_by_book(_yb, _yh).items():                                     # verified per-book ladders, same tolerance as the verifier
+        _viol += [(n_, k_, f"{bk_} ladder", v) for v in YP.monotone_violations([x for x, _ in rows_], [p for _, p in rows_], tol=YP.STEP_TOL)]
+    if _viol:
+        for v in _viol[:25]: print("MONOTONICITY VIOLATION:", v)
+        raise SystemExit(f"build failed: {len(_viol)} yard-curve monotonicity violation(s): P(over) rises with the line")
+    _rejn = collections.Counter(bk for _, _, bk in _yrej)
+    print(f"yard curves: monotonicity check passed on {len(yard_rows)} player curves; {len(_yrej)} unverified one-sided ladders kept research-only"
+          + (" (" + ", ".join(f"{bk} {n}" for bk, n in sorted(_rejn.items())) + ")" if _rejn else ""))
     print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {sum(1 for r in yard_rows if r['curve_ok'])} with a market curve, "
           f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if not e.get('alt'))} main line, {sum(1 for e in yard_edges if e.get('alt'))} alt rungs); {len(alt_research)} alt candidates logged for research")
     if alt_research and not os.environ.get("ODDS_MOCK"):
@@ -369,6 +411,13 @@ if YARD_KINDS:
 MIN_BOOKS, MIN_EV = RU.MIN_BOOKS, RU.MIN_EV
 edges = RU.td_edges(df)                                       # shared rule (rules.py), every field read NaN-safely
 edges += yard_edges
+for e in edges: e.setdefault("kick_utc", kick_utc(teams[e["team"]]["gametime"]) if e["team"] in teams else None)
+# timing rules (rules.py): nothing is actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN
+# is set) on a price older than that; held edges are shown with the reason, never logged for CLV, never graded
+_act = [(e, RU.not_actionable(e, NOW_UTC)) for e in edges]
+held = [dict(e, reasons=w) for e, w in _act if w]
+edges = [e for e, w in _act if not w]
+print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
 # board rules (rules.py): passing-yard rungs hidden (research log), Rotational players over 2.5x the market blocked (research log),
 # Bench plays kept in their own section at 0.25u; the headline board is Starter + Rotational
 _parts = RU.split_board(edges)
@@ -388,8 +437,10 @@ if not os.environ.get("ODDS_MOCK"):
     print("paper parlays newly logged:", PL.log_paper(_pl["modes"], season, week, _pstamp))
 # the live thresholds, published so the page labels rungs with the same numbers the board and grading use (never re-defined in display code)
 RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
-                 bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK)
+                 bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK,
+                 kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=RU.MAX_PRICE_AGE_MIN, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
+            as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),
