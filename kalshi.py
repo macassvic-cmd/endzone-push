@@ -120,6 +120,7 @@ def attach(events, board=None, min_volume=0.0):
     if board is None:
         board, _ = fetch_board()
     n = liquid = 0
+    _ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())        # capture time = this fetch (Kalshi quotes carry no timestamp of their own); feeds the price-age rule
     for ev in events or []:
         g = (TEAM_ABBR.get(ev["away_team"]), TEAM_ABBR.get(ev["home_team"]))
         k = board.get(g)
@@ -131,7 +132,7 @@ def attach(events, board=None, min_volume=0.0):
                        reference=not is_liquid(r),
                        kalshi_yes_ask=r["yes_ask"], kalshi_yes_bid=r["yes_bid"], kalshi_ask_size=r["ask_size"],
                        kalshi_dollars_at_ask=r["dollars_at_ask"], kalshi_volume=r["volume"], kalshi_volume_24h=r["volume_24h"],
-                       kalshi_ticker=r["ticker"])
+                       kalshi_ticker=r["ticker"], ts=_ts)
                   for r in rows if r["volume"] >= min_volume]
             if oc: markets.append(dict(key=key, outcomes=oc))
         if markets:

@@ -11,6 +11,7 @@ from nansafe import val, flag, text, num, isnan
 
 DATA, OUT = "data", os.environ.get("OUT_DIR", ".")       # OUT_DIR: write the slate files elsewhere (replays never touch the published ones)
 os.makedirs(OUT, exist_ok=True)
+if OUT != ".": C.EDGE_DIR, C.RESEARCH_DIR = f"{OUT}/edge_log", f"{OUT}/research"   # a replay never appends to the published edge log / research logs
 p, s = M.load()
 # AS_OF=<ISO UTC> replays a build as of that moment (which games are still ahead, the kickoff cutoff, every price age); default = now
 NOW_UTC = pd.Timestamp(os.environ["AS_OF"]) if os.environ.get("AS_OF") else pd.Timestamp.now(tz="UTC")
@@ -412,18 +413,18 @@ MIN_BOOKS, MIN_EV = RU.MIN_BOOKS, RU.MIN_EV
 edges = RU.td_edges(df)                                       # shared rule (rules.py), every field read NaN-safely
 edges += yard_edges
 for e in edges: e.setdefault("kick_utc", kick_utc(teams[e["team"]]["gametime"]) if e["team"] in teams else None)
-# timing rules (rules.py): nothing is actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN
-# is set) on a price older than that; held edges are shown with the reason, never logged for CLV, never graded
-_act = [(e, RU.not_actionable(e, NOW_UTC)) for e in edges]
-held = [dict(e, reasons=w) for e, w in _act if w]
-edges = [e for e, w in _act if not w]
-print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
 # board rules (rules.py): passing-yard rungs hidden (research log), Rotational players over 2.5x the market blocked (research log),
 # Bench plays kept in their own section at 0.25u; the headline board is Starter + Rotational
 _parts = RU.split_board(edges)
-edges = _parts["main"] + _parts["bench"]
 print(f"board: {len(_parts['main'])} main, {len(_parts['bench'])} bench at {RU.BENCH_STAKE}u | hidden passing-yard rungs {len(_parts['hidden'])} | "
       f"blocked rotational > {RU.MAX_RATIO_ROT}x {len(_parts['blocked'])}")
+# timing rules (rules.py), on the board rows only (hidden / blocked rows go to the research logs whatever the clock says): nothing is
+# actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN is set) on a price older than
+# that; held edges are shown with the reason, never logged for CLV, never graded
+_act = [(e, RU.not_actionable(e, NOW_UTC)) for e in _parts["main"] + _parts["bench"]]
+held = [dict(e, reasons=w) for e, w in _act if w]
+edges = [e for e, w in _act if not w]
+print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
 clean = lambda d: d.replace({np.nan: None})
 if not os.environ.get("ODDS_MOCK"):
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from

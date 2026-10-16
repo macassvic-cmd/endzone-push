@@ -10,7 +10,7 @@ results.py adds the aggregates (overall, by role, by market, % beating the close
 import glob, json, os, re
 import odds as O
 
-EDGE_DIR, ODDS_DIR = "edge_log", "odds_history"
+EDGE_DIR, ODDS_DIR, RESEARCH_DIR = "edge_log", "odds_history", "research"   # run_week.py points EDGE_DIR / RESEARCH_DIR under OUT_DIR for replays
 
 
 def log_edges(edges, season, week, stamp):
@@ -38,8 +38,8 @@ def log_edges(edges, season, week, stamp):
 def log_research(tag, rows, season, week, stamp):
     """First sighting of each (pid, market, kind, line) appended to research/<tag>_<season>_w<week>.json; never a bet.
        Used for the hidden passing-yard rungs and the Rotational ratio block. Returns the number newly logged."""
-    os.makedirs("research", exist_ok=True)
-    fn = f"research/{tag}_{season}_w{week}.json"
+    os.makedirs(RESEARCH_DIR, exist_ok=True)
+    fn = f"{RESEARCH_DIR}/{tag}_{season}_w{week}.json"
     log = json.load(open(fn)) if os.path.exists(fn) else {}
     n = 0
     for e in rows:
@@ -93,6 +93,7 @@ def closing_summary(season, week, log=None):
         return {}
     cache = {}
     for key, e in log.items():
+        if e.get("void"): continue                                               # voided entries (never placeable) get no close / CLV
         # find the event for this team in the latest pull to learn kickoff, then the last pull before it
         latest = pulls(season, week)
         if not latest:

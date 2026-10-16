@@ -1450,7 +1450,13 @@
 "model_p": 0.7256,
 "ev": 0.2715,
 "ev_med": 0.2715,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 67.5 at 50%): Over 24.5 at 43%, Over 29.5 at 31%, Over 34.5 at 22% and 3 more",
+"pull": "2026_w5_20261010T1932Z.json"
+}
 },
 "00-0039794|yds|rush|19.5": {
 "pid": "00-0039794",
@@ -1469,7 +1475,13 @@
 "model_p": 0.8923,
 "ev": 0.1899,
 "ev_med": 0.1899,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 71.5 at 50%): Over 24.5 at 46%, Over 29.5 at 34%, Over 34.5 at 25% and 4 more",
+"pull": "2026_w5_20261010T1932Z.json"
+}
 },
 "00-0037740|yds|rec|99.5": {
 "pid": "00-0037740",
@@ -1507,7 +1519,13 @@
 "model_p": 0.9395,
 "ev": 0.204,
 "ev_med": 0.204,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 61.5 at 50%): Over 24.5 at 38%, Over 29.5 at 29%, Over 34.5 at 22% and 5 more",
+"pull": "2026_w5_20261010T1932Z.json"
+}
 },
 "00-0032764|yds|rush|19.5": {
 "pid": "00-0032764",
@@ -1526,7 +1544,13 @@
 "model_p": 0.9675,
 "ev": 0.193,
 "ev_med": 0.193,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 78.5 at 50%): Over 29.5 at 41%, Over 34.5 at 32%, Over 39.5 at 24% and 5 more",
+"pull": "2026_w5_20261010T1932Z.json"
+}
 },
 "00-0037252|any": {
 "pid": "00-0037252",
@@ -2058,7 +2082,13 @@
 "model_p": 0.8485,
 "ev": 0.1803,
 "ev_med": 0.1803,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 67.5 at 50%): Over 24.5 at 43%, Over 29.5 at 31%, Over 34.5 at 22% and 4 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0033293|yds|rush|19.5": {
 "pid": "00-0033293",
@@ -2077,7 +2107,13 @@
 "model_p": 0.9248,
 "ev": 0.2159,
 "ev_med": 0.2159,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 71.5 at 50%): Over 24.5 at 47%, Over 29.5 at 36%, Over 34.5 at 27% and 5 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0040784|yds|rush|19.5": {
 "pid": "00-0040784",
@@ -2096,7 +2132,13 @@
 "model_p": 0.8374,
 "ev": 0.2726,
 "ev_med": 0.2726,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 60.5 at 50%): Over 24.5 at 36%, Over 29.5 at 26%, Over 34.5 at 18% and 3 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0038797|yds|rush|14.5": {
 "pid": "00-0038797",
@@ -2115,7 +2157,13 @@
 "model_p": 0.8532,
 "ev": 0.1369,
 "ev_med": 0.1369,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 63.5 at 49%): Over 24.5 at 37%, Over 29.5 at 27%, Over 34.5 at 20% and 4 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0037840|yds|rush|19.5": {
 "pid": "00-0037840",
@@ -2134,7 +2182,13 @@
 "model_p": 0.909,
 "ev": 0.2118,
 "ev_med": 0.2118,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 69.5 at 50%): Over 4.5 at 44%, Over 24.5 at 45%, Over 29.5 at 34% and 6 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0037248|yds|rush|19.5": {
 "pid": "00-0037248",
@@ -2153,7 +2207,13 @@
 "model_p": 0.9614,
 "ev": 0.1828,
 "ev_med": 0.1828,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 73.5 at 50%): Over 29.5 at 39%, Over 34.5 at 30%, Over 39.5 at 22% and 4 more",
+"pull": "2026_w5_20261010T2013Z.json"
+}
 },
 "00-0036355|any": {
 "pid": "00-0036355",
@@ -2343,7 +2403,13 @@
 "model_p": 0.853,
 "ev": 0.2157,
 "ev_med": 0.2157,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 51.5 at 50%): Over 19.5 at 39%, Over 24.5 at 27%, Over 29.5 at 17% and 3 more",
+"pull": "2026_w5_20261011T1942Z.json"
+}
 },
 "00-0033881|yds|rec|29.5": {
 "pid": "00-0033881",
@@ -2400,7 +2466,13 @@
 "model_p": 0.7145,
 "ev": 0.6557,
 "ev_med": 0.6557,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"void": {
+"reason": "DK ladder unverified \u2014 phantom feed price",
+"at": "2026-10-16T22:09Z",
+"check": "contradicts the book's own line (Over 64.5 at 50%): Over 24.5 at 39%",
+"pull": "2026_w5_20261011T1942Z.json"
+}
 },
 "00-0039793|yds|rec|29.5": {
 "pid": "00-0039793",

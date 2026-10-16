@@ -23,7 +23,7 @@ BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS = 6, 0.25, 2.5, ("pas
 # and, once MAX_PRICE_AGE_MIN is set, only while the price it was flagged at is younger than that. Edges that fail are held
 # off the board (shown with the reason, never logged, never graded). MAX_PRICE_AGE_MIN = None shows the price age on every
 # row without enforcing a limit; the user sets the number.
-KICKOFF_CUTOFF_MIN, MAX_PRICE_AGE_MIN = 30, None
+KICKOFF_CUTOFF_MIN, MAX_PRICE_AGE_MIN = 30, 15
 # Listing rule (2026-10-15): an alternate yard rung is actionable only when the named book lists that exact rung at that
 # price on the verified board (yard_prices.verify_ladders); curve values never stand in for a price.
 LISTED_RULE = "actionable alt rungs are listed at the named book at the named price; unlisted or unverified rungs are research-only"

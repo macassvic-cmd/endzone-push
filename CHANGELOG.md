@@ -1125,3 +1125,99 @@ rising ladder, the monotone helper, the timing rules and a regression on the sav
 Open item: `edge_log/2026_w6.json` already holds the Wilson 19.5 (-135) and Javonte Williams 19.5 (-165) entries from the
 22:09 run, and `results.py` grades yard edges from that log. They were never placeable; decision needed on voiding them
 (not changed here).
+
+
+## 2026-10-16 — Staleness limit 15 min, 14 phantom edge-log entries voided, study provenance, replay hygiene
+
+Follow-up to the 2026-10-15 entry (phantom alt rungs). Model projections untouched.
+
+### 1. `rules.MAX_PRICE_AGE_MIN = 15`
+
+Set by the user. Enforced in `run_week.py` (held edges, with the reason) and re-checked on the viewer's clock in
+`template.html`, so the consequence is: **a board is actionable for 15 minutes after its pull**; after that every row sits
+under "Held off the board · price captured N min ago (over 15)" until the next run. The 22:09 UTC week-6 pull replayed as of
+23:50 holds every yard row and every TD row for age (the two SEA/DEN rows also for kickoff). Kalshi quotes carry no
+timestamp of their own, so `kalshi.attach` now stamps each quote with its fetch time (without that every Kalshi-best edge
+was held for "price age unknown"; `test_kalshi_quotes_carry_capture_time`). Odds API and SharpAPI quotes already carried
+theirs. Board rules (hidden passing rungs, ratio block, bench) now apply before the timing hold, so research-only rows no
+longer appear in `data.held`.
+
+### 2. Voided edge-log entries (`void = {reason, at, check, pull}`)
+
+Every yard entry in every edge log (weeks 3–6; weeks 1–3 have no yard markets) was re-checked against the saved pull at
+its flag time with `yard_prices.verify_ladders`. 15 entries sit on a ladder the check rejects; the 14 at DraftKings were
+voided with reason **"DK ladder unverified — phantom feed price"**:
+
+| Wk | Bet | Price | Flagged | Graded |
+|---|---|---|---|---|
+| 5 | Bhayshul Tuten Over 24.5 rush yds (alt) | +120 DraftKings | 20261010T1933Z | won +1.20u |
+| 5 | Braelon Allen Over 19.5 rush yds (alt) | -165 DraftKings | 20261010T1933Z | won +0.61u |
+| 5 | Jaylen Warren Over 14.5 rush yds (alt) | -180 DraftKings | 20261010T1933Z | won +0.56u |
+| 5 | Derrick Henry Over 19.5 rush yds (alt) | -205 DraftKings | 20261010T1933Z | won +0.49u |
+| 5 | Chase Brown Over 19.5 rush yds (alt) | -150 DraftKings | 20261010T2014Z | won +0.67u |
+| 5 | Aaron Jones Sr. Over 19.5 rush yds (alt) | -165 DraftKings | 20261010T2014Z | won +0.61u |
+| 5 | Quinshon Judkins Over 19.5 rush yds (alt) | -110 DraftKings | 20261010T2014Z | won +0.91u |
+| 5 | Emanuel Wilson Over 14.5 rush yds (alt) | -180 DraftKings | 20261010T2014Z | won +0.56u |
+| 5 | Kyren Williams Over 19.5 rush yds (alt) | -160 DraftKings | 20261010T2014Z | won +0.62u |
+| 5 | James Cook III Over 19.5 rush yds (alt) | -210 DraftKings | 20261010T2014Z | won +0.48u |
+| 5 | J.K. Dobbins Over 14.5 rush yds (alt) | -135 DraftKings | 20261011T1942Z | won +0.74u |
+| 5 | Emanuel Wilson Over 24.5 rush yds (alt) | +145 DraftKings | 20261011T1942Z | won +1.45u |
+| 6 | Emanuel Wilson Over 19.5 rush yds (alt) | -135 DraftKings | 20261015T2209Z | not graded |
+| 6 | Javonte Williams Over 19.5 rush yds (alt) | -165 DraftKings | 20261015T2209Z | not graded |
+
+All 12 graded ones had "won" (they were priced as if a 60-yard back needed 20 yards): **12 wins and +8.88u leave the
+record**; headline singles go from 38–72 +47.33u to 26–72 +38.45u, alt rungs from 41 bets +29.38u to 29 bets +20.50u. A
+voided entry is out of `results.py` (live weeks via `yard_edge_source`, frozen weeks via `bets_frozen.json`, which lost
+the 12 week-5 rows), out of `clv.py` closing/CLV, out of `confirm_filter.py` and `alt_cap_study.py`; `results.json`
+carries `voided` and the Results tab lists them ("Voided from the record · 14"). No two-sided main-line entry was
+affected (all 25 of them verify as the book's own line); every FanDuel alt entry but one sits on a verified ladder.
+
+**Not voided:** Garrett Wilson Over 99.5 rec yds (alt), +280 FanDuel, week 5, flagged 20261010T1933Z. The check calls
+its ladder unverified because the 10/10 pulls carried no FanDuel two-sided receiving line for anyone (12 of 12 FanDuel
+ladders in those pulls fail for that reason); the ladder itself (29.5 -1200 … 149.5 +1260) is a genuine receiving-yards
+ladder consistent with FanDuel's 68.5 main line in the 10/06 pull. Under the rule going forward it would be held
+research-only; whether to void the logged bet is the user's call.
+
+### 3. Which studies and fits used DraftKings one-sided yardage ladders
+
+Scope first: across every saved week 4–6 pull, **1,077 of 1,113 DraftKings one-sided yardage ladders fail the check**
+(e.g. 131 of 137 in the 10/03 18:52 week-4 pull, 118 of 120 in the 10/10 20:13 week-5 pull); FanDuel 41 of 2,417, almost
+all "no two-sided line in that pull". Weeks 1–3 carried no yard ladders.
+
+- **Contaminated (consumed those ladders through the old `yard_prices` with no verification):** the week-4 replay table
+  (`yard_alt_replay.py --week 4 --pull 20261003T1852Z`, CHANGELOG 2026-10-07/08: 48 alt rungs flagged, 26–22, +13.0u),
+  the alt-rung cap study (`alt_cap_study.py`, weeks 4–5, +300/+350/+400 tables; its verdict was "cap stays at +300",
+  i.e. no change was made on it), the ladder replay (`ladder_replay.py`, weeks 4–5), the yard rows of the confirmation
+  study (`confirm_filter.py`, "yards 13–7 +4.7u"), and the week-5 "Alt-rung rules · old vs v2" card (now regraded without
+  the voided rows). The pre-registered week-5 decision ("+150 to +300 band loses units → cap tightens to +150") rested on
+  FanDuel rungs only: every DraftKings phantom was priced between -210 and +145.
+- **Clean:** `yards_backtest.py` (2024–25 play-by-play simulation against actual yards, no odds feed) and
+  `blend_model.json` (anytime / first / 2+ TD fits only; a yards blend would be fitted on two-sided main lines).
+
+None rerun here (per the ticket).
+
+### 4. Ladder with alternate rungs but no two-sided line at that book
+
+Marked **unverified** (`yard_prices.ladder_fault`: "no two-sided line at this book to verify the ladder against"), the
+whole book ladder is research-only; covered by `test_consistent_ladder_kept_and_no_anchor_rejected`.
+
+### 5. Replay hygiene and page labels
+
+- `OUT_DIR` replays also point `clv.EDGE_DIR` / `clv.RESEARCH_DIR` under the output dir (ODDS_MOCK runs never logged
+  edges; this makes it structural). `results.py` refits `blend_model.json` while it runs: a replay started during a
+  `results.py` run picked up the refit mid-way (TD edges 44 → 19); do not run them concurrently.
+- Page: on data built before the listed-only rule the Yards tab no longer shows a "listed <book>" fallback label; it
+  says "listing not verified (built before the listed-only rule)" and "price age unknown", and the footnote cutoff
+  defaults to 30.
+
+### Verification (22:09 UTC week-6 pull rebuilt as of 22:09 / 23:50 / 00:20 with `MAX_PRICE_AGE_MIN = 15`)
+
+| Check | Result |
+|---|---|
+| Zero actionable yard rows whose rung is not listed at the named book at the named price | **PASS** — 18 of 18 match a raw feed row at that book, line and price; named book in `listed` on all 18 |
+| Wilson 19.5 / Javonte Williams 19.5 absent (board and held) | **PASS** — no DraftKings alt-rung edge at all |
+| Monotonicity on every player curve | **PASS** — 541 curves, every verified ladder, in all three replays |
+| Kickoff cutoff | **PASS** — 22:09: nothing held for kickoff; 23:50: RJ Harvey 24.5 and Tory Horton 14.5 "kickoff in 25 min (under 30)"; 00:20: "game underway" |
+| Staleness | 22:09: every yard row 0.5–1.3 min old, none held for age; 11 Kalshi-best TD rows held "price age unknown" (the saved pull predates the Kalshi stamp); 23:50 / 00:20: every row held "price captured 101–102 min ago (over 15)" |
+| Removed vs. the old code (same data, same sim draws) | Exactly 2: Emanuel Wilson Over 19.5 rush (-135 DraftKings) and Javonte Williams Over 19.5 rush (-165 DraftKings). Nothing added, no FanDuel-listed rung dropped |
+| Edge logs | 14 voided, 0 unverified DraftKings entries remain; 1 FanDuel no-anchor entry left for the user (above) |

@@ -68,6 +68,7 @@ def main(season=2026):
         pulls = pull_cache(season, week)
         if not pulls: continue
         for key, e in log.items():
+            if e.get("void"): continue
             gid = game_of.get(e["pid"])
             if not gid or gid not in final: continue
             flag = stamp_key(e["flagged"]); at_flag = next((pl for pl in pulls if pl["stamp"] == flag), None); first_pull = pulls[0]

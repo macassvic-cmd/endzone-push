@@ -184,7 +184,7 @@ def main():
     def yard_edge_source(d):
         fn = f"{C.EDGE_DIR}/{d['season']}_w{d['week']}.json"
         if os.path.exists(fn):
-            log = json.load(open(fn)); rows = [v for v in log.values() if v.get("market") in ("yds", "yds_alt")]
+            log = json.load(open(fn)); rows = [v for v in log.values() if v.get("market") in ("yds", "yds_alt") and not v.get("void")]   # void = {reason, at}: never placeable, out of every record
             if rows: return rows
         return [e for e in d.get("edges", []) if e.get("market") in ("yds", "yds_alt")]
     def yard_bets(rules_from=RU.BOARD_RULES_WEEK):
@@ -251,6 +251,17 @@ def main():
     #      then and never recomputed; "under current rules" is a separate re-score of every week with today's rule and blend ----
     FROZEN = "bets_frozen.json"
     frozen = json.load(open(FROZEN)) if os.path.exists(FROZEN) else {}
+    # voided edge-log entries (edge_log/*.json, `void = {reason, at}`; 2026-10-16: prices from DraftKings "alternate" yardage ladders that
+    # were another market) were never placeable: out of the live weeks above (yard_edge_source), out of the frozen weeks here, listed on the Results tab
+    voided = []
+    for fn in sorted(glob.glob(f"{C.EDGE_DIR}/*_w*.json")):
+        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
+        for k, v in json.load(open(fn)).items():
+            if v.get("void"): voided.append(dict(season=sn, week=wk, key=k, bet=v.get("bet"), market=v.get("market"), book=v.get("book"), best=v.get("best"), flagged=v.get("flagged"), reason=v["void"].get("reason"), at=v["void"].get("at")))
+    void_keys = {(v["season"], v["week"], v["bet"]) for v in voided}
+    for key, fz in frozen.items():
+        kept = [b_ for b_ in fz["bets"] if (b_["season"], b_["week"], b_["bet"]) not in void_keys]
+        if len(kept) != len(fz["bets"]): print(f"  frozen week {key}: {len(fz['bets']) - len(kept)} voided bet(s) removed from the frozen record"); fz["bets"] = kept
     bets_current = rescore_edges(allp, models, rules_from=None) + yard_bets(rules_from=None)   # plain blend re-score: today's blend and edge rule, 1u for every role, no board rules
     partial = {(w["season"], w["week"]) for w in weeks if w.get("partial")}
     rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, " + ("fitted" if any(BL.coef_for(models, m) for m in ("any", "first", "two")) else "50/50")
@@ -550,6 +561,7 @@ def main():
                research_pass=research_pass, research_ratio=research_ratio,
                board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
                                 min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE))
+    out["voided"] = voided
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),
           "| top-15 regulars:", len(regulars), "| backtest:", "yes" if backtest else "missing backtest_2025.json")

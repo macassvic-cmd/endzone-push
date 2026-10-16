@@ -91,9 +91,12 @@ def test_timing_rules():
     now = pd.Timestamp("2026-10-15T22:09:00Z")
     e = dict(kick_utc="2026-10-16T00:15Z", captured="2026-10-15T22:07:41Z")
     assert RU.not_actionable(dict(e), now) == [] and round(RU.minutes_to_kick(e["kick_utc"], now)) == 126
-    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-15T23:50:00Z")) == ["kickoff in 25 min (under 30)"]
-    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-16T00:15:00Z")) == ["game underway"]
-    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-16T01:00:00Z")) == ["game underway"]
+    NOAGE = 10**9                                                              # kickoff rule alone (the age limit is tested below)
+    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-15T23:50:00Z"), max_age=NOAGE) == ["kickoff in 25 min (under 30)"]
+    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-16T00:15:00Z"), max_age=NOAGE) == ["game underway"]
+    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-16T01:00:00Z"), max_age=NOAGE) == ["game underway"]
+    assert RU.MAX_PRICE_AGE_MIN == 15                                          # set 2026-10-16; the module default applies when max_age is None
+    assert RU.not_actionable(dict(e), pd.Timestamp("2026-10-15T23:50:00Z")) == ["kickoff in 25 min (under 30)", "price captured 102 min ago (over 15)"]
     assert RU.not_actionable(dict(e, kick_utc=None), now) == ["kickoff unknown"]
     assert RU.not_actionable(dict(e), now, max_age=1) == ["price captured 1 min ago (over 1)"]
     assert RU.not_actionable(dict(e), now, max_age=5) == []
@@ -130,6 +133,22 @@ def test_week6_pull_regression():
         c = YP.market_curve(board, hold, k, n)
         if c: assert not YP.monotone_violations(c["lines"], c["probs"]), (k, n, c["lines"], c["probs"])
     print(f"  week-6 pull: {len(rej)} ladders rejected ({', '.join(sorted(books_rej))}), {len(players)} player curves monotone")
+
+
+def test_kalshi_quotes_carry_capture_time():
+    """Kalshi quotes have no timestamp of their own; attach() stamps the fetch time so the price-age rule can judge them
+       (without it every Kalshi-best edge is held for 'price age unknown' once MAX_PRICE_AGE_MIN is set)."""
+    import kalshi as K
+    ev = dict(away_team="Seattle Seahawks", home_team="Denver Broncos", props=dict(bookmakers=[]))
+    row = dict(player="Tory Horton", yes_ask=0.10, yes_bid=0.09, ask_size=2000, dollars_at_ask=200.0, volume=5000, volume_24h=500, ticker="KX-TEST")
+    board = {(K.TEAM_ABBR["Seattle Seahawks"], K.TEAM_ABBR["Denver Broncos"]): {"player_anytime_td": [row]}}
+    n, liquid = K.attach([ev], board=board)
+    oc = ev["props"]["bookmakers"][-1]["markets"][0]["outcomes"][0]
+    assert n == 1 and oc["description"] == "Tory Horton" and oc.get("ts"), oc
+    age = RU.price_age_min(oc["ts"], pd.Timestamp.now(tz="UTC"))
+    assert age is not None and 0 <= age < 2, age
+    e = dict(kick_utc=(pd.Timestamp.now(tz="UTC") + pd.Timedelta(hours=3)).strftime("%Y-%m-%dT%H:%MZ"), captured=oc["ts"])
+    assert RU.not_actionable(e, pd.Timestamp.now(tz="UTC"), max_age=15) == []
 
 
 if __name__ == "__main__":

@@ -121,7 +121,7 @@ def main(season, weeks, json_out=None):
         print(f"   gate (>= 30 bets, >= 3 weeks, units >= expected): {'MET' if ok else 'NOT MET'} -> cap {'could rise' if ok else 'stays at +300'}")
     # sanity: week-5 +300 replay vs the live v2 edge log
     if 5 in weeks and os.path.exists("edge_log/2026_w5.json"):
-        log = {k: v for k, v in json.load(open("edge_log/2026_w5.json")).items() if v.get("market") == "yds_alt" and str(v.get("rule", "")).startswith("alt rung v2")}
+        log = {k: v for k, v in json.load(open("edge_log/2026_w5.json")).items() if v.get("market") == "yds_alt" and not v.get("void") and str(v.get("rule", "")).startswith("alt rung v2")}
         live = {(v["pid"], v["kind"], float(v["line"])) for v in log.values()}
         rep = {(b["pid"], b["kind"], b["line"]) for b in runs[300] if b["week"] == 5}
         lb = grade([dict(week=5, pid=v["pid"], kind=v["kind"], line=float(v["line"]), price=int(v["best"]), ev=v["ev"]) for v in log.values()], ymap)
