@@ -1176,7 +1176,8 @@ affected (all 25 of them verify as the book's own line); every FanDuel alt entry
 its ladder unverified because the 10/10 pulls carried no FanDuel two-sided receiving line for anyone (12 of 12 FanDuel
 ladders in those pulls fail for that reason); the ladder itself (29.5 -1200 … 149.5 +1260) is a genuine receiving-yards
 ladder consistent with FanDuel's 68.5 main line in the 10/06 pull. Under the rule going forward it would be held
-research-only; whether to void the logged bet is the user's call.
+research-only. User decision 2026-10-16: **keep**; the entry carries `note = "manually verified vs FD 68.5 main line from
+earlier pull; no FD two-sided receiving lines in the 10/10 pulls."` (no code exception).
 
 ### 3. Which studies and fits used DraftKings one-sided yardage ladders
 
@@ -1217,7 +1218,7 @@ whole book ladder is research-only; covered by `test_consistent_ladder_kept_and_
 | Zero actionable yard rows whose rung is not listed at the named book at the named price | **PASS** — 18 of 18 match a raw feed row at that book, line and price; named book in `listed` on all 18 |
 | Wilson 19.5 / Javonte Williams 19.5 absent (board and held) | **PASS** — no DraftKings alt-rung edge at all |
 | Monotonicity on every player curve | **PASS** — 541 curves, every verified ladder, in all three replays |
-| Kickoff cutoff | **PASS** — 22:09: nothing held for kickoff; 23:50: RJ Harvey 24.5 and Tory Horton 14.5 "kickoff in 25 min (under 30)"; 00:20: "game underway" |
-| Staleness | 22:09: every yard row 0.5–1.3 min old, none held for age; 11 Kalshi-best TD rows held "price age unknown" (the saved pull predates the Kalshi stamp); 23:50 / 00:20: every row held "price captured 101–102 min ago (over 15)" |
+| Kickoff cutoff | **PASS** — 22:09: nothing held for kickoff; 23:50: RJ Harvey 24.5 and Tory Horton 14.5 held "kickoff in 25 min (under 30)" (final code: 44 board rows, all held, 2 of them for kickoff as well); 00:20: a build drops the started game from the slate (502 curves, 40 board rows, all held for age), while the page shows a pre-kickoff build's SEA/DEN rows as "game underway" on the viewer's clock |
+| Staleness | 22:09: every yard row 0.5–1.3 min old, none held for age; 11 Kalshi-best TD rows held "price age unknown" (the saved pull predates the Kalshi stamp); 23:50 / 00:20: every board row held, "price captured 101–132 min ago (over 15)" (plus 9 Kalshi rows "price age unknown"). 23:50 and 00:20 re-run one at a time on the final code |
 | Removed vs. the old code (same data, same sim draws) | Exactly 2: Emanuel Wilson Over 19.5 rush (-135 DraftKings) and Javonte Williams Over 19.5 rush (-165 DraftKings). Nothing added, no FanDuel-listed rung dropped |
 | Edge logs | 14 voided, 0 unverified DraftKings entries remain; 1 FanDuel no-anchor entry left for the user (above) |

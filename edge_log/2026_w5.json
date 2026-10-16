@@ -1500,7 +1500,8 @@
 "model_p": 0.3227,
 "ev": 0.085,
 "ev_med": 0.085,
-"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve"
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"note": "manually verified vs FD 68.5 main line from earlier pull; no FD two-sided receiving lines in the 10/10 pulls."
 },
 "00-0037228|yds|rush|14.5": {
 "pid": "00-0037228",
