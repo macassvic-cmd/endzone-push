@@ -15897,5 +15897,76 @@
 "price"
 ],
 "flagged": "20261017T1932Z"
+},
+"00-0040666|rush|109.5": {
+"bet": "Omarion Hampton Over 109.5 rush yds (alt)",
+"pid": "00-0040666",
+"market": "yds_alt",
+"kind": "rush",
+"line": 109.5,
+"team": "LAC",
+"model_p": 0.0644,
+"mkt_p": 0.0237,
+"blend_p": 0.0441,
+"best": 3900,
+"book": "DraftKings",
+"ev": 0.7627,
+"med": 3900,
+"ev_med": 0.7627,
+"nbooks": 1,
+"curve_rungs": 14,
+"games": 14,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0237,
+"captured": "2026-10-17T20:27:45.387364278Z",
+"kick_utc": "2026-10-18T20:25Z",
+"reasons": [
+"price",
+"ratio"
+],
+"flagged": "20261017T2028Z"
+},
+"00-0036355|pass|349.5": {
+"bet": "Justin Herbert Over 349.5 pass yds (alt)",
+"pid": "00-0036355",
+"market": "yds_alt",
+"kind": "pass",
+"line": 349.5,
+"team": "LAC",
+"model_p": 0.0398,
+"mkt_p": 0.0231,
+"blend_p": 0.0315,
+"best": 4000,
+"book": "DraftKings",
+"ev": 0.2901,
+"med": 4000,
+"ev_med": 0.2901,
+"nbooks": 1,
+"curve_rungs": 22,
+"games": 21,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-10-17T20:27:45.387364278Z",
+"kick_utc": "2026-10-18T20:25Z",
+"reasons": [
+"price"
+],
+"flagged": "20261017T2028Z"
 }
 }
