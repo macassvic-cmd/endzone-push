@@ -108,7 +108,7 @@ def test_week6_pull_regression():
     if not os.path.exists(W6):
         print("  (week-6 pull not present, regression skipped)"); return
     rej = {}
-    board, hold = YP.ladder_board(json.load(open(W6)), rejected=rej)
+    board, hold = YP.ladder_board(json.load(open(W6)), rejected=rej, source="sharpapi")
     w = norm_name("Emanuel Wilson")
     dk_alts = [k for k, books in board.items() if k[0] == "rush" and k[1] == w and "DraftKings" in books and "under" not in books["DraftKings"]]
     assert dk_alts == [], f"DraftKings one-sided rungs for Wilson survived: {dk_alts}"
