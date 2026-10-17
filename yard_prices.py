@@ -11,6 +11,20 @@ from odds import norm_name, implied, decimal, american
 KIND_MARKET = {"rush": "player_rush_yds", "rec": "player_reception_yds", "pass": "player_pass_yds"}
 
 
+def only_books(events, titles):
+    """Copy of `events` keeping only the prop bookmakers whose title is in `titles` (research reruns on one book's ladders,
+       e.g. --books FanDuel after the DraftKings phantom-ladder finding). Game lines are untouched. None/empty -> unchanged."""
+    if not titles: return events
+    want = {t.lower() for t in titles}
+    out = []
+    for e in events:
+        e2 = dict(e)
+        if "props" in e2:
+            e2["props"] = dict(e2["props"], bookmakers=[b for b in e2["props"].get("bookmakers", []) if (b.get("title") or b.get("key") or "").lower() in want])
+        out.append(e2)
+    return out
+
+
 def ladder_board(events, rejected=None):
     """{(kind, norm_name, line): {book: {"over": price, "under": price, "main": bool, "ts": capture time}}}, plus each book's
        main-line hold. Only verified ladders survive (verify_ladders); `rejected`, when a dict is passed, receives the

@@ -1222,3 +1222,46 @@ whole book ladder is research-only; covered by `test_consistent_ladder_kept_and_
 | Staleness | 22:09: every yard row 0.5–1.3 min old, none held for age; 11 Kalshi-best TD rows held "price age unknown" (the saved pull predates the Kalshi stamp); 23:50 / 00:20: every board row held, "price captured 101–132 min ago (over 15)" (plus 9 Kalshi rows "price age unknown"). 23:50 and 00:20 re-run one at a time on the final code |
 | Removed vs. the old code (same data, same sim draws) | Exactly 2: Emanuel Wilson Over 19.5 rush (-135 DraftKings) and Javonte Williams Over 19.5 rush (-165 DraftKings). Nothing added, no FanDuel-listed rung dropped |
 | Edge logs | 14 voided, 0 unverified DraftKings entries remain; 1 FanDuel no-anchor entry left for the user (above) |
+
+## 2026-10-17 — FanDuel-only re-check of the alt-rung cap (pre-registered), `--books` flag on the two replay scripts
+
+Follow-up to 2026-10-16 §3 (the cap study and the week-4 alt replay had consumed the phantom DraftKings ladders). Nothing
+on the board changes; `yards.ALT_MAX_PRICE` stays +300.
+
+**Pre-registered before the reruns** (scratchpad `prereg_fd_only.md`, 2026-10-17): the verdict "cap stays at +300" is
+reversed only if (a) raise side: the +301–+350 / +351–+400 band meets the 2026-10-12 gate (≥ 30 graded bets across
+≥ 3 weeks with actual ≥ expected; impossible with two weeks of ladders, reported for the record), or (b) tighten side:
+FD-only, the +150 to +300 band pooled over weeks 4–5 has **n ≥ 20 graded bets AND actual units < 0 AND actual <
+expected**. Below n = 20 the result is "inconclusive" and +300 stays by default until more weeks accrue.
+
+`yard_prices.only_books(events, titles)` plus `--books FanDuel` on `alt_cap_study.py` and `yard_alt_replay.py` drop every
+other book's prop ladders before verification (DraftKings' 36 verifying ladders go too; this is a one-book rerun, not
+"everything that verifies"). Both ran alone, one at a time, on the saved pulls (10 week-4, 11 week-5), the slate files and
+`data/pbp.parquet`; no API calls.
+
+**Alt-rung cap study, FanDuel only** (`alt_cap_study.py --weeks 4,5 --books FanDuel`):
+
+| Cap | Week | Bets | Record | Units | Expected | ROI | (contaminated run) |
+|---|---|---|---|---|---|---|---|
+| +300 | 4–5 | 61 | 22–39 | +11.23 | +8.05 | +18.4% | 91, 52–39, +33.74 |
+| +300 | 4 | 44 | 14–30 | +1.83 | +6.41 | +4.2% | 67, 35–32, +15.05 |
+| +300 | 5 | 17 | 8–9 | +9.40 | +1.63 | +55.3% | 24, 17–7, +18.69 |
+| +350 | 4–5 | 70 | 23–47 | +15.22 | +9.88 | +21.7% | 100, 53–47, +37.73 |
+| +400 | 4–5 | 77 | 20–57 | +1.79 | +11.34 | +2.3% | 107, 50–57, +24.30 |
+
+Every FD-only bet under the +300 cap sits in the +150 to +300 band (61 bets: FanDuel lists no rung shorter than +150
+that the rule flags; the 30 bets that vanished were all DraftKings phantoms priced −210 to +145, 30–0 "won"). The
+incremental bands are unchanged from 2026-10-12 §9 (+301–+350: 22 bets, 7–15, +7.10u; +351–+400: 27 bets, 3–24,
+−13.10u) because those rungs were FanDuel's already; both gates NOT MET. Week-5 sanity: the +300 replay reproduces all
+16 keys of the voided-filtered live v2 log (live 8–8 +10.30u, replay 8–9 +9.40u, one extra replay key).
+
+**Week 4 alt replay, FanDuel only** (`yard_alt_replay.py --week 4 --pull 20261003T1852Z --books FanDuel`): 239 player-stats
+with an eligible curve (249 before), 0 main-line edges (a main-line edge needs 2 books; the frozen week-4 main-line
+record came from the Sunday pulls and is unaffected), **31 alt rungs flagged, 11–20, +4.2u vs +4.6u expected — the
+contaminated table's +150 to +300 band exactly** (the 17 flagged bets that are gone were the −150-and-shorter and
+−150-to-+150 bands, all DraftKings: 7–2 and 8–0). Research set beyond +300: 169 bets, 18–151, −44.3u (was −48.3u).
+
+**Verdict: HOLDS.** Tighten side: n = 61 ≥ 20, +11.23u > 0 → not triggered (week 4 alone +1.83u, below its +6.41u
+expected but positive). Raise side: gate not met. Cap stays at +300. What the re-check changes in the narrative: the
+"shorter than +150" bands that looked like free money (15–2 across both scripts) never existed; FanDuel's own ladders
+carry the whole alt-rung record, at +150 to +300, modestly ahead of expectation on 61 bets.

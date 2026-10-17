@@ -1,7 +1,7 @@
 """Replay the yard-ladder edge rule on a saved pull and grade it (no re-simulation: model P(over) per rung comes from the
 week's slate, interpolated in log-odds between its rungs).
 
-    python yard_alt_replay.py --season 2026 --week 4 [--pull 20261003T1852Z]
+    python yard_alt_replay.py --season 2026 --week 4 [--pull 20261003T1852Z] [--books FanDuel]   (--books: only those books' ladders, yard_prices.only_books)
 
 Rule (same as run_week.py): pooled DK+FD market curve per player and stat (main + alternates, no-vig, after the bad-row
 filters, PAV-monotone, log-odds interpolation, no extrapolation), 50/50 (or fitted) model+curve blend at the exact
@@ -14,12 +14,12 @@ import odds as O, yard_prices as YP, yards as Y, blend as BL, yards_backtest as 
 from nansafe import val, text
 
 
-def main(season, week, pull=None):
+def main(season, week, pull=None, books=None):
     slate = json.load(open(f"slate_{season}_w{week}.json"))
     pulls = C.pulls(season, week)
     if pull: pulls = [(st, fn) for st, fn in pulls if st.startswith(pull.replace("Z", ""))]
     if not pulls: raise SystemExit("no saved pull")
-    st, fn = pulls[0]; events = json.load(open(fn)); yb, yh = YP.ladder_board(events)
+    st, fn = pulls[0]; events = YP.only_books(json.load(open(fn)), books); yb, yh = YP.ladder_board(events)
     models = BL.load(); coef = {k: BL.coef_for(models, "yds_" + k) or BL.coef_for(models, "yds") for k in Y.DEFAULT_LADDER}
     p = pd.read_parquet("data/pbp.parquet"); ymap = {(int(r.week), r.pid, r.kind): float(r.y) for r in YB.actual_yards(p, season).itertuples()}
     edges, n_curve, n_dropped = [], 0, 0
@@ -80,4 +80,4 @@ def main(season, week, pull=None):
 
 if __name__ == "__main__":
     a = sys.argv[1:]; g = lambda k, d=None: a[a.index(k) + 1] if k in a else d
-    main(int(g("--season", 2026)), int(g("--week", 4)), g("--pull"))
+    main(int(g("--season", 2026)), int(g("--week", 4)), g("--pull"), g("--books").split(",") if g("--books") else None)

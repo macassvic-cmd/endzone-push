@@ -1,7 +1,9 @@
 """Alt-rung cap study (research only, nothing on the board changes): replay the v2 alt-rung rule over a week's saved pulls
 with the price cap at +300, +350 and +400 and grade the result.
 
-    python alt_cap_study.py [--weeks 4,5] [--season 2026] [--json out.json]
+    python alt_cap_study.py [--weeks 4,5] [--season 2026] [--json out.json] [--books FanDuel]
+
+`--books` keeps only those books' prop ladders (yard_prices.only_books), e.g. the FD-only re-check after the DraftKings phantom-ladder finding.
 
 Replay mirrors the live first-flag log: pulls oldest first; events whose kickoff is before the pull stamp are skipped (the
 game had started) and only the week's own games count (a Monday pull already carries next week's board); per pull, every offered alternate rung of every slate player-stat (no weak spots, not the book's main
@@ -19,6 +21,7 @@ import odds as O, yard_prices as YP, yards as Y, yards_backtest as YB, clv as C
 from nansafe import text
 
 CAPS = (300, 350, 400)
+BOOKS = None   # --books: restrict the ladders to these book titles
 
 
 def pull_candidates(season, week):
@@ -34,6 +37,7 @@ def pull_candidates(season, week):
         events = [e for e in json.load(open(fn)) if e["commence_time"].replace("-", "").replace(":", "")[:13] >= stamp
                   and frozenset((O.TEAM_ABBR.get(e["home_team"], e["home_team"]), O.TEAM_ABBR.get(e["away_team"], e["away_team"]))) in games]
         if not events: continue
+        events = YP.only_books(events, BOOKS)
         with contextlib.redirect_stdout(io.StringIO()):
             yb, yh = YP.ladder_board(events)
         out = {}
@@ -138,4 +142,6 @@ def main(season, weeks, json_out=None):
 
 if __name__ == "__main__":
     a = sys.argv[1:]; g = lambda k, d=None: a[a.index(k) + 1] if k in a else d
+    BOOKS = g("--books").split(",") if g("--books") else None
+    if BOOKS: print("books:", ", ".join(BOOKS), "(ladders from other books dropped before verification)")
     main(int(g("--season", 2026)), [int(x) for x in g("--weeks", "4,5").split(",")], g("--json"))
