@@ -54,3 +54,15 @@ Runs from `.github/workflows/pickem.yml` Sun 8:40 PT (~105 Odds API credits); ex
 
     python -m pickem.scan            # needs ODDS_API_KEY; UD_MOCK / ODDS_MOCK for offline reruns
     python -m pytest pickem
+
+## Pull loops (10-minute boards before each kickoff cluster)
+
+`pull_windows.py` turns the week's kickoff times (nflverse schedule, Eastern -> UTC, DST automatic) into loop windows: one per
+distinct kickoff, 3 h before it to the kickoff; a kickoff whose window starts within one 10-min step of the previous cluster's last
+kickoff joins it (1 pm + 4:05/4:25 = one loop; London 9:30 stays separate). The scheduled runs write `pull_windows.json` a week
+ahead. `pull_dispatch.yml` (every 30 min, 09-23 UTC) starts a `Pull loop` run for each cluster due within 90 min that has no run yet
+(the half-hour cadence is the backup). `pull_loop.yml` waits for its exact start, then every 10 min pulls SharpAPI + Kalshi (Odds API
+only with `use_odds`), builds, and publishes an orphan snapshot to the `board` branch, which GitHub Pages serves; it stops at the
+cluster's last kickoff, hands over to a chained second job past the 6 h cap, and commits to main once per job (first pull of each
+UTC hour + the newest pull, first-seen edge/research/parlay logs merged key-wise against origin/main; every pull is a run artifact),
+in a step that runs even if the loop failed. Refresh the board by hand: Actions -> Pull loop -> Run workflow (mode `once`).

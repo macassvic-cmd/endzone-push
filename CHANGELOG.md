@@ -1289,3 +1289,26 @@ Open design question for the user: a yards blend fitted on main lines only canno
 yards blend is ever wanted it needs graded alt-rung rows (model P and curve P away from 0.5) in the fit, under the
 backtest gate. Test: `test_blend_with_negative_coefficient_not_used` (7/7 pass). Verified locally in the CI order on the
 18:38 pull: yds `in_use: false`, build passes (474 player curves monotone), `test_reconcile` 56 checks pass.
+
+## 2026-10-17 — Pull loops: 10-minute boards for the 3 h before each kickoff cluster, published to the `board` branch
+
+Spec approved by the user 2026-10-17 (windows from the slate's kickoff times, own concurrency group, separate publish branch,
+stop at the last kickoff, manual trigger, end-of-cluster commit even on failure, dispatcher ≥ 30 min ahead with a backup, test
+before Week 7). Repo is public, so Actions minutes are not metered.
+
+- `pull_windows.py` → `pull_windows.json` (written by every scheduled run after `refresh.py`): clusters of kickoffs, lead 3 h,
+  merge when a lead-in starts within one 10-min step of the previous cluster's last kickoff, `chained` when over 340 min.
+  Week 7: Thu 21:15Z→Fri 00:15Z (NE@CHI), Sun 10:30→13:30Z (PIT@NO London), Sun 14:00→20:25Z (7 × 1 pm + DEN@ARI 4:05 + GB@DET,
+  LA@LV 4:25; 6.42 h, two chained jobs), Sun 21:20→Mon 00:20Z (KC@SEA), Mon 21:15→Tue 00:15Z (DAL@PHI); 115 pulls ≈ 3,000
+  SharpAPI requests (free tier, no cap).
+- `pull_loop.yml` / `pull_loop.py`: modes `loop` (until `end`), `once` (refresh the board now), `dry_run` (N short iterations);
+  concurrency group `pull-loop-<end>` (never `update`, never cancelled); waits for its exact start; `run_week.py` every 10 min
+  (SharpAPI + Kalshi, Odds API only with `use_odds`); each board is an orphan snapshot of the tracked tree + generated files
+  force-pushed to `board` (GitHub Pages source), so main gets no per-pull commits; `--finalize` runs `if: always()` and commits to
+  main once per job the first pull of each UTC hour + the newest pull (every pull is a 30-day run artifact) and the first-seen
+  logs merged key-wise against origin/main in a temporary worktree (upstream wins on shared keys), with push retries; a cluster
+  over 340 min hands over to the chained `loop2` job via `remaining` / `resume_start`.
+- `pull_dispatch.yml` / `pull_dispatch.py`: every 30 min 09–23 UTC, dispatches each cluster due within 90 min that has no
+  queued / running / successful run (`run-name` carries the cluster's end as the key); a late firing starts the loop at once.
+- `update.yml`: writes `pull_windows.json`, runs `test_pull_loop.py`, and publishes its own board snapshot after its main commit.
+- Not changed: model, rules, grading, edge-log semantics (first-seen, voids), the scheduled runs' own commits.
