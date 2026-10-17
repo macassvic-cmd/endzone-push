@@ -63,6 +63,7 @@ jobs:
           python test_nan_safety.py
           python test_ladder_integrity.py
           python test_pull_loop.py
+          python test_yards_source.py
           python refresh.py --data-only
           python pull_windows.py --write pull_windows.json
       - name: Smoke-test grading on the committed slates (fails loudly before any odds are pulled)
@@ -74,6 +75,7 @@ jobs:
           ODDS_API_KEY: ${{ steps.odds.outputs.use_odds == 'true' && secrets.ODDS_API_KEY || '' }}
           ODDS_SAVE: odds_raw.json
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          YARDS_SOURCE: ${{ vars.YARDS_SOURCE || 'sharpapi' }}     # repository variable: flip to oddsapi to go live (no commit needed)
         run: python run_week.py
       - name: Grade (then check the headline, its breakdown and the week table reconcile)
         id: grade
@@ -93,7 +95,7 @@ jobs:
         run: |
           git config user.name "endzone-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add latest.json slate_*.json results.json odds_history edge_log draws.bin bets_frozen.json parlay_log research pull_windows.json
+          git add latest.json slate_*.json results.json odds_history edge_log draws.bin bets_frozen.json parlay_log research pull_windows.json odds_api_usage.jsonl
           if git diff --cached --quiet; then echo "no changes"; else
             git commit -m "Projections $(date -u +'%Y-%m-%d %H:%M') UTC"
             git push

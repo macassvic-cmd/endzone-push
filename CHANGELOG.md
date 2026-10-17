@@ -1354,3 +1354,33 @@ clamped to the viewport; verified at 390 px in headless Chrome (card 356 px wide
 - **Results tab:** "All prices" is the primary view (first radio, default; the stored choice still applies). The Luck
   card already showed σ in both views (the "two long hits" wording was in the 2026-10-17 report, not on the page); on All
   prices it reads +1.6σ · hot for 35–122, +125.3u vs +40.6u expected.
+
+## 2026-10-17 — NFL yardage odds from The Odds API, built behind `YARDS_SOURCE` (not live)
+
+User spec 2026-10-17. Default stays `sharpapi`; the flag is a repository variable (`vars.YARDS_SOURCE`) read by update.yml
+and pull_loop.yml, and a per-run input on the Pull loop workflow, so go-live is a settings flip after the replay is approved.
+
+- **Source.** `YARDS_SOURCE=oddsapi` adds `player_rush_yds`, `player_reception_yds` and their `_alternate` markets to the Odds
+  API event call (region us); SharpAPI keeps anytime / first TD and everything else, and its yardage rows are still saved in
+  the pull (tagged `source=sharpapi`, research only). `merge_sources` keeps both feeds' yardage markets side by side instead of
+  letting the fresher one replace the other; `yard_prices.ladder_board(source=…)` reads one feed. Every book still goes
+  through `verify_ladders`. If the flag is on but the pull carries no Odds API yardage rows (key missing, budget guard, old
+  pull) the build falls back to SharpAPI's ladders and says so (`latest.json` `odds_api.yards_effective`, site notice).
+- **Pooling (proposal, implemented as the default for the Odds API source):** a fixed set of regulated US books with their
+  own pricing — DraftKings, FanDuel, BetMGM, Caesars, Hard Rock Bet, BetRivers, Fanatics, ESPN BET (`yard_prices.YARD_BOOKS`).
+  Left out: Kambi clones (betPARX, theScore Bet, Bally Bet) and the Hard Rock FL mirror, which repeat one feed and would count
+  it two or three times in the pooled mean; offshore and sweepstakes books (BetOnline, Bovada, LowVig, MyBookie, BetUS,
+  Fliff, ReBet, Courtside), which are not where a flagged rung can be bet and whose alternates are derived. A verified book
+  outside the set never prices a rung or enters the curve; `books="all"` is available for research replays.
+- **Credits.** Every paid Odds API call is appended to `odds_api_usage.jsonl` (ts, tag, path, cost, used, remaining; tag
+  `nfl` for the lab, `pickem` for the scanner), committed by the scheduled runs and the loop finalize. `odds.usage_summary()`
+  sums NFL credits for the UTC calendar month. Per pull with yardage: 2 (lines) + 6 markets × games not yet kicked off within
+  6 days. Week 7 loops: TNF ≈ 1,628, London ≈ 1,514, Sunday main ≈ 1,992, SNF ≈ 260, MNF ≈ 146 → ≈ 5,540 a week in the loops,
+  plus ≈ 350 for the four scheduled pulls and the pick'em scanner's own ≈ 100–150; ≈ 26k a month on the 100K plan.
+- **Guard (pull loops only).** Before each loop pull: NFL month-to-date > 40,000 or account remaining < 20,000 → that pull
+  runs without The Odds API (SharpAPI + Kalshi; yardage from SharpAPI's verified ladders). Scheduled runs keep the Odds API.
+  The site shows a notice line (source, credits used, remaining) on every board and a highlighted warning when the guard
+  is tripped, whichever run built the board. `DRY_RUN=1` builds without logging edges / research / paper parlays; the Pull
+  loop workflow gained `yards_source`, `publish` and `dry_run` inputs for the replay pull.
+- Tests: `test_yards_source.py` (one feed per build, fixed books, usage summary and guard thresholds), ladder and loop tests
+  unchanged (8/8, 3/3). Default-mode replay of the 19:07 UTC pull is identical to the pre-change build (62 edges, same yard rows).

@@ -15,7 +15,7 @@ worktree (upstream wins on shared keys, our new keys are added), pushed with ret
 import os, sys, json, glob, time, shutil, tempfile, subprocess, datetime as dt
 
 GENERATED = ["latest.json", "results.json", "draws.bin", "pickem_latest.json", "pull_windows.json"]
-LOG_DIRS = ["edge_log", "research", "parlay_log"]
+LOG_DIRS = ["edge_log", "research", "parlay_log", "odds_api_usage.jsonl"]
 PULLS_OUT = "pulls_out"
 BOT = dict(GIT_AUTHOR_NAME="endzone-bot", GIT_AUTHOR_EMAIL="actions@users.noreply.github.com",
            GIT_COMMITTER_NAME="endzone-bot", GIT_COMMITTER_EMAIL="actions@users.noreply.github.com")
@@ -60,7 +60,19 @@ def publish_board(stamp, push=True):
 
 
 def run_pull():
-    r = subprocess.run([sys.executable, "run_week.py"])
+    """One build. Budget guard (loops only): NFL credits this UTC month over odds.NFL_MTD_LIMIT, or the account's remaining credits
+       under odds.REMAINING_FLOOR, drop The Odds API from this pull (SharpAPI + Kalshi only; yardage falls back to SharpAPI's
+       verified ladders). The scheduled runs (update.yml) are not guarded. Either way run_week.py puts the state on the site."""
+    env = dict(os.environ)
+    if env.get("ODDS_API_KEY"):
+        sys.path.insert(0, os.getcwd()); import odds as O
+        u = O.usage_summary()
+        if u["guard"]["tripped"]:
+            print("ODDS API BUDGET GUARD: " + "; ".join(u["guard"]["reasons"]) + " -> this pull runs without The Odds API", flush=True)
+            env["ODDS_API_KEY"] = ""; env["ODDS_GUARD_TRIPPED"] = "1"
+        else:
+            print(f"odds api budget: NFL credits this month {u['nfl_mtd']:,} (limit {u['guard']['mtd_limit']:,}), remaining {u['remaining']} (floor {u['guard']['remaining_floor']:,})", flush=True)
+    r = subprocess.run([sys.executable, "run_week.py"], env=env)
     if r.returncode: raise SystemExit(f"run_week.py failed ({r.returncode})")
 
 
@@ -82,7 +94,8 @@ def loop(mode, start, end, step_min, iterations, max_minutes, push):
             remaining = bool(end and t0 < end); print(f"job cap {max_minutes} min reached; remaining={remaining}"); break
         print(f"\n===== pull {n + 1} at {t0:%Y-%m-%d %H:%M:%S}Z (mode {mode}, step {step_min} min, end {end})", flush=True)
         run_pull(); n += 1
-        publish_board(t0.strftime("%Y-%m-%dT%H:%MZ"), push)
+        if os.environ.get("PUBLISH", "1") == "0": print("PUBLISH=0: board not published")
+        else: publish_board(t0.strftime("%Y-%m-%dT%H:%MZ"), push)
         if mode == "once": break
         nxt = t0 + dt.timedelta(minutes=step_min)
         if end and nxt >= end: print("the next pull would fall after the last kickoff: stop"); break
@@ -107,6 +120,7 @@ def select_pulls(paths, step_min):
 
 
 def changed(paths):
+    paths = [p for p in paths if os.path.exists(p) or os.path.isdir(p)] or paths
     st = subprocess.run(["git", "status", "--porcelain", "--", *paths], text=True, capture_output=True, check=True).stdout
     return sorted({ln[3:].strip() for ln in st.splitlines() if ln.strip()})   # "XY path": never strip the line itself
 

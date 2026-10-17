@@ -64,14 +64,16 @@ def merge_sources(oa, sa):
                 tgt["props"]["bookmakers"].append(b); continue
             tm = {m["key"]: m for m in tb[b["title"]]["markets"]}
             for m in b["markets"]:
-                if m["key"] not in tm:
-                    tb[b["title"]]["markets"].append(m); continue
+                if m["key"] not in tm or "yds" in m["key"]:
+                    tb[b["title"]]["markets"].append(m); continue          # yardage: both feeds' rows stay (outcomes carry source); ladder_board picks one
                 old = tm[m["key"]]; old_ts = max((o.get("ts") or "" for o in old["outcomes"]), default=""); new_ts = max((o.get("ts") or "" for o in m["outcomes"]), default="")
                 if new_ts >= old_ts:
                     old["outcomes"] = m["outcomes"]                 # fresher SharpAPI quote replaces the Odds API one for this book+market
     return list(out.values())
 
 
+YARDS_SOURCE = O.yards_source()                                       # 'sharpapi' (default) | 'oddsapi' (rush/rec ladders from The Odds API, region us)
+DRY_RUN = bool(os.environ.get("DRY_RUN"))                             # DRY_RUN=1: pull and build, never log edges / research / paper parlays
 sharp = None
 if os.environ.get("SHARPAPI_KEY") and not os.environ.get("ODDS_MOCK"):
     try:
@@ -102,6 +104,14 @@ if events and not os.environ.get("ODDS_MOCK") and not odds_asof:
     os.makedirs("odds_history", exist_ok=True)
     _fn = f"odds_history/{season}_w{week}_{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z.json"
     json.dump(events, open(_fn, "w")); print("saved odds pull to", _fn)
+def _has_source(evs, src):
+    return any((o.get("source") or "oddsapi") == src and "yds" in m["key"] for e in evs or [] for b in e.get("props", {}).get("bookmakers", []) for m in b["markets"] for o in m["outcomes"][:1])
+YARDS_EFFECTIVE = YARDS_SOURCE
+if YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
+    YARDS_EFFECTIVE = "sharpapi"; print("yards source: YARDS_SOURCE=oddsapi but this pull carries no Odds API yardage rows (key missing, budget guard or an old pull): SharpAPI ladders used")
+else:
+    print(f"yards source: {YARDS_EFFECTIVE}" + (f" (books {', '.join(YP.YARD_BOOKS)})" if YARDS_EFFECTIVE == "oddsapi" else ""))
+ODDS_USAGE = O.usage_summary()
 lines = O.game_lines(events)
 board = O.prop_board(events)
 hold = O.measure_hold(events)          # per-book overround measured from this week's boards
@@ -302,7 +312,7 @@ if YARD_KINDS:
     _posof = lambda pid: M.POS_MAP.get(pos.get(pid, "WR"), pos.get(pid, "WR"))
     _yd = Y.simulate(teams, _plv, qbs, _yc, sim, _posof)
     _yrej = {}                                                                     # (kind, player, book) -> one-sided ladders that failed verification (research view)
-    _yb, _yh = YP.ladder_board(events, rejected=_yrej) if events else ({}, {})
+    _yb, _yh = YP.ladder_board(events, rejected=_yrej, source=YARDS_EFFECTIVE) if events else ({}, {})
     _kick = {t: kick_utc(teams[t]["gametime"]) for t in teams}
     _name = {r.pid: r["name"] for _, r in df.iterrows()}; _meta = {r.pid: r for _, r in df.iterrows()}
     _lines = {(pid, k): YP.offered_lines(_yb, k, _name.get(pid, "")) for (pid, k) in _yd if pid in _name}
@@ -380,7 +390,7 @@ if YARD_KINDS:
           + (" (" + ", ".join(f"{bk} {n}" for bk, n in sorted(_rejn.items())) + ")" if _rejn else ""))
     print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {sum(1 for r in yard_rows if r['curve_ok'])} with a market curve, "
           f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if not e.get('alt'))} main line, {sum(1 for e in yard_edges if e.get('alt'))} alt rungs); {len(alt_research)} alt candidates logged for research")
-    if alt_research and not os.environ.get("ODDS_MOCK"):
+    if alt_research and not os.environ.get("ODDS_MOCK") and not DRY_RUN:
         os.makedirs("research", exist_ok=True); _rfn = f"research/alt_rungs_{season}_w{week}.json"
         _rlog = json.load(open(_rfn)) if os.path.exists(_rfn) else {}
         _rstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
@@ -426,14 +436,15 @@ held = [dict(e, reasons=w) for e, w in _act if w]
 edges = [e for e, w in _act if not w]
 print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
 clean = lambda d: d.replace({np.nan: None})
-if not os.environ.get("ODDS_MOCK"):
+if DRY_RUN: print("DRY_RUN: edges, research rows and paper parlays not logged")
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
     if edges: print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
     if _parts["hidden"]: print("passing-yard rungs newly logged for research:", C.log_research("pass_yds", _parts["hidden"], season, week, _flag))
     if _parts["blocked"]: print("ratio-blocked rotational edges newly logged for research:", C.log_research("ratio_block", _parts["blocked"], season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
 print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
-if not os.environ.get("ODDS_MOCK"):
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
     _pstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
     print("paper parlays newly logged:", PL.log_paper(_pl["modes"], season, week, _pstamp))
 # the live thresholds, published so the page labels rungs with the same numbers the board and grading use (never re-defined in display code)
@@ -442,6 +453,8 @@ RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_M
                  kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=RU.MAX_PRICE_AGE_MIN, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
+            odds_api=dict(yards_source=YARDS_SOURCE, yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
+                          loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), **ODDS_USAGE),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),

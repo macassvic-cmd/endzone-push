@@ -27,6 +27,19 @@ def clusters(kicks, lead_h=LEAD_H, step_min=STEP_MIN):
     return out
 
 
+LINES_CREDITS, MARKETS_PER_EVENT = 2, 6      # Odds API: spreads+totals (2) + per not-yet-kicked-off game: 2 TD markets + 4 yardage markets (region us)
+HORIZON_DAYS = 6                              # odds.fetch_all prices games up to 6 days out
+
+
+def credits_for(cluster_start, cluster_end, kicks, step_min=STEP_MIN, markets=MARKETS_PER_EVENT):
+    """Credits one loop spends: per pull, 2 for lines + markets x (games not yet kicked off and within the 6-day horizon)."""
+    tot, t = 0, cluster_start
+    while t <= cluster_end:
+        live = sum(1 for k in kicks if t < k <= t + pd.Timedelta(days=HORIZON_DAYS))
+        tot += LINES_CREDITS + markets * live; t += pd.Timedelta(minutes=step_min)
+    return int(tot)
+
+
 def week_windows(sched, season, week, lead_h=LEAD_H, step_min=STEP_MIN):
     s = sched[(sched.season == season) & (sched.week == week) & (sched.game_type == "REG")].copy()
     s["kick_utc"] = pd.to_datetime(s.gameday + " " + s.gametime.fillna("13:00")).dt.tz_localize("America/New_York").dt.tz_convert("UTC")
@@ -36,10 +49,11 @@ def week_windows(sched, season, week, lead_h=LEAD_H, step_min=STEP_MIN):
         games = s[s.kick_utc.isin(c["kicks"])]
         dur = (c["end"] - c["start"]).total_seconds() / 60
         rows.append(dict(start=c["start"].strftime("%Y-%m-%dT%H:%M:%SZ"), end=c["end"].strftime("%Y-%m-%dT%H:%M:%SZ"), minutes=int(dur),
-                         pulls=int(dur // step_min) + 1, chained=bool(dur > MAX_JOB_MIN),
+                         pulls=int(dur // step_min) + 1, chained=bool(dur > MAX_JOB_MIN), odds_api_credits=credits_for(c["start"], c["end"], list(s.kick_utc), step_min),
                          kickoffs=[k.strftime("%Y-%m-%dT%H:%MZ") for k in c["kicks"]],
                          games=[f"{a}@{h}" for a, h in zip(games.away_team, games.home_team)]))
     return dict(season=int(season), week=int(week), lead_h=lead_h, step_min=step_min, max_job_min=MAX_JOB_MIN,
+                odds_api_credits=sum(r["odds_api_credits"] for r in rows), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull (YARDS_SOURCE=oddsapi, region us)",
                 generated=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), clusters=rows)
 
 
@@ -62,6 +76,7 @@ if __name__ == "__main__":
     w = week_windows(sched, season, week, float(g("--lead-h", LEAD_H)), int(g("--step-min", STEP_MIN)))
     print(f"{w['season']} week {w['week']}: {sum(len(c['games']) for c in w['clusters'])} games, {len(w['clusters'])} loop(s), {sum(c['pulls'] for c in w['clusters'])} pulls at {w['step_min']} min")
     for c in w["clusters"]:
-        print(f"  {c['start'][:16]}Z -> {c['end'][:16]}Z  {c['minutes'] / 60:.2f} h, {c['pulls']} pulls, {len(c['games'])} games" + ("  [chained: 2 jobs]" if c["chained"] else "") + " | " + ", ".join(c["games"]))
+        print(f"  {c['start'][:16]}Z -> {c['end'][:16]}Z  {c['minutes'] / 60:.2f} h, {c['pulls']} pulls, {len(c['games'])} games, ~{c['odds_api_credits']} Odds API credits with yardage" + ("  [chained: 2 jobs]" if c["chained"] else "") + " | " + ", ".join(c["games"]))
+    print(f"  week total with YARDS_SOURCE=oddsapi in every loop: ~{w['odds_api_credits']} credits ({w['credits_note']})")
     if g("--write"):
         json.dump(w, open(g("--write"), "w"), indent=1); print("written", g("--write"))

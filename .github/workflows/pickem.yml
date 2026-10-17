@@ -57,6 +57,7 @@ jobs:
       - name: Scan
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          ODDS_API_TAG: pickem
           ODDS_SAVE: pickem_odds_raw.json
           PICKEM_ALTS: ${{ inputs.alts && '1' || '0' }}
           PICKEM_FULL: ${{ inputs.full && '1' || '0' }}

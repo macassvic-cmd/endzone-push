@@ -9,6 +9,10 @@ import numpy as np
 from odds import norm_name, implied, decimal, american
 
 KIND_MARKET = {"rush": "player_rush_yds", "rec": "player_reception_yds", "pass": "player_pass_yds"}
+# YARDS_SOURCE=oddsapi: the books whose verified ladders price the board and feed the pooled curve. A fixed set of regulated US books
+# with their own pricing; Kambi clones (betPARX, theScore Bet, Bally Bet), the Hard Rock FL mirror, offshore and sweepstakes books
+# (BetOnline, Bovada, LowVig, MyBookie, BetUS, Fliff, ReBet, Courtside) are left out so one feed never counts twice in the pool.
+YARD_BOOKS = ("DraftKings", "FanDuel", "BetMGM", "Caesars", "Hard Rock Bet", "BetRivers", "Fanatics", "ESPN BET")
 
 
 def only_books(events, titles):
@@ -25,19 +29,28 @@ def only_books(events, titles):
     return out
 
 
-def ladder_board(events, rejected=None):
+def ladder_board(events, rejected=None, source=None, books=None):
     """{(kind, norm_name, line): {book: {"over": price, "under": price, "main": bool, "ts": capture time}}}, plus each book's
        main-line hold. Only verified ladders survive (verify_ladders); `rejected`, when a dict is passed, receives the
-       one-sided ladders that failed verification, keyed (kind, norm_name, book), for the research view."""
+       one-sided ladders that failed verification, keyed (kind, norm_name, book), for the research view.
+       `source` ('sharpapi' | 'oddsapi', default YARDS_SOURCE) picks which feed's yardage rows are read: a saved pull can carry
+       both (SharpAPI rows carry source="sharpapi"; Odds API rows "oddsapi" or none). `books` (default: YARD_BOOKS when the
+       source is oddsapi, every book for sharpapi) restricts the ladders to that set; `books="all"` keeps every book."""
+    import os
+    source = source or ("oddsapi" if os.environ.get("YARDS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi")
+    if books is None: books = YARD_BOOKS if source == "oddsapi" else "all"
+    want = None if books == "all" else {b.lower() for b in books}
     board, hold = {}, {}
     for ev in events or []:
         for b in ev.get("props", {}).get("bookmakers", []):
+            if want is not None and (b.get("title") or "").lower() not in want: continue
             for m in b["markets"]:
                 base = m["key"].replace("_alternate", "")
                 kind = next((k for k, v in KIND_MARKET.items() if v == base), None)
                 if not kind: continue
                 for o in m["outcomes"]:
                     if o.get("point") is None or o.get("reference"): continue
+                    if o.get("source") and o["source"] != source: continue      # the other feed's yardage rows stay in the file (research); untagged rows count for either
                     key = (kind, norm_name(o.get("description") or ""), float(o["point"]))
                     cell = board.setdefault(key, {}).setdefault(b["title"], {})
                     cell["over" if o["name"] == "Over" else "under"] = o["price"]

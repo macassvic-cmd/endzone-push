@@ -1,6 +1,8 @@
 """The Odds API client: live game lines + TD props for every book, with best price and no-vig consensus.
 
-Cost per run (us region): 2 credits for lines + 3 per game for props (~47 for a 15-game slate).
+Cost per run (us region): 2 credits for lines + 1 per market per game for props (markets actually returned): 2 TD markets with SharpAPI
+covering anytime/first, plus 4 yardage markets when YARDS_SOURCE=oddsapi (~86 for a 14-game slate). Every paid call is logged to
+odds_api_usage.jsonl (tag from ODDS_API_TAG, default nfl); usage_summary() feeds the budget guard and the site notice.
 Set ODDS_API_KEY in the environment. Without it everything falls back to nflverse lines and no book prices.
 """
 import json, os, re, time, unicodedata, urllib.request, urllib.parse
@@ -10,6 +12,47 @@ import numpy as np
 BASE = "https://api.the-odds-api.com/v4/sports/americanfootball_nfl"
 PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds", "player_tds_over"]   # full set (fallback when SharpAPI is unavailable)
 PROP_MARKETS_TRIMMED = ["player_tds_over", "player_pass_tds"]   # with SharpAPI covering DK/FD anytime, first TD and yardage: 2 markets per event instead of 4
+YARD_MARKETS = ["player_rush_yds", "player_reception_yds", "player_rush_yds_alternate", "player_reception_yds_alternate"]   # YARDS_SOURCE=oddsapi: 4 credits per event (us)
+USAGE_FILE, USAGE_TAG = "odds_api_usage.jsonl", os.environ.get("ODDS_API_TAG", "nfl")   # one line per paid call: ts, tag, path, cost, used, remaining
+NFL_MTD_LIMIT, REMAINING_FLOOR = 40_000, 20_000                                        # budget guard (pull loops only; scheduled runs keep the Odds API)
+
+
+def yards_source():
+    """'sharpapi' (default) or 'oddsapi' (YARDS_SOURCE): which feed's rush/rec yardage ladders price the board."""
+    return "oddsapi" if os.environ.get("YARDS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi"
+
+
+def log_usage(path, headers, tag=None):
+    """Append one record per paid call so NFL credits can be summed month to date (committed with the odds history)."""
+    import datetime as dt
+    rec = dict(ts=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), tag=tag or USAGE_TAG, path=path,
+               cost=int(headers.get("x-requests-last") or 0), used=int(headers.get("x-requests-used") or 0), remaining=int(headers.get("x-requests-remaining") or 0))
+    try:
+        with open(USAGE_FILE, "a") as f: f.write(json.dumps(rec) + "\n")
+    except OSError as e:
+        print("usage log failed:", e)
+    return rec
+
+
+def usage_summary(fn=USAGE_FILE, tag="nfl", now=None):
+    """{nfl_mtd, remaining, last_call, month, guard: {tripped, reasons, mtd_limit, remaining_floor}} from the usage log (UTC calendar month)."""
+    import datetime as dt
+    now = now or dt.datetime.now(dt.timezone.utc); month = now.strftime("%Y-%m")
+    rows = []
+    if os.path.exists(fn):
+        for ln in open(fn):
+            ln = ln.strip()
+            if ln:
+                try: rows.append(json.loads(ln))
+                except ValueError: pass
+    mtd = sum(r.get("cost", 0) for r in rows if r.get("tag") == tag and str(r.get("ts", "")).startswith(month))
+    last = rows[-1] if rows else None
+    remaining = last.get("remaining") if last else None
+    reasons = []
+    if mtd > NFL_MTD_LIMIT: reasons.append(f"NFL credits this month {mtd:,} > {NFL_MTD_LIMIT:,}")
+    if remaining is not None and remaining < REMAINING_FLOOR: reasons.append(f"account remaining {remaining:,} < {REMAINING_FLOOR:,}")
+    return dict(nfl_mtd=mtd, remaining=remaining, last_call=last.get("ts") if last else None, month=month,
+                guard=dict(tripped=bool(reasons), reasons=reasons, mtd_limit=NFL_MTD_LIMIT, remaining_floor=REMAINING_FLOOR))
 TWO_PLUS = ("player_tds_over", 1.5)
 # The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
 MARKET_ALIAS = {"player_1st_td": "player_first_td"}
@@ -52,12 +95,15 @@ def _get(url, params, fetch=None):
     q = urllib.parse.urlencode(params)
     with urllib.request.urlopen(f"{url}?{q}", timeout=30) as r:
         left = r.headers.get("x-requests-remaining")
-        if left: print("odds api credits remaining:", left)
+        if left:
+            print("odds api credits remaining:", left, "| this call:", r.headers.get("x-requests-last"))
+            log_usage(url.replace(BASE, ""), r.headers)
         return json.load(r)
 
 
 def fetch_all(api_key=None, fetch=None, markets=None):
     markets = markets or (PROP_MARKETS_TRIMMED if os.environ.get("ODDS_API_PROPS", "trimmed") == "trimmed" and os.environ.get("SHARPAPI_KEY") else PROP_MARKETS)
+    if yards_source() == "oddsapi": markets = list(markets) + [m for m in YARD_MARKETS if m not in markets]   # rush/rec main + alternate ladders, region us
     if os.environ.get("ODDS_MOCK"):                     # offline test fixture
         return json.load(open(os.environ["ODDS_MOCK"]))
     api_key = api_key or os.environ.get("ODDS_API_KEY")

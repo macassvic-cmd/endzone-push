@@ -38,6 +38,19 @@ on:
         description: "Also pull The Odds API (spends credits)"
         type: boolean
         default: false
+      yards_source:
+        description: "Yardage ladders from: sharpapi (live default) | oddsapi (rush/rec main + alternates, region us; needs use_odds)"
+        type: choice
+        options: [default, sharpapi, oddsapi]
+        default: default
+      publish:
+        description: "Publish the board to the board branch (off = pull, build and save the odds only)"
+        type: boolean
+        default: true
+      dry_run:
+        description: "DRY_RUN: never log edges / research / paper parlays (the pull is still saved and committed)"
+        type: boolean
+        default: false
   repository_dispatch:
     types: [pull_loop]
 
@@ -57,6 +70,9 @@ env:
   ITER: ${{ inputs.iterations || github.event.client_payload.iterations || '2' }}
   USE_ODDS: ${{ (inputs.use_odds || github.event.client_payload.use_odds) && 'true' || 'false' }}
   MAX_MINUTES: "340"
+  YARDS_SOURCE: ${{ (inputs.yards_source != '' && inputs.yards_source != 'default') && inputs.yards_source || github.event.client_payload.yards_source || vars.YARDS_SOURCE || 'sharpapi' }}
+  PUBLISH: ${{ (inputs.publish == false) && '0' || '1' }}
+  DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
 
 jobs:
   loop:
@@ -76,6 +92,7 @@ jobs:
           python test_nan_safety.py
           python test_ladder_integrity.py
           python test_pull_loop.py
+          python test_yards_source.py
           python refresh.py --data-only
       - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
         run: python results.py
