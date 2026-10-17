@@ -1331,3 +1331,26 @@ expected = EV × stake and the luck band, markets inside the headline, CLV and t
 parlay detail, current-rules view, blend re-score, backfill). The dot-separated summary block is gone. Phone width: the
 page column no longer stretches to the widest table (`.wrap > * {min-width:0}`, `.tbl` scrolls sideways), Results cards are
 clamped to the viewport; verified at 390 px in headless Chrome (card 356 px wide, only the tables scroll).
+
+## 2026-10-17 — Every fitted blend pinned to 50/50 pending approval; two new blend gates; Results tab defaults to All prices
+
+- **Approval.** `blend.APPROVED` (empty) lists the markets whose fitted blend may go live; `coef_for` returns 50/50 for
+  everything else, whatever the fit says. The fits still run every grading pass and are reported (`results.json` `blend`,
+  Market Brier card: in use / reason / gate results). Anytime and first TD therefore run 50/50 again, same as yards. On the
+  19:07 UTC pull the pinned build is identical to the 50/50 comparison build: 36 TD edge rows, same keys (the fitted build
+  had 35 rows, 45 rows different).
+- **Gate 1, between the inputs** (`blend.between_inputs`, tolerance 1e-6): on every fitted row the blend must lie in
+  [min(model, market), max(model, market)]. A logistic fit with an intercept or b + c ≠ 1 can leave that interval; the
+  2026-10-17 first-TD fit sat outside on 72% of rows (up to 0.12 above both inputs), anytime on 42% (up to 0.07). A 50/50
+  blend never does.
+- **Gate 2, first-TD game sums** (`blend.game_sums`, tolerance 0.02): per game, Σ blend P(first) over the priced players
+  ≤ 1 + 0.02, and ≥ min(Σ model, Σ market) − 0.02. First TD is one-of-N: the true total over every candidate is 1 − P(no
+  TD in the game) and the priced set is a subset, so any blend total above 1 is probability mass that does not exist; the
+  2 points cover no-vig rounding and the 1–3% of NFL games with no touchdown. The first-TD fit reached 1.05 in a game
+  (market itself 1.04 on one no-vig board, model never above 0.91). The lower bound stops a blend from erasing mass both
+  inputs agree on. Both gates plus `monotone` are recorded per market; `in_use` requires leave-one-week-out better than
+  50/50, every gate, and approval. Tests: `test_blend_gates_and_approval`, `test_blend_with_negative_coefficient_not_used`
+  (8/8).
+- **Results tab:** "All prices" is the primary view (first radio, default; the stored choice still applies). The Luck
+  card already showed σ in both views (the "two long hits" wording was in the 2026-10-17 report, not on the page); on All
+  prices it reads +1.6σ · hot for 35–122, +125.3u vs +40.6u expected.

@@ -160,7 +160,14 @@ def test_blend_with_negative_coefficient_not_used():
     bad = dict(coef=[0.10933, 0.33279, -2.70149], n=507, weeks=[4, 5, 6], loo=dict(fitted=0.24861, half=0.2511))
     good = dict(coef=[0.25058, 0.31846, 0.82285], n=1668, weeks=[1, 2, 3, 4, 5, 6], loo=dict(fitted=0.12491, half=0.12499))
     assert BL.coef_for({"yds": bad}, "yds") is None, "negative market coefficient must not be used"
-    assert BL.coef_for({"any": good}, "any") == good["coef"], "a monotone fit that beats 50/50 stays in use"
+    assert BL.coef_for({"any": good}, "any") is None, "not approved -> 50/50"
+    _saved = BL.APPROVED
+    try:
+        BL.APPROVED = frozenset({"any"})
+        assert BL.coef_for({"any": dict(good, gates=dict(ok=True))}, "any") == good["coef"], "an approved, gated, monotone fit that beats 50/50 is used"
+        assert BL.coef_for({"any": dict(good, gates=dict(ok=False))}, "any") is None, "a failed gate blocks an approved fit"
+    finally:
+        BL.APPROVED = _saved
     ladder = [0.05, 0.2, 0.5, 0.8, 0.95]                              # market P(over) falling with the line, model alongside it
     p_bad = BL.predict(bad["coef"], ladder, ladder); p_good = BL.predict(good["coef"], ladder, ladder)
     assert np.all(np.diff(p_bad) < 0) and np.all(np.diff(p_good) > 0), "the bad fit inverts the ladder, the good one does not"
@@ -171,8 +178,39 @@ def test_blend_with_negative_coefficient_not_used():
     df = pd.DataFrame(dict(season=2026, week=rng.choice([4, 5, 6], n), p_yds=rng.uniform(0.3, 0.7, n), yds_mkt_p=0.5 + rng.normal(0, 0.01, n)))
     df["yds_hit"] = (rng.uniform(size=n) < df.p_yds).astype(int)
     rec = BL.fit_market(df, "yds")
-    assert rec is None or rec["in_use"] == BL.monotone(rec["coef"]), "in_use must respect the sign guard"
+    assert rec is None or (rec["in_use"] is False and rec["gates"]["monotone"]["ok"] == BL.monotone(rec["coef"])), "in_use must respect the sign guard (and approval)"
     print(f"  bad fit refused (coef {bad['coef']}), good fit kept; fit_market in_use honours the guard")
+
+
+def test_blend_gates_and_approval():
+    """A fitted blend goes live only if the market is in blend.APPROVED AND it passes every gate: non-negative coefficients, blend
+       between the model and market probability on every row, first-TD per-game sums <= 1 + 0.02 and >= min(input sums) - 0.02.
+       2026-10-17: APPROVED is empty, so anytime and first TD run 50/50 like yards whatever their fits say."""
+    import blend as BL
+    import numpy as np, pandas as pd
+    assert BL.APPROVED == frozenset(), "no fitted blend is approved for live use"
+    good_loo = dict(fitted=0.1, half=0.2)
+    fit_first = [1.19182, 0.64939, 0.75292]; fit_any = [0.25058, 0.31846, 0.82285]
+    rec = dict(coef=fit_any, n=1668, weeks=[1, 2, 3, 4, 5, 6], loo=good_loo, gates=dict(ok=True))
+    assert BL.coef_for({"any": rec}, "any") is None, "unapproved -> 50/50 even when every gate passes"
+    # gate 1: the 2026-10-17 first-TD and anytime fits leave the interval between the inputs; 50/50 never does
+    rng = np.random.default_rng(1); pm = rng.uniform(0.02, 0.4, 500); pk = np.clip(pm + rng.normal(0, 0.05, 500), 0.01, 0.6)
+    assert not BL.between_inputs(fit_first, pm, pk)["ok"] and not BL.between_inputs(fit_any, pm, pk)["ok"]
+    assert BL.between_inputs([0.0, 0.5, 0.5], pm, pk)["ok"], "a pure logit average stays between the inputs"
+    # gate 2: first-TD sums per game
+    # 25 synthetic games, 20 priced players each, inputs summing to 0.95 per game (first TD is one-of-N: the true total is 1 - P(no TD))
+    g = np.repeat(np.arange(25), 20)
+    pm2 = np.concatenate([rng.dirichlet(np.ones(20) * 1.5) * 0.95 for _ in range(25)])
+    pk2 = np.concatenate([(lambda v: v / v.sum() * 0.95)(np.clip(pm2[i * 20:(i + 1) * 20] + rng.normal(0, 0.01, 20), 0.003, 1)) for i in range(25)])
+    gs = BL.game_sums(fit_first, pm2, pk2, g)
+    assert not gs["ok"] and gs["max_over_one"] > 0, f"the intercept-heavy fit over-allocates first-TD mass: {gs}"
+    assert BL.game_sums([0.0, 0.5, 0.5], pm2, pk2, g)["ok"]
+    # fit_market records the gates and the approval, and never marks an unapproved fit in use
+    df = pd.DataFrame(dict(season=2026, week=rng.choice([3, 4, 5, 6], 500), game_id=[f"g{x}" for x in g], p_first=pm2, first_mkt_p=pk2))
+    df["first_hit"] = (rng.uniform(size=500) < df.p_first).astype(int)
+    r = BL.fit_market(df, "first")
+    assert r and r["approved"] is False and r["in_use"] is False and "game_sum" in r["gates"] and "between" in r["gates"], r and r.get("gates")
+    print(f"  approval gate holds; first-TD fit: between {r['gates']['between']['ok']}, game sums {r['gates']['game_sum']['ok']} -> {r['reason']}")
 
 
 if __name__ == "__main__":
