@@ -2257,5 +2257,26 @@
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
 "stake": 0.25,
 "ratio": 1.23
+},
+"00-0034960|any": {
+"pid": "00-0034960",
+"bet": "Jakobi Meyers Anytime TD",
+"market": "any",
+"team": "JAX",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261017T2011Z",
+"best": 349,
+"book": "Kalshi",
+"med": 320,
+"mkt_p": 0.2227,
+"blend_p": 0.2501,
+"model_p": 0.2678,
+"ev": 0.1228,
+"ev_med": 0.0503,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.2
 }
 }
