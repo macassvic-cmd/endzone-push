@@ -1,0 +1,131 @@
+name: Pull loop
+
+# One run per kickoff cluster (see pull_windows.py / pull_windows.json): wait until `start`, then every `step_min` minutes pull
+# SharpAPI (+ Kalshi; The Odds API only with use_odds), build the board and publish it as an orphan snapshot to the `board`
+# branch, which GitHub Pages serves. Stops at `end` (the cluster's last kickoff). Pulls and first-seen edge/research/parlay logs
+# are committed to main ONCE per job, in a step that runs even if the loop failed (if: always()), merged key-wise against
+# origin/main so a crash never loses logged edges. A cluster longer than the job cap hands over to the chained second job.
+# Started by pull_dispatch.yml (>= 30 min ahead, every 30 min as backup), by hand (mode once = one pull + publish; dry_run = a
+# few short iterations), or by repository_dispatch type pull_loop with client_payload {mode, start, end, step_min}.
+
+run-name: "pull loop ${{ inputs.mode || github.event.client_payload.mode || 'loop' }} ${{ inputs.start || github.event.client_payload.start || 'now' }} -> ${{ inputs.end || github.event.client_payload.end || 'open' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "loop = until end | once = one pull + publish (refresh the board now) | dry_run = iterations x step_min"
+        type: choice
+        options: [once, loop, dry_run]
+        default: once
+      start:
+        description: "ISO UTC; the job waits until then (empty = now)"
+        type: string
+        default: ""
+      end:
+        description: "ISO UTC; loop mode stops here (the cluster's last kickoff)"
+        type: string
+        default: ""
+      step_min:
+        description: "minutes between pulls"
+        type: string
+        default: "10"
+      iterations:
+        description: "dry_run only: number of pulls"
+        type: string
+        default: "2"
+      use_odds:
+        description: "Also pull The Odds API (spends credits)"
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [pull_loop]
+
+permissions:
+  contents: write
+
+# Own group per cluster (keyed on the cluster's last kickoff): never the scheduled runs' `update` group, and never cancelled.
+concurrency:
+  group: pull-loop-${{ inputs.end || github.event.client_payload.end || github.run_id }}
+  cancel-in-progress: false
+
+env:
+  MODE: ${{ inputs.mode || github.event.client_payload.mode || 'loop' }}
+  START: ${{ inputs.start || github.event.client_payload.start || '' }}
+  END: ${{ inputs.end || github.event.client_payload.end || '' }}
+  STEP: ${{ inputs.step_min || github.event.client_payload.step_min || '10' }}
+  ITER: ${{ inputs.iterations || github.event.client_payload.iterations || '2' }}
+  USE_ODDS: ${{ (inputs.use_odds || github.event.client_payload.use_odds) && 'true' || 'false' }}
+  MAX_MINUTES: "340"
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    outputs:
+      remaining: ${{ steps.run.outputs.remaining }}
+      resume_start: ${{ steps.run.outputs.resume_start }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Tests and data
+        run: |
+          python test_nan_safety.py
+          python test_ladder_integrity.py
+          python test_pull_loop.py
+          python refresh.py --data-only
+      - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
+        run: python results.py
+      - name: Pull loop
+        id: run
+        env:
+          SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          ODDS_API_KEY: ${{ env.USE_ODDS == 'true' && secrets.ODDS_API_KEY || '' }}
+          PYTHONUNBUFFERED: "1"
+        run: python pull_loop.py --mode "$MODE" --start "$START" --end "$END" --step-min "$STEP" --iterations "$ITER" --max-minutes "$MAX_MINUTES"
+      - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
+        if: always()
+        run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Keep every pull of this job (download to rerun locally with ODDS_MOCK)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulls-${{ github.run_id }}-1
+          path: pulls_out/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  loop2:
+    # second leg of a cluster longer than the job cap (Sunday 1 pm + 4 pm blocks)
+    needs: loop
+    if: always() && needs.loop.outputs.remaining == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python refresh.py --data-only
+      - run: python results.py
+      - name: Pull loop (continued)
+        env:
+          SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          ODDS_API_KEY: ${{ env.USE_ODDS == 'true' && secrets.ODDS_API_KEY || '' }}
+          PYTHONUNBUFFERED: "1"
+        run: python pull_loop.py --mode loop --start "${{ needs.loop.outputs.resume_start }}" --end "$END" --step-min "$STEP" --max-minutes "$MAX_MINUTES"
+      - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
+        if: always()
+        run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Keep every pull of this job
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulls-${{ github.run_id }}-2
+          path: pulls_out/
+          if-no-files-found: ignore
+          retention-days: 30

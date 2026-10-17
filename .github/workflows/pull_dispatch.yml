@@ -1,0 +1,36 @@
+name: Pull dispatcher
+
+# Every 30 minutes (09:00-23:59 UTC covers every loop start: London 10:30Z through the 21:20Z prime-time lead-ins): read
+# pull_windows.json (written by the scheduled runs from the nflverse schedule) and start a `Pull loop` run for each cluster whose
+# loop starts within 90 min and has no run yet. The half-hour cadence is the backup: a late or skipped firing is covered by the next
+# one, and a loop started late begins at once. GitHub cron is 5-min granular and often late, which is why the loop waits for its own
+# exact start time inside the job instead of relying on cron for the cadence.
+
+on:
+  schedule:
+    - cron: "*/30 9-23 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Show what would be dispatched without starting anything"
+        type: boolean
+        default: false
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: pull-dispatch
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch the loops due within 90 min
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python pull_dispatch.py --lead-min 90 ${{ inputs.dry_run && '--dry-run' || '' }}

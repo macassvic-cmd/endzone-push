@@ -1,0 +1,180 @@
+{
+ "any": {
+  "coef": [
+   0.25058,
+   0.31846,
+   0.82285
+  ],
+  "n": 1668,
+  "weeks": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "brier": {
+   "model": 0.12624,
+   "market": 0.12532,
+   "half": 0.12499,
+   "fitted": 0.12421
+  },
+  "loo": {
+   "fitted": 0.12491,
+   "half": 0.12499,
+   "market": 0.12532,
+   "model": 0.12624,
+   "n": 1668
+  },
+  "gates": {
+   "monotone": {
+    "ok": true
+   },
+   "between": {
+    "ok": false,
+    "rows_outside": 671,
+    "n": 1668,
+    "max_excursion": 0.0704
+   },
+   "ok": false
+  },
+  "approved": false,
+  "in_use": false,
+  "reason": "fails a gate: between"
+ },
+ "first": {
+  "coef": [
+   1.19182,
+   0.64939,
+   0.75292
+  ],
+  "n": 1634,
+  "weeks": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "brier": {
+   "model": 0.03892,
+   "market": 0.03868,
+   "half": 0.03873,
+   "fitted": 0.03827
+  },
+  "loo": {
+   "fitted": 0.0385,
+   "half": 0.03873,
+   "market": 0.03868,
+   "model": 0.03892,
+   "n": 1634
+  },
+  "gates": {
+   "monotone": {
+    "ok": true
+   },
+   "between": {
+    "ok": false,
+    "rows_outside": 1144,
+    "n": 1634,
+    "max_excursion": 0.1125
+   },
+   "game_sum": {
+    "ok": false,
+    "games_outside": 14,
+    "games": 77,
+    "max_over_one": 0.1842,
+    "max_under_inputs": 0.0287,
+    "tol": 0.02
+   },
+   "ok": false
+  },
+  "approved": false,
+  "in_use": false,
+  "reason": "fails a gate: between, game_sum"
+ },
+ "two": {
+  "coef": [
+   0.45012,
+   0.73351,
+   0.26099
+  ],
+  "n": 351,
+  "weeks": [
+   4,
+   5,
+   6
+  ],
+  "brier": {
+   "model": 0.05743,
+   "market": 0.05728,
+   "half": 0.05721,
+   "fitted": 0.05628
+  },
+  "loo": {
+   "fitted": 0.06605,
+   "half": 0.06597,
+   "market": 0.06649,
+   "model": 0.06571,
+   "n": 121
+  },
+  "gates": {
+   "monotone": {
+    "ok": true
+   },
+   "between": {
+    "ok": false,
+    "rows_outside": 258,
+    "n": 351,
+    "max_excursion": 0.0987
+   },
+   "ok": false
+  },
+  "approved": false,
+  "in_use": false,
+  "reason": "not better than 50/50 held out"
+ },
+ "yds": {
+  "coef": [
+   0.10933,
+   0.33279,
+   -2.70149
+  ],
+  "n": 507,
+  "weeks": [
+   4,
+   5,
+   6
+  ],
+  "brier": {
+   "model": 0.25675,
+   "market": 0.2533,
+   "half": 0.2511,
+   "fitted": 0.24657
+  },
+  "loo": {
+   "fitted": 0.24861,
+   "half": 0.2511,
+   "market": 0.2533,
+   "model": 0.25675,
+   "n": 507
+  },
+  "gates": {
+   "monotone": {
+    "ok": false
+   },
+   "between": {
+    "ok": false,
+    "rows_outside": 218,
+    "n": 507,
+    "max_excursion": 0.7012
+   },
+   "ok": false
+  },
+  "approved": false,
+  "in_use": false,
+  "reason": "fails a gate: monotone, between"
+ }
+}
