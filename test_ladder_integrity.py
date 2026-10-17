@@ -45,7 +45,7 @@ def wilson_events():
 
 def test_phantom_ladder_rejected():
     rej = {}
-    board, hold = YP.ladder_board(wilson_events(), rejected=rej)
+    board, hold = YP.ladder_board(wilson_events(), rejected=rej, source="sharpapi")
     assert YP.offered_at(board, "rush", "Emanuel Wilson", 19.5) == [], "the phantom DraftKings 19.5 must not be listed"
     for pt in (4.5, 9.5, 14.5, 24.5, 54.5):
         assert YP.offered_at(board, "rush", "Emanuel Wilson", pt) == [], f"DraftKings {pt} must go with the rest of its ladder"
@@ -65,18 +65,18 @@ def test_consistent_ladder_kept_and_no_anchor_rejected():
     fd = [("player_rush_yds", "RJ Harvey", "Over", 14.5, -113), ("player_rush_yds", "RJ Harvey", "Under", 14.5, -113)]
     fd += [("player_rush_yds_alternate", "RJ Harvey", "Over", pt, pr) for pt, pr in [(4.5, -650), (9.5, -235), (19.5, 152), (24.5, 235), (29.5, 350), (39.5, 640), (49.5, 1100), (59.5, 1500)]]
     rej = {}
-    board, hold = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", fd)], rejected=rej)
+    board, hold = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", fd)], rejected=rej, source="sharpapi")
     assert YP.offered_at(board, "rush", "RJ Harvey", 24.5) == [("FanDuel", 235)] and not rej
     assert YP.book_ranges(board, "rush", "RJ Harvey") == {"FanDuel": (4.5, 59.5)}
     assert YP.captured_at(board, "rush", "RJ Harvey", 24.5, "FanDuel") == "2026-10-15T22:07:41Z"
     # the same ladder without a two-sided line cannot be verified
     rej = {}
-    board, _ = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", fd[2:])], rejected=rej)
+    board, _ = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", fd[2:])], rejected=rej, source="sharpapi")
     assert YP.offered_at(board, "rush", "RJ Harvey", 24.5) == [] and "no two-sided line" in rej[("rush", norm_name("RJ Harvey"), "FanDuel")]["reason"]
     # a ladder that rises with the line is rejected even when every rung sits on the right side of the main
     bad = fd[:2] + [("player_rush_yds_alternate", "RJ Harvey", "Over", 19.5, 300), ("player_rush_yds_alternate", "RJ Harvey", "Over", 24.5, 110)]
     rej = {}
-    board, _ = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", bad)], rejected=rej)
+    board, _ = YP.ladder_board([ev("Denver Broncos", "FanDuel", "player_rush_yds", bad)], rejected=rej, source="sharpapi")
     assert YP.offered_at(board, "rush", "RJ Harvey", 24.5) == [] and "rises" in rej[("rush", norm_name("RJ Harvey"), "FanDuel")]["reason"]
 
 
