@@ -77,6 +77,8 @@ jobs:
           python test_ladder_integrity.py
           python test_pull_loop.py
           python refresh.py --data-only
+      - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
+        run: python results.py
       - name: Pull loop
         id: run
         env:
@@ -109,6 +111,7 @@ jobs:
           python-version: "3.11"
       - run: pip install -r requirements.txt
       - run: python refresh.py --data-only
+      - run: python results.py
       - name: Pull loop (continued)
         env:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
