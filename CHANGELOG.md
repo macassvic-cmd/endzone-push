@@ -1384,3 +1384,25 @@ and pull_loop.yml, and a per-run input on the Pull loop workflow, so go-live is 
   loop workflow gained `yards_source`, `publish` and `dry_run` inputs for the replay pull.
 - Tests: `test_yards_source.py` (one feed per build, fixed books, usage summary and guard thresholds), ladder and loop tests
   unchanged (8/8, 3/3). Default-mode replay of the 19:07 UTC pull is identical to the pre-change build (62 edges, same yard rows).
+
+### Replay of the 21:11 UTC week-6 pull, SharpAPI yardage vs Odds API yardage (same pull, same sim draws; awaiting approval)
+
+The dry CI pull (`Pull loop`, once, use_odds, yards_source=oddsapi, publish off, DRY_RUN) saved both feeds in one file:
+SharpAPI 116 yardage markets (DraftKings 104, FanDuel 12: FanDuel's SharpAPI board was still collapsed, 13 anchor-less ladders)
+and Odds API 364 (DraftKings, FanDuel, BetMGM, BetRivers, Caesars, Fanatics, BetOnline, Bovada; region us). Caveat: "old" is
+unusually thin here because of that FanDuel dropout; it is the only pull with both feeds.
+
+| Build | Yard edges | Player-stats with a curve | Listed rungs (books) |
+|---|---|---|---|
+| Old: SharpAPI | 27 (0 main, 27 alt) | 225 of 474 | 2,880 (DraftKings only) |
+| New: Odds API, fixed book set | 47 (3 main, 44 alt) | 212 of 474 | 3,554 (DK 2,346, FD 2,096, BetMGM 1,062, BetRivers 972, Fanatics …) |
+| New: Odds API, every verified book | 59 (3 main, 56 alt) | 216 of 474 | 5,033 (adds BetOnline 1,892, Bovada …) |
+
+Old → new (fixed set): 27 added, 7 removed, 20 shared. Shared rows: mean |ΔMARKET| 0.013 (max 0.042), mean ΔEV +5.3 pts
+(max +26.5: Colby Parkinson 24.5 rec, +217 DK → +290 FD), driven by better listed prices at FanDuel / BetRivers rather than by
+the curve; on all 2,252 rungs priced by both builds the curve moved +0.0006 on average (mean |Δ| 0.006, ≥ 5 pts on 5 rungs).
+The 7 removed rows are DraftKings rungs displaced by a better-EV rung of the same player on another book (e.g. Geno Smith
+Over 19.5 rush +298 DK out, Over 14.5 +235 FD in); the 3 new main-line edges exist because a second book now anchors them.
+Fixed set → all verified books: +14 / −2 edges, curves +0.014 on shared rows (max +0.062, Rico Dowdle 29.5 rush), one edge
+priced best at Bovada; the offshore quotes lift the pooled curve and the EV, which is the reason for the fixed set.
+Full row-level diff: session scratchpad `compare_yards.txt`.
