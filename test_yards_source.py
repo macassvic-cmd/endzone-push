@@ -27,6 +27,7 @@ def test_ladder_board_reads_one_feed_and_the_fixed_books():
     bk["markets"].append(dict(key="player_rush_yds_alternate", outcomes=[dict(name=n, description="Test Back", point=p, price=pr, source="sharpapi") for p, n, pr in alt_sa]))
     ev["props"]["bookmakers"].append(dict(key="betonlineag", title="BetOnline.ag", markets=[dict(key="player_rush_yds", outcomes=[dict(name=n, description="Test Back", point=p, price=pr, source="oddsapi") for p, n, pr in main]),
                                                                                        dict(key="player_rush_yds_alternate", outcomes=[dict(name="Over", description="Test Back", point=39.5, price=-400, source="oddsapi")])]))
+    os.environ.pop("YARD_BOOKS", None)                      # the research override must not leak into the test
     b_sa, _ = YP.ladder_board([ev], source="sharpapi")
     b_oa, _ = YP.ladder_board([ev], source="oddsapi")
     b_all, _ = YP.ladder_board([ev], source="oddsapi", books="all")

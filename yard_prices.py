@@ -38,7 +38,9 @@ def ladder_board(events, rejected=None, source=None, books=None):
        source is oddsapi, every book for sharpapi) restricts the ladders to that set; `books="all"` keeps every book."""
     import os
     source = source or ("oddsapi" if os.environ.get("YARDS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi")
-    if books is None: books = YARD_BOOKS if source == "oddsapi" else "all"
+    if books is None:
+        env = os.environ.get("YARD_BOOKS", "").strip()            # research override: "all" or a comma list of titles
+        books = ("all" if env.lower() == "all" else [b.strip() for b in env.split(",")]) if env else (YARD_BOOKS if source == "oddsapi" else "all")
     want = None if books == "all" else {b.lower() for b in books}
     board, hold = {}, {}
     for ev in events or []:
