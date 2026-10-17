@@ -71,8 +71,16 @@ def fit_market(df, mk):
     if oos:
         rec["loo"] = dict(fitted=round(float(np.mean(oos)), 5), half=round(float(np.mean(oos_half)), 5),
                           market=round(float(np.mean(oos_mkt)), 5), model=round(float(np.mean(oos_mod)), 5), n=len(oos))
-    rec["in_use"] = bool(rec.get("loo") and rec["loo"]["fitted"] < rec["loo"]["half"])
+    rec["in_use"] = bool(rec.get("loo") and rec["loo"]["fitted"] < rec["loo"]["half"]) and monotone(coef)
+    if not monotone(coef): rec["reason"] = "not used: a model or market coefficient is negative, so the blend would fall as that input rises (unusable across a ladder; 2026-10-17 yds fit on main lines only)"
     return rec
+
+
+def monotone(coef):
+    """A blend is usable only if it rises with both inputs (b, c >= 0). A fit on two-sided main lines alone (market P ~ 0.5 everywhere)
+       can return a negative market coefficient that passes the leave-one-week-out gate yet inverts P(over) across a ladder:
+       the 2026-10-17 week-6 yds fit [0.109, 0.333, -2.70] failed the yard-curve monotonicity gate on every CI run."""
+    return coef is None or (coef[1] >= 0 and coef[2] >= 0)
 
 
 def save(models, fn=FILE):
@@ -89,4 +97,4 @@ def coef_for(models, mk):
     m = (models or {}).get(mk)
     if not m or m.get("n", 0) < MIN_ROWS or not m.get("loo"):
         return None
-    return m["coef"] if m["loo"]["fitted"] < m["loo"]["half"] else None
+    return m["coef"] if m["loo"]["fitted"] < m["loo"]["half"] and monotone(m["coef"]) else None

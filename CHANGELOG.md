@@ -1265,3 +1265,27 @@ contaminated table's +150 to +300 band exactly** (the 17 flagged bets that are g
 expected but positive). Raise side: gate not met. Cap stays at +300. What the re-check changes in the narrative: the
 "shorter than +150" bands that looked like free money (15–2 across both scripts) never existed; FanDuel's own ladders
 carry the whole alt-rung record, at +150 to +300, modestly ahead of expectation on 61 bets.
+
+## 2026-10-17 — Both Saturday scheduled runs failed at "Run model": the first gated-in yards blend fit inverted every ladder
+
+The 17:55 and 18:35 UTC runs (`39055827830`, `39058769742`) saved their SharpAPI pulls and then failed the yard-curve
+monotonicity gate ("build failed: 2647 yard-curve monotonicity violation(s): P(over) rises with the line"); nothing but
+the pulls and results.json was published, so the page kept Thursday's build (everything held for age). Reproduced
+locally only by running the CI step order — `results.py` (which refits `blend_model.json`) and then `run_week.py` —
+on the 18:38 pull; replays on the committed blend model pass.
+
+Cause: with the week-6 Thursday game graded, the yards head-to-head reached 3 graded weeks (4–6, 507 main-line rows)
+and `results.py` fitted the pooled `yds` blend for the first time. The fit came out **[0.109, 0.333, −2.701]**: a negative
+coefficient on the market no-vig P. It passed the leave-one-week-out gate (0.2486 vs 0.2511 for 50/50) because on
+two-sided main lines the market P is ≈ 0.5 everywhere and carries no information, so the coefficient is unidentified;
+applied across a ladder (market P from 0.05 to 0.95) it makes the blend fall as the market P rises, i.e. P(over) climbs
+with the line for every player (Trevor Lawrence rush: 9.5 → 0.28, 13.5 → 0.50, 19.5 → 0.78 …). The gate did its job.
+
+Fix (`blend.py`): a fitted blend is used only if it rises with both inputs — `blend.monotone(coef)` (b ≥ 0 and c ≥ 0) is
+required in `coef_for` and in `fit_market`'s `in_use` (the record keeps the coefficients and a `reason`). The yds blend
+therefore stays 50/50, which is what every build so far has used; no model behaviour changes. `any` and `first` now
+pass their gates with positive coefficients and are in use (the pre-registered 2026-10 mechanism, not a change here).
+Open design question for the user: a yards blend fitted on main lines only cannot be validated for alt rungs; if a fitted
+yards blend is ever wanted it needs graded alt-rung rows (model P and curve P away from 0.5) in the fit, under the
+backtest gate. Test: `test_blend_with_negative_coefficient_not_used` (7/7 pass). Verified locally in the CI order on the
+18:38 pull: yds `in_use: false`, build passes (474 player curves monotone), `test_reconcile` 56 checks pass.

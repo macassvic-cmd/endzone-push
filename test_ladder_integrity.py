@@ -151,6 +151,30 @@ def test_kalshi_quotes_carry_capture_time():
     assert RU.not_actionable(e, pd.Timestamp.now(tz="UTC"), max_age=15) == []
 
 
+def test_blend_with_negative_coefficient_not_used():
+    """A fitted blend is used only if it rises with both inputs. The 2026-10-17 week-6 yds fit (main lines only, market P ~ 0.5
+       everywhere) came out [0.109, 0.333, -2.70]: it beat 50/50 leave-one-week-out yet inverted P(over) across every ladder and
+       failed the monotonicity gate on both scheduled runs. blend.coef_for / fit_market must refuse such a fit (50/50 instead)."""
+    import blend as BL
+    import numpy as np
+    bad = dict(coef=[0.10933, 0.33279, -2.70149], n=507, weeks=[4, 5, 6], loo=dict(fitted=0.24861, half=0.2511))
+    good = dict(coef=[0.25058, 0.31846, 0.82285], n=1668, weeks=[1, 2, 3, 4, 5, 6], loo=dict(fitted=0.12491, half=0.12499))
+    assert BL.coef_for({"yds": bad}, "yds") is None, "negative market coefficient must not be used"
+    assert BL.coef_for({"any": good}, "any") == good["coef"], "a monotone fit that beats 50/50 stays in use"
+    ladder = [0.05, 0.2, 0.5, 0.8, 0.95]                              # market P(over) falling with the line, model alongside it
+    p_bad = BL.predict(bad["coef"], ladder, ladder); p_good = BL.predict(good["coef"], ladder, ladder)
+    assert np.all(np.diff(p_bad) < 0) and np.all(np.diff(p_good) > 0), "the bad fit inverts the ladder, the good one does not"
+    assert np.allclose(BL.predict(BL.coef_for({"yds": bad}, "yds"), ladder, ladder), ladder), "fallback is the 50/50 blend"
+    # fit_market records the refusal
+    import pandas as pd
+    rng = np.random.default_rng(0); n = 400
+    df = pd.DataFrame(dict(season=2026, week=rng.choice([4, 5, 6], n), p_yds=rng.uniform(0.3, 0.7, n), yds_mkt_p=0.5 + rng.normal(0, 0.01, n)))
+    df["yds_hit"] = (rng.uniform(size=n) < df.p_yds).astype(int)
+    rec = BL.fit_market(df, "yds")
+    assert rec is None or rec["in_use"] == BL.monotone(rec["coef"]), "in_use must respect the sign guard"
+    print(f"  bad fit refused (coef {bad['coef']}), good fit kept; fit_market in_use honours the guard")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     failed = 0
