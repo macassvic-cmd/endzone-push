@@ -3,7 +3,7 @@
     python test_reconcile.py            # after python results.py; the workflow runs it after both grading steps
 
 Checks, for the live and since-current-rules scopes:
-  1. record.<scope>.main.all  == sum of record.<scope>.by_market[*].all   (headline = its market breakdown)
+  1. record.<scope>.singles  == sum of by_market[*] == main + bench == sum of by_role[*]   (headline = its market and role breakdowns)
   2. record.<scope>.<group>   == sum over bets_by_week rows in scope       (headline = week table cumulative), for main, bench, parlay
   3. record.<scope>.main/bench == an independent recount of results.json `bets` (singles) by role group; parlay == parlays.by_week
   4. the same for the shorter-than-+1000 split
@@ -58,15 +58,24 @@ def main():
             continue
         rows = [r for r in R["bets_by_week"] if rows_ok(r["week"])]
         for split in ("all", "short"):
-            # 1. headline == sum of its market breakdown
+            # 1. headline (singles = Starter + Rotational + Bench at actual stakes) == sum of its market breakdown == main + bench == sum of roles
             bm = zero()
             for v in S["by_market"].values(): add(bm, v[split])
-            same(f"{sc}/{split}: main vs by_market", S["main"][split], bm); checks += 1
+            same(f"{sc}/{split}: singles vs by_market", S["singles"][split], bm); checks += 1
+            mm = zero()
+            for v in S["main_by_market"].values(): add(mm, v[split])
+            same(f"{sc}/{split}: main vs main_by_market", S["main"][split], mm); checks += 1
+            same(f"{sc}/{split}: singles vs main + bench", S["singles"][split], add(add(zero(), S["main"][split]), S["bench"][split])); checks += 1
+            br = zero()
+            for v in S["by_role"].values(): add(br, v[split])
+            same(f"{sc}/{split}: singles vs by_role rows", S["singles"][split], br); checks += 1
+            assert "Unknown" not in S["by_role"] or S["by_role"]["Unknown"][split]["n"] == 0, f"{sc}/{split}: bets without a role in the record"
+            checks += 1
             bb = zero()
             for v in S["bench_by_market"].values(): add(bb, v[split])
             same(f"{sc}/{split}: bench vs bench_by_market", S["bench"][split], bb); checks += 1
             # 2. headline == week-table cumulative, per group and per market
-            for g in ("main", "bench", "parlay"):
+            for g in ("singles", "main", "bench", "parlay"):
                 acc = zero()
                 for r in rows: add(acc, r[g][split])
                 same(f"{sc}/{split}: {g} vs week rows", S[g][split], acc); checks += 1
@@ -76,6 +85,7 @@ def main():
                 same(f"{sc}/{split}: market {m} vs week rows", v[split], acc); checks += 1
         # 3. independent recount from the bet list (singles) and the parlay log
         in_scope = lambda b: rows_ok(int(b["week"]))
+        same(f"{sc}: singles vs recount of bets", S["singles"]["all"], recount(R["bets"], in_scope)); checks += 1
         same(f"{sc}: main vs recount of bets", S["main"]["all"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") != "Bench")); checks += 1
         same(f"{sc}: bench vs recount of bets", S["bench"]["all"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") == "Bench")); checks += 1
         same(f"{sc}: short main vs recount", S["main"]["short"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") != "Bench" and not b.get("longshot"))); checks += 1
@@ -86,7 +96,7 @@ def main():
                 if c.get("dec"): add(par, dict(n=1, won=int(bool(c["won"])), units=float(c["profit"]), expected=float(c.get("ev") or 0)))
         same(f"{sc}: parlays vs parlay log", S["parlay"]["all"], par); checks += 1
         # the singles headline must not contain parlays
-        assert S["main"]["all"]["n"] + S["bench"]["all"]["n"] == recount(R["bets"], in_scope)["n"], f"{sc}: singles count differs from the bet list"
+        assert S["singles"]["all"]["n"] == recount(R["bets"], in_scope)["n"], f"{sc}: singles count differs from the bet list"
         checks += 1
     LG = R.get("longshot_gate")
     if LG and LG.get("all"):
@@ -105,8 +115,9 @@ def main():
                 acc = zero()
                 for r in CR["weeks"]: add(acc, r[g][split])
                 same(f"current rules/{split}: {g} vs its week rows", CR["cum"][g][split], acc); checks += 1
-    print(f"PASS test_reconcile: {checks} checks, headline singles {rec['live']['main']['all']['won']}-{rec['live']['main']['all']['n'] - rec['live']['main']['all']['won']} "
-          f"{rec['live']['main']['all']['units']:+.2f}u | bench {rec['live']['bench']['all']['n']} | parlays {rec['live']['parlay']['all']['n']}" if rec.get("live") else "PASS test_reconcile: no live record yet")
+    H = rec["live"]["singles"]["all"] if rec.get("live") else None
+    print(f"PASS test_reconcile: {checks} checks, headline singles (Starter + Rotational + Bench) {H['won']}-{H['n'] - H['won']} {H['units']:+.2f}u "
+          f"(exp {H['expected']:+.2f}u) | main {rec['live']['main']['all']['n']} + bench {rec['live']['bench']['all']['n']} | parlays {rec['live']['parlay']['all']['n']}" if H else "PASS test_reconcile: no live record yet")
 
 
 if __name__ == "__main__":

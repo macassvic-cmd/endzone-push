@@ -461,7 +461,7 @@ def main():
                     legs_hit=sum(w["legs_hit"] for w in ws), legs_expected=round(sum(w["legs_expected"] for w in ws), 2))
     parlay_summary = {m: psum([w for w in parlays if w["mode"] == m]) for m in PL.MODES if any(w["mode"] == m for w in parlays)} if parlays else None
     if parlay_summary: parlay_summary["by_week"] = parlays
-    # ---- bets by week. Singles split by group (main = Starter + Rotational, the headline; bench = Bench plays) and market,
+    # ---- bets by week. Singles (the headline, 2026-10-17: Starter + Rotational + Bench at each bet's stake) split by group (main = Starter + Rotational; bench = Bench plays) and market,
     #      parlays as their own group, never mixed into the singles. Every aggregate carries n, record, units, expected
     #      (stake x EV), ROI (units / staked) and var = sum of stake^2 x (decimal - 1): the variance of a bet that is exactly
     #      fair at its price, so +-2 sqrt(var) is the luck band around expected. alt_players combines a player's alt rungs
@@ -495,11 +495,13 @@ def main():
     both = lambda rs: dict(all=agg(rs), short=agg([r for r in rs if not r["longshot"]]))
     def summarize(rs, keep_rows=True):
         main = [r for r in rs if r["group"] == "main"]; bench = [r for r in rs if r["group"] == "bench"]; par = [r for r in rs if r["group"] == "parlay"]
-        ap = dict(all=alt_by_player(main), short=alt_by_player([r for r in main if not r["longshot"]]))
+        singles = main + bench            # the headline (2026-10-17): Starter + Rotational + Bench at each bet's actual stake; parlays stay out
+        ap = dict(all=alt_by_player(singles), short=alt_by_player([r for r in singles if not r["longshot"]]))
         if not keep_rows:
             for v in ap.values(): v.pop("rows")
-        return dict(main=both(main), bench=both(bench), parlay=both(par),
-                    by_market={m: both([r for r in main if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in main)},
+        return dict(singles=both(singles), main=both(main), bench=both(bench), parlay=both(par),
+                    by_market={m: both([r for r in singles if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in singles)},
+                    main_by_market={m: both([r for r in main if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in main)},
                     bench_by_market={m: both([r for r in bench if r["market"] == m]) for m in MKTS if any(r["market"] == m for r in bench)},
                     by_role={k: both([r for r in rs if r["role"] == k]) for k in sorted({r["role"] for r in rs if r["group"] != "parlay"})}, alt_players=ap)
     def week_table(rows):

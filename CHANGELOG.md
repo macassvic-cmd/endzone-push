@@ -1312,3 +1312,22 @@ before Week 7). Repo is public, so Actions minutes are not metered.
   queued / running / successful run (`run-name` carries the cluster's end as the key); a late firing starts the loop at once.
 - `update.yml`: writes `pull_windows.json`, runs `test_pull_loop.py`, and publishes its own board snapshot after its main commit.
 - Not changed: model, rules, grading, edge-log semantics (first-seen, voids), the scheduled runs' own commits.
+
+## 2026-10-17 — Results tab: Bench folded into the headline, Priced-bets card simplified
+
+Display and headline definition only; grading, edge logs and the model are untouched. **Headline = every single (Starter +
+Rotational + Bench) at the stake it carried** (1u, Bench 0.25u from week 6); parlays stay paper-only on their own line.
+`results.py` adds `singles` next to `main` / `bench` in every week row and record, `by_market` now spans the singles
+(`main_by_market` keeps the old split), and `test_reconcile.py` checks singles = main + bench = Σ by_market = Σ by_role
+for every scope and price split (82 checks). Live record on this basis: shorter than +1000 (primary) 27–64, +31.4u vs
++15.6u expected, +0.8σ (normal); all prices 34–122, +119.1u vs +40.4u (Bench's two long hits).
+
+Card order: three stat cards (Record · Units vs expected · Luck in σ, labelled normal within ±1σ, hot / cold beyond),
+segmented market filter (one scrolling row, no wrapping; All singles · Anytime · First TD · 2+ TD · Yards · Alt rungs ·
+Starter + Rot. · Bench · Parlays), weekly table + actual-vs-expected chart (Bench included), role table (Bench, Rotational,
+Starter, then the headline total row), one row of status badges (Bench stake / 1u unlock at 100 bets, Anytime +1000 gate
+status and decision week, Parlays paper-only record), and a collapsed "How this is graded" (stakes, frozen weeks,
+expected = EV × stake and the luck band, markets inside the headline, CLV and the bench gate, the longshot gate detail,
+parlay detail, current-rules view, blend re-score, backfill). The dot-separated summary block is gone. Phone width: the
+page column no longer stretches to the widest table (`.wrap > * {min-width:0}`, `.tbl` scrolls sideways), Results cards are
+clamped to the viewport; verified at 390 px in headless Chrome (card 356 px wide, only the tables scroll).
