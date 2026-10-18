@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.11"   # pinned: CI is 3.11 (this PC runs 3.12); prepush_check.py compiles and tests with 3.11 before every push
       - run: pip install numpy scipy pytest
       - name: Offline test
         run: python -m pytest -q pickem

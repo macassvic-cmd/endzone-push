@@ -1610,3 +1610,16 @@ Underdog's payout table is marked unconfirmed on the Yards tab and the research 
 from the outlier filter (it exists for size-unknown feeds); 13 of the 16:16Z build's "outliers" were Kalshi longshots with real size.
 
 3.11 scan used: `rg "f\"[^\"]*\{[^}]*\\[^}]*\}" *.py` (any backslash inside an f-string expression).
+
+### 2026-10-18 — Pre-push gate against Python-version breaks
+
+CI runs Python 3.11 (`python-version: "3.11"` was already pinned in update.yml, both pull_loop.yml jobs and pickem.yml; the pins now carry a
+comment so nobody bumps one without the others), this PC runs 3.12/3.14, and the 3.11-only SyntaxError above cost the day's loops. New:
+`prepush_check.py` (run with `py -3.11`) compiles every tracked .py under 3.11 and runs test_nan_safety, test_ladder_integrity,
+test_pull_loop, test_yards_source, test_board_rules, test_lineshop, test_reconcile and the pickem pytest suite under 3.11 with ODDS_API_KEY /
+ODDS_LIVE stripped (never a live call); `hooks/pre-push` calls it and refuses the push on any failure. Enabled in this clone with
+`git config core.hooksPath hooks` (one-time per clone); Python 3.11 installed locally via winget with the project requirements, pytest and
+pyyaml. `py -3.11 prepush_check.py --compile` is the seconds-long compile-only variant.
+Known failure carried, not caused by the gate: `pickem/test_scan.py::test_scan_end_to_end` (KeyError "Ladd McConkey Fantasy Points over")
+has failed on CI since the 2026-10-11 Pick'em scanner run (after commit 54602bf skipped imputed-only stats as legs), so the weekly scanner job
+has been red since then; the gate deselects it (`prepush_check.KNOWN_FAILURES`) until it is fixed, and runs the rest of the pickem suite.
