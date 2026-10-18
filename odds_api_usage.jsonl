@@ -27,3 +27,14 @@
 {"ts": "2026-10-18T16:16:18Z", "tag": "nfl", "path": "/events/45b2690b350ed45145c7a716b18e8e66/odds", "cost": 8, "used": 25685, "remaining": 74315, "pull_type": "manual", "region": "us"}
 {"ts": "2026-10-18T16:16:19Z", "tag": "nfl", "path": "/events/f122527f003276d3bca19efa48c902c1/odds", "cost": 8, "used": 25709, "remaining": 74291, "pull_type": "manual", "region": "us"}
 {"ts": "2026-10-18T16:16:19Z", "tag": "nfl", "path": "/events/ffebea881c1d7b2dfb85b3e590c35985/odds", "cost": 0, "used": 25709, "remaining": 74291, "pull_type": "manual", "region": "us"}
+{"ts": "2026-10-18T18:16:14Z", "tag": "nfl", "path": "/odds", "cost": 2, "used": 26537, "remaining": 73463, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:14Z", "tag": "nfl", "path": "/events/3729ac6d2a66b642850caf2044cdc658/odds", "cost": 8, "used": 26545, "remaining": 73455, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:15Z", "tag": "nfl", "path": "/events/45b2690b350ed45145c7a716b18e8e66/odds", "cost": 8, "used": 26553, "remaining": 73447, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:16Z", "tag": "nfl", "path": "/events/20fefae8c296247460ba5773caa42218/odds", "cost": 8, "used": 26561, "remaining": 73439, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:16Z", "tag": "nfl", "path": "/events/82fd5a159fa130e67abab93a9537f70b/odds", "cost": 8, "used": 26569, "remaining": 73431, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:17Z", "tag": "nfl", "path": "/events/f122527f003276d3bca19efa48c902c1/odds", "cost": 8, "used": 26577, "remaining": 73423, "pull_type": "scheduled", "region": "us"}
+{"ts": "2026-10-18T18:16:31Z", "tag": "nfl", "path": "/events/3729ac6d2a66b642850caf2044cdc658/odds", "cost": 6, "used": 26583, "remaining": 73417, "pull_type": "scheduled", "region": "us_ex"}
+{"ts": "2026-10-18T18:16:31Z", "tag": "nfl", "path": "/events/45b2690b350ed45145c7a716b18e8e66/odds", "cost": 6, "used": 26589, "remaining": 73411, "pull_type": "scheduled", "region": "us_ex"}
+{"ts": "2026-10-18T18:16:32Z", "tag": "nfl", "path": "/events/20fefae8c296247460ba5773caa42218/odds", "cost": 6, "used": 26595, "remaining": 73405, "pull_type": "scheduled", "region": "us_ex"}
+{"ts": "2026-10-18T18:16:32Z", "tag": "nfl", "path": "/events/82fd5a159fa130e67abab93a9537f70b/odds", "cost": 6, "used": 26601, "remaining": 73399, "pull_type": "scheduled", "region": "us_ex"}
+{"ts": "2026-10-18T18:16:33Z", "tag": "nfl", "path": "/events/f122527f003276d3bca19efa48c902c1/odds", "cost": 6, "used": 26607, "remaining": 73393, "pull_type": "scheduled", "region": "us_ex"}

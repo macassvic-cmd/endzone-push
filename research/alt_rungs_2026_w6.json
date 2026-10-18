@@ -25874,5 +25874,112 @@
 "price"
 ],
 "flagged": "20261018T1616Z"
+},
+"00-0037291|rec|39.5": {
+"bet": "Jalen Nailor Over 39.5 rec yds (alt)",
+"pid": "00-0037291",
+"market": "yds_alt",
+"kind": "rec",
+"line": 39.5,
+"team": "LV",
+"model_p": 0.3134,
+"mkt_p": 0.2591,
+"blend_p": 0.2863,
+"best": 300,
+"book": "FanDuel",
+"ev": 0.145,
+"med": 300,
+"ev_med": 0.145,
+"nbooks": 3,
+"curve_rungs": 19,
+"games": 20,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.2356,
+"captured": "2026-10-18T18:15:38Z",
+"kick_utc": "2026-10-18T20:25Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T1816Z"
+},
+"00-0037261|rec|89.5": {
+"bet": "Khalil Shakir Over 89.5 rec yds (alt)",
+"pid": "00-0037261",
+"market": "yds_alt",
+"kind": "rec",
+"line": 89.5,
+"team": "BUF",
+"model_p": 0.0984,
+"mkt_p": 0.1001,
+"blend_p": 0.0992,
+"best": 960,
+"book": "DraftKings",
+"ev": 0.0518,
+"med": 960,
+"ev_med": 0.0518,
+"nbooks": 3,
+"curve_rungs": 17,
+"games": 21,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.0893,
+"captured": "2026-10-18T18:16:12Z",
+"kick_utc": "2026-10-18T20:25Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T1816Z"
+},
+"00-0038041|rec|89.5": {
+"bet": "Jake Ferguson Over 89.5 rec yds (alt)",
+"pid": "00-0038041",
+"market": "yds_alt",
+"kind": "rec",
+"line": 89.5,
+"team": "DAL",
+"model_p": 0.0367,
+"mkt_p": 0.0376,
+"blend_p": 0.0372,
+"best": 2800,
+"book": "DraftKings",
+"ev": 0.0774,
+"med": 2800,
+"ev_med": 0.0774,
+"nbooks": 4,
+"curve_rungs": 18,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0326,
+"captured": "2026-10-18T18:15:17Z",
+"kick_utc": "2026-10-19T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T1816Z"
 }
 }

@@ -4,7 +4,25 @@
  "lead_h": 3.0,
  "step_min": 10,
  "max_job_min": 340,
- "generated": "2026-10-17T19:24:08Z",
+ "odds_api_credits": 7310,
+ "early": {
+  "slots": 28,
+  "credits": 3192
+ },
+ "scheduled": {
+  "pulls": 4,
+  "credits": 456
+ },
+ "pickem": {
+  "credits": 98
+ },
+ "exchange": {
+  "markets_per_game": 6,
+  "credits": 420,
+  "note": "us_ex (Novig, ProphetX, Polymarket, Kalshi): games with an edge, 4 scheduled pulls + 1 final pre-kickoff pull per game; <= 6 credits per game per pull"
+ },
+ "credits_note": "2 for lines + 8 markets per game not yet kicked off, per pull (PROPS_SOURCE=oddsapi, region us)",
+ "generated": "2026-10-18T18:15:53Z",
  "clusters": [
   {
    "start": "2026-10-15T21:15:00Z",
@@ -12,6 +30,7 @@
    "minutes": 180,
    "pulls": 19,
    "chained": false,
+   "odds_api_credits": 2158,
    "kickoffs": [
     "2026-10-16T00:15Z"
    ],
@@ -25,6 +44,7 @@
    "minutes": 180,
    "pulls": 19,
    "chained": false,
+   "odds_api_credits": 2006,
    "kickoffs": [
     "2026-10-18T13:30Z"
    ],
@@ -38,6 +58,7 @@
    "minutes": 385,
    "pulls": 39,
    "chained": true,
+   "odds_api_credits": 2630,
    "kickoffs": [
     "2026-10-18T17:00Z",
     "2026-10-18T20:05Z",
@@ -62,6 +83,7 @@
    "minutes": 180,
    "pulls": 19,
    "chained": false,
+   "odds_api_credits": 334,
    "kickoffs": [
     "2026-10-19T00:20Z"
    ],
@@ -75,6 +97,7 @@
    "minutes": 180,
    "pulls": 19,
    "chained": false,
+   "odds_api_credits": 182,
    "kickoffs": [
     "2026-10-20T00:15Z"
    ],
