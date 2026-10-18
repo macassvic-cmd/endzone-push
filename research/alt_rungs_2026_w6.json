@@ -21508,5 +21508,40 @@
 "price"
 ],
 "flagged": "20261018T0244Z"
+},
+"00-0034383|rec|119.5": {
+"bet": "Dalton Schultz Over 119.5 rec yds (alt)",
+"pid": "00-0034383",
+"market": "yds_alt",
+"kind": "rec",
+"line": 119.5,
+"team": "HOU",
+"model_p": 0.0191,
+"mkt_p": 0.033,
+"blend_p": 0.0261,
+"best": 4000,
+"book": "DraftKings",
+"ev": 0.0687,
+"med": 4000,
+"ev_med": 0.0687,
+"nbooks": 4,
+"curve_rungs": 17,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-10-18T03:01:16Z",
+"kick_utc": "2026-10-18T13:30Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T0302Z"
 }
 }
