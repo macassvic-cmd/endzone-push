@@ -5628,5 +5628,233 @@
 "ok": true
 }
 ]
+},
+"00-0031503|first": {
+"pid": "00-0031503",
+"bet": "Jameis Winston First TD",
+"market": "first",
+"team": "NYG",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261018T1619Z",
+"best": 4000,
+"book": "DraftKings",
+"med": 3500,
+"mkt_p": 0.0206,
+"blend_p": 0.0292,
+"model_p": 0.03785,
+"ev": 0.1979,
+"ev_med": 0.0518,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.84,
+"bet_down_to": 3496,
+"best_venue": {
+"venue": "DraftKings",
+"price": 4000,
+"net": 4000,
+"size_label": "",
+"captured": "2026-10-18T16:18:15Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 4000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 4000,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 3500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 3500,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 3000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2800,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 3227,
+"ok": false
+}
+]
+},
+"00-0039451|yds|rec|24.5": {
+"pid": "00-0039451",
+"bet": "Isaiah Williams Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYJ",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261018T1629Z",
+"best": 277,
+"book": "DraftKings",
+"med": 277,
+"mkt_p": 0.2511,
+"blend_p": 0.3039,
+"model_p": 0.3566,
+"ev": 0.1455,
+"ev_med": 0.1455,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.42,
+"bet_down_to": 246,
+"best_venue": {
+"venue": "DraftKings",
+"price": 277,
+"net": 277,
+"size_label": "",
+"captured": "2026-10-18T16:27:15Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 277,
+"ok": true
+}
+]
+},
+"00-0041132|any": {
+"pid": "00-0041132",
+"bet": "Deion Burks Anytime TD",
+"market": "any",
+"team": "IND",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1629Z",
+"best": 2200,
+"book": "DraftKings",
+"med": 2050,
+"mkt_p": 0.0395,
+"blend_p": 0.0543,
+"model_p": 0.06906666666666667,
+"ev": 0.2489,
+"ev_med": 0.1674,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.75,
+"bet_down_to": 1834,
+"best_venue": {
+"venue": "DraftKings",
+"price": 2200,
+"net": 2200,
+"size_label": "",
+"captured": "2026-10-18T16:28:40Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 2200,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 2200,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2200,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 2069,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 1911,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1900,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 1900,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 1400,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 370,
+"ok": true
+}
+]
+},
+"00-0040563|yds|rec|24.5": {
+"pid": "00-0040563",
+"bet": "Efton Chism III Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Bench",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261018T1629Z",
+"best": 260,
+"book": "FanDuel",
+"med": 260,
+"mkt_p": 0.3011,
+"blend_p": 0.2979,
+"model_p": 0.2947,
+"ev": 0.0724,
+"ev_med": 0.0724,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 0.98,
+"bet_down_to": 253,
+"best_venue": {
+"venue": "FanDuel",
+"price": 260,
+"net": 260,
+"size_label": "",
+"captured": "2026-10-18T16:29:13Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 260,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 230,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 178,
+"ok": true
+}
+]
 }
 }
