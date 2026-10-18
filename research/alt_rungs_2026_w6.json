@@ -27063,5 +27063,41 @@
 "price"
 ],
 "flagged": "20261018T1957Z"
+},
+"00-0040009|rec|24.5": {
+"bet": "Savion Williams Over 24.5 rec yds (alt)",
+"pid": "00-0040009",
+"market": "yds_alt",
+"kind": "rec",
+"line": 24.5,
+"team": "GB",
+"model_p": 0.1262,
+"mkt_p": 0.1331,
+"blend_p": 0.1296,
+"best": 750,
+"book": "FanDuel",
+"ev": 0.102,
+"med": 750,
+"ev_med": 0.102,
+"nbooks": 2,
+"curve_rungs": 10,
+"games": 8,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.1109,
+"captured": "2026-10-18T22:28:25.092256894Z",
+"kick_utc": "2026-10-19T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T2228Z"
 }
 }
