@@ -1506,3 +1506,63 @@ User instruction (2026-10-18). Model, blends, edge rules (EV ≥ 5% at the media
   pulls outside loop windows, 37 first seen in the Thursday window (7 of them only there). Thursday game, true close: 5 edges
   flagged Tuesday closed +2.0 pts better on average (3 of 5 beat the close; AJ Barner Over 39.5 rec +7.2, George Holani Over 24.5
   rush +3.7, Emanuel Wilson first TD −1.2); the 2 flagged Thursday closed flat. Sunday/Monday games: interim movement only.
+
+### 2026-10-18 — Cross-venue line shop (display + data), credit audit and projection guard, Underdog pick'em flags (no model changes)
+
+User instruction (2026-10-18): a cross-venue line shop for the Edge Board, display + data only. The edge rule (EV ≥ 5% at the median and at the
+best regular book, 2+ books) is untouched and a venue price changes WHERE to bet, never WHETHER a bet is flagged
+(`test_lineshop.py::test_flag_set_identical_with_and_without_line_shop`). Polymarket direct was skipped: The Odds API's us_ex region already
+carries its props.
+
+**1. Credits (built and reported first).** Every Odds API usage record now carries `pull_type` (scheduled / early / loop / manual / pickem /
+local, from `PULL_TYPE` in the workflows) and `region` (us / us_ex), and the pull loops' finalize step commits `odds_api_usage.jsonl` (line-wise
+union), so the per-pull-type table comes straight from the log from now on. For the last 7 days it was reconstructed from the CI run logs:
+
+| Pull type (2026-10-11 → 10-18 08:00Z) | Runs | Odds API credits |
+|---|---|---|
+| Scheduled runs (update.yml) | 12 | ~40 (old key: 188 left on 10/11, exhausted by 10/17; most runs pulled SharpAPI only) |
+| Early-week pulls | 0 | 0 (first slots Tue 10/20) |
+| Kickoff loops (dispatched) | 0 | 0 (first loop Sun 10/18 10:30Z) |
+| Manual once-runs (Pull loop, workflow_dispatch) | 9 with Odds API calls | 640 (638 on the new key) |
+| Pick'em scanner | 1 (failed before pulling) | 0 |
+| Local replays / probes (this machine) | — | 67 (54 dry pull 02:11Z, 13 us_ex probes) |
+| Outside the pipeline (user probing, Phase 1 us_ex) | — | ~24,900 |
+
+The new key (created 2026-10-17 21:07Z, 100,000 credits, reset on the 17th) stood at 74,399 remaining at 08:10Z on 10/18: 25,601 used, of
+which ~700 by the pipeline. The 11.6k/day "burn" was the Phase 1 probing, not the scheduled pulls. Planned pipeline burn with PROPS_SOURCE=oddsapi
+(kickoff loops ~7,310 + early-week ~3,190 + scheduled ~456 + pick'em ~98 + us_ex ~420 ≈ 11,470 per week ≈ 1,640/day) projects ~25,700 remaining at
+the 2026-11-17 reset: above the 10,000 floor, no guard stage. `odds.budget_projection` recomputes this every pull (burn = max(planned from
+pull_windows.json, observed trailing 3-day burn from the `remaining` series, so manual probing shows up too): stage 1 (projected < 10,000) skips
+the us_ex pulls, stage 2 (still under without us_ex) makes the kickoff loops pull every 20 min; `alerts.notify_guard` posts a Discord message once per
+stage per 12 h. us_ex is pulled only for games with ≥ 1 edge on the board, only on scheduled runs (`EXCHANGE_PULL=all` in update.yml) and on a game's
+final pre-kickoff loop pull (`final`: kickoff in [30, 30 + step) minutes); early-week and manual once-runs spend nothing on it unless the new
+`exchange` input is set. Cost: 1 credit per market returned per game (≤ 6).
+
+**2. Exchange price safety.** Novig, ProphetX and Polymarket quotes carry no size in the feed and are labelled "size unknown, confirm in app";
+Kalshi keeps the $100-at-the-ask floor (direct feed; the us_ex copy of Kalshi is dropped). A quote more than 15% better in relative implied
+probability than the regular-book median for the same bet is greyed "outlier" and can never be the best place. ProphetX's order-book levels
+collapse to the top of book; −9900-style placeholder sides are not quotes. Exchange alt ladders run through `yard_prices.verify_ladders` and the
+monotonicity check like sportsbook ladders; failures are research-only (greyed "unverified", never eligible).
+
+**3. Fees** (`venues.py`, sources in ODDS_SOURCES.md "Venue fees"): Kalshi taker 0.07·P·(1−P) (board convention), Polymarket taker 0.05·p·(1−p)
+per share (official docs), ProphetX 2% of net winnings (secondary sources only), Novig none on pregame straight trades (secondary). Official pages
+for Kalshi, ProphetX, Novig and Underdog were not reachable by automated fetch on 10/18 (rate limit / JS apps / 404s): the table says which figures
+are confirmed and which to verify in the app.
+
+**4. Display** (`template.html`, index.html regenerated): BEST / BOOK / Bet down to become one "Best place to bet" column (venue, after-fee price,
+size or "size unknown", ↓ bet-down-to); the Kalshi column folds into the venue list; a click on an edge row expands every venue's price for that bet,
+best to worst, with fee, size and price age; inside a kickoff window (3 h before kickoff) venue prices older than 15 min are hidden on the viewer's
+clock. "UD ✓" tags on Edge Board rows and Yards cards, a "Pick'em" filter on the Yards tab, an Underdog column in the rung table, and the Edge Board
+notice shows the credit projection and the line-shop status (venues live, us_ex mode, skipped reason).
+
+**5. Underdog pick'em** (`pickem_ud.py`, kill switch `PICKEM_SOURCE=off`): one fetch per scheduled run (`UD_FETCH=1`), cached in `ud_lines.json`,
+loops read the cache. Players matched by name + team + game with the Josh Allen guard (a name on another team is dropped, never attached). For
+every Underdog higher/lower at one of our yard rungs or TD lines: break-even per leg for 2-pick 3x, 3-pick 6x and 5-pick flex 10x/2.5x/0.4x
+(57.7%, 55.0%, 52.8% at multiplier 1; the line's own payout multiplier scales it), flagged when the blend beats the 3-pick break-even by ≥ 3 pts on
+the better side. Payouts are a constant to verify in app (`UD_PAYOUTS` override). DraftKings Pick6 skipped.
+
+**Tests** `test_lineshop.py` (7): fee math per venue, outlier grey-out, exchange ladder gate + monotonicity (bad ladders fail), name matching across
+venues incl. same-name players on different teams, break-even table, us_ex gating + guard stages + alert text, flag set identical with and
+without the line shop (357 synthetic edges on the saved 03:46Z pull). All other suites still pass (board rules 4, yards source 5, pull loop 4,
+ladders 8, nan safety, reconcile). Workflows: update.yml (PULL_TYPE, EXCHANGE_PULL, UD_FETCH, PICKEM_SOURCE, ud_lines.json committed), pull_loop.yml
+(PULL_TYPE by mode/label, EXCHANGE_PULL final for loops, `exchange` input), pickem.yml (PULL_TYPE).

@@ -55,7 +55,10 @@ def week_windows(sched, season, week, lead_h=LEAD_H, step_min=STEP_MIN):
                          kickoffs=[k.strftime("%Y-%m-%dT%H:%MZ") for k in c["kicks"]],
                          games=[f"{a}@{h}" for a, h in zip(games.away_team, games.home_team)]))
     return dict(season=int(season), week=int(week), lead_h=lead_h, step_min=step_min, max_job_min=MAX_JOB_MIN,
-                odds_api_credits=sum(r["odds_api_credits"] for r in rows), early=early_pull_credits(rows, int(len(s))), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull ({'PROPS_SOURCE' if MARKETS_PER_EVENT == 8 else 'YARDS_SOURCE'}=oddsapi, region us)",
+                odds_api_credits=sum(r["odds_api_credits"] for r in rows), early=early_pull_credits(rows, int(len(s))),
+                scheduled=dict(pulls=4, credits=4 * (LINES_CREDITS + MARKETS_PER_EVENT * int(len(s)))), pickem=dict(credits=7 * int(len(s))),
+                exchange=dict(markets_per_game=6, credits=6 * int(len(s)) * 5, note="us_ex (Novig, ProphetX, Polymarket, Kalshi): games with an edge, 4 scheduled pulls + 1 final pre-kickoff pull per game; <= 6 credits per game per pull"),
+                credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull ({'PROPS_SOURCE' if MARKETS_PER_EVENT == 8 else 'YARDS_SOURCE'}=oddsapi, region us)",
                 generated=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), clusters=rows)
 
 

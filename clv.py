@@ -29,7 +29,8 @@ def log_edges(edges, season, week, stamp):
         log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
                         flagged=stamp, best=e["best"], book=e["book"], med=e["med"], mkt_p=e["mkt_p"],
                         blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"], rule=e.get("rule"),
-                        stake=e.get("stake", 1.0), ratio=e.get("ratio"), bet_down_to=e.get("bet_down_to"))
+                        stake=e.get("stake", 1.0), ratio=e.get("ratio"), bet_down_to=e.get("bet_down_to"),
+                        best_venue=e.get("best_venue"), venues=[dict(v=v["venue"], net=v["net"], ok=v["eligible"]) for v in e.get("venues", [])])
         new.append(e)
     json.dump(log, open(fn, "w"), indent=0)
     return new

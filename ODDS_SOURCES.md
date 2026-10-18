@@ -159,3 +159,37 @@ Fits as the cross-check/ladder source in the recommended combination above. Pipe
 52 requests (about 71 for the month with discovery). Auth is an `apiKey` query parameter; `odds-by-tournaments`
 takes exactly one `bookmaker`. Historical ids need the live name map ("Last, First" format); 433 of 690 ids mapped.
 Pinnacle has no player TD markets; DK/FD had no 1.5-TD line in the archive. Numbers in CHANGELOG.md.
+
+## Venue fees and size rules for the cross-venue line shop (2026-10-18)
+
+Every venue on the Edge Board's "Best place to bet" is compared AFTER its fee. The flag itself (EV >= 5% at the median and at the
+best regular book, 2+ books) never sees a venue price. Fee rules in `venues.py`; the table below is the record of where each came from.
+
+| Venue | Type | Fee rule used | Size shown | Source |
+|---|---|---|---|---|
+| DraftKings, FanDuel, BetMGM, Caesars, Hard Rock Bet, BetRivers, Fanatics, ESPN BET | sportsbook | none (the margin is in the price) | none (books) | — |
+| Kalshi | prediction market | taker fee 0.07 × contracts × P × (1 − P), rounded up to the cent per order; the NFL player series run the default multiplier (`fee_multiplier: 1`, `fee_type: quadratic` on KXNFLTD, `quadratic_with_maker_fees` on KXNFLFIRSTTD). The board price is already fee-adjusted (`kalshi.fee_adjusted_american`, same convention as the venue table). | dollars at the ask from the direct feed; counts as bettable only with ≥ $100 at the ask, a tight spread and some trading (`kalshi.is_liquid`) | fee fields: Kalshi trade API `GET https://api.elections.kalshi.com/trade-api/v2/series/KXNFLTD` and `/series/KXNFLFIRSTTD` (read 2026-10-18); coefficient: https://kalshi.com/docs/fees (rate-limited to automated fetches on 2026-10-18; confirm in a browser) |
+| Polymarket | prediction market | taker fee = shares × 0.05 × p × (1 − p) on sports markets, paid on top of the price; makers pay nothing (15% of taker fees rebated to makers) | **size unknown, confirm in app** (the Odds API us_ex feed carries no size) | https://docs.polymarket.com/polymarket-learn/trading/fees (read 2026-10-18: "fee = C × feeRate × p × (1 − p)", sports feeRate 0.05, no NFL-specific rate listed) |
+| ProphetX | exchange | 2% commission on net winnings of winning trades, nothing on losers (net decimal = 1 + (dec − 1) × 0.98) | **size unknown, confirm in app** | no official fee page reachable (prophetx.co/fees 404, help center DNS failure, 2026-10-18); secondary: https://nextpredict.io/platforms/prophetx/ , https://oddsassist.com/prediction-markets/prophetx-fees/ , https://kairos.trade/compare/prophetx-review (2% on net winnings, 1.5% VIP, parlays 0%). Treat as unconfirmed until read in the app. |
+| Novig | exchange | pregame straight trades: no fee (prices are the exchange's no-vig quotes); live trades carry a taker fee 0.03 × p × (1 − p) per contract and parlays a 0.10 coefficient built into the price (neither applies to the pregame singles on this board) | **size unknown, confirm in app** | official pages are a JavaScript app (novig.com/fees renders nothing without a browser, 2026-10-18); secondary: https://bettorsinsider.com/predictions/promotions/novig/ (fee schedule above), https://oddsassist.com/prediction-markets/novig-fees/ . Treat as unconfirmed until read in the app. |
+
+Exchange price safety (`venues.py`, `lineshop.py`): a us_ex quote more than 15% better in relative implied probability than the median of the
+regular books for the same bet is greyed out as an outlier and can never be the best place to bet; a side priced at −4900 or shorter (the
+−9900 "no offer" placeholders Polymarket and Kalshi return) is not a quote; ProphetX's several order-book levels per outcome collapse to the
+top of book; exchange alternate ladders go through `yard_prices.verify_ladders` and the monotonicity check exactly like sportsbook ladders
+and are research-only (greyed "unverified") when they fail. Inside a kickoff window (3 h before kickoff) the page hides any venue price older
+than 15 minutes on the viewer's clock.
+
+Credits: one us_ex call per game costs one credit per market returned (probe 2026-10-18: 6 for a Sunday game with Novig, ProphetX and
+Polymarket posted; 1 for a Thursday game where only Kalshi had a market). Pulled only for games with ≥ 1 edge, on scheduled runs and on a
+game's final pre-kickoff loop pull; skipped whenever `odds.budget_projection` projects under 10,000 credits at the billing reset.
+
+### Underdog pick'em (read-only, `pickem_ud.py`)
+
+Public board `https://api.underdogfantasy.com/v1/over_under_lines` (the same endpoint `pickem/ud_board.py` has used since September), one fetch
+per scheduled run, cached in `ud_lines.json`, kill switch `PICKEM_SOURCE=off`. Lines carry a per-pick `payout_multiplier` (1.0 standard;
+0.86 / 1.11 on shaded lines) and no odds. Payout table used for the break-even per leg: standard 2-pick 3x and 3-pick 6x, 5-pick flex
+10x / 2.5x / 0.4x for 5 / 4 / 3 correct (`pickem_ud.DEFAULT_PAYOUTS`, override with the `UD_PAYOUTS` env JSON). Public sources disagree on the
+current table (3x/6x/20x vs 3.5x/6.5x/20x; flex 10x confirmed, 2.5x/0.4x not), and Underdog's rules page is a JavaScript app
+(https://app.underdogsports.com/rules/pick-em), so **verify the payouts in the app**; the per-pick multiplier from the feed is applied to the
+structure when a leg's break-even is computed. DraftKings Pick6 is skipped (no public feed).

@@ -60,6 +60,10 @@ on:
         description: "Publish the board to the board branch (off = pull, build and save the odds only)"
         type: boolean
         default: true
+      exchange:
+        description: "us_ex line shop (Novig, ProphetX, Polymarket) on this once-run for every game with an edge (<= 6 credits per game); loops do it on the final pre-kickoff pull only"
+        type: boolean
+        default: false
       dry_run:
         description: "DRY_RUN: never log edges / research / paper parlays (the pull is still saved and committed)"
         type: boolean
@@ -90,6 +94,9 @@ env:
   KEEP_BOTH: ${{ inputs.keep_both && '1' || '' }}
   PUBLISH: ${{ (inputs.publish == false) && '0' || '1' }}
   DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+  PULL_TYPE: ${{ ((inputs.mode || github.event.client_payload.mode || 'loop') == 'loop') && 'loop' || (startsWith(inputs.label, 'early') && 'early' || 'manual') }}   # credits per pull type in odds_api_usage.jsonl
+  EXCHANGE_PULL: ${{ vars.EXCHANGE_PULL == 'off' && 'off' || (inputs.exchange && 'all' || (((inputs.mode || github.event.client_payload.mode || 'loop') == 'loop') && 'final' || 'off')) }}   # loops: final pre-kickoff pull only; once-runs: only when asked
+  PICKEM_SOURCE: ${{ vars.PICKEM_SOURCE || 'underdog' }}
 
 jobs:
   loop:

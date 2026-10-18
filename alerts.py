@@ -12,8 +12,44 @@ def fmt_price(a):
 
 def line(e):
     stake = e.get("stake", 1.0)
+    bv = e.get("best_venue")
+    venue = f" \u00b7 best place {bv['venue']} {fmt_price(bv['net'])} after fees{' (' + bv['size_label'] + ')' if bv.get('size_label') else ''}" if bv and bv.get("venue") != e.get("book") else ""
     return (f"\u2022 **{e['bet']}** \u2014 {e.get('book') or '?'} {fmt_price(e.get('best'))} \u00b7 bet down to {fmt_price(e.get('bet_down_to'))}"
-            f" \u00b7 EV {e['ev'] * 100:+.1f}% \u00b7 {e.get('role') or 'Unknown'} {stake:g}u")
+            f" \u00b7 EV {e['ev'] * 100:+.1f}% \u00b7 {e.get('role') or 'Unknown'} {stake:g}u{venue}")
+
+
+GUARD_STATE, GUARD_REPEAT_H = "odds_guard_alert.json", 12
+
+
+def guard_message(b):
+    acts = "; ".join(b.get("actions") or []) or "none"
+    return (f"**Endzone Lab \u00b7 Odds API credit guard stage {b['stage']}**\n"
+            f"Remaining {b['remaining']:,} \u00b7 burn {b['burn_per_day']:,}/day (planned {b['planned_per_day']:,}, observed {b['observed_per_day'] if b['observed_per_day'] is not None else '\u2013'}) "
+            f"\u00b7 projected **{b['projected_at_reset']:,}** at the {b['reset_at'][:10]} reset, floor {b['floor']:,}.\nActions: {acts}.")
+
+
+def notify_guard(b, webhook=None, state=GUARD_STATE, now=None):
+    """Discord alert when the credit-budget guard (odds.budget_projection) is at stage 1+. Once per stage per GUARD_REPEAT_H hours (state file in the
+       working tree, never committed), so a kickoff loop pulling every 10 min does not repeat it. Never raises."""
+    import datetime as dt
+    if not b or not b.get("stage"): return "guard not tripped"
+    now = now or dt.datetime.now(dt.timezone.utc)
+    try: st = json.load(open(state)) if os.path.exists(state) else {}
+    except ValueError: st = {}
+    last = st.get(str(b["stage"]))
+    if last:
+        try:
+            if (now - dt.datetime.fromisoformat(last.replace("Z", "+00:00"))).total_seconds() < GUARD_REPEAT_H * 3600: return f"stage {b['stage']} already alerted at {last}"
+        except ValueError: pass
+    webhook = (webhook or os.environ.get("DISCORD_WEBHOOK_URL") or "").strip()
+    msg = guard_message(b)
+    if not webhook: return "no DISCORD_WEBHOOK_URL: would post the guard alert"
+    try:
+        post(msg, webhook)
+        st[str(b["stage"])] = now.strftime("%Y-%m-%dT%H:%M:%SZ"); json.dump(st, open(state, "w"))
+        return f"posted guard alert (stage {b['stage']})"
+    except Exception as e:
+        return f"guard alert failed: {type(e).__name__}: {str(e)[:120]}"
 
 
 def messages(new_edges, season, week, stamp):

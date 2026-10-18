@@ -88,11 +88,13 @@ def only_books(events, titles, keep=("Kalshi",)):
     return out
 
 
-def log_usage(path, headers, tag=None):
-    """Append one record per paid call so NFL credits can be summed month to date (committed with the odds history)."""
+def log_usage(path, headers, tag=None, region=None):
+    """Append one record per paid call so NFL credits can be summed month to date and per pull type (committed with the odds history).
+       pull_type = PULL_TYPE env (scheduled | early | loop | manual | pickem | local), region = the regions parameter (us | us_ex)."""
     import datetime as dt
     rec = dict(ts=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), tag=tag or USAGE_TAG, path=path,
-               cost=int(headers.get("x-requests-last") or 0), used=int(headers.get("x-requests-used") or 0), remaining=int(headers.get("x-requests-remaining") or 0))
+               cost=int(headers.get("x-requests-last") or 0), used=int(headers.get("x-requests-used") or 0), remaining=int(headers.get("x-requests-remaining") or 0),
+               pull_type=os.environ.get("PULL_TYPE") or ("manual" if os.environ.get("GITHUB_ACTIONS") else "local"), region=region or "us")
     try:
         with open(USAGE_FILE, "a") as f: f.write(json.dumps(rec) + "\n")
     except OSError as e:
@@ -119,6 +121,133 @@ def usage_summary(fn=USAGE_FILE, tag="nfl", now=None):
     if remaining is not None and remaining < REMAINING_FLOOR: reasons.append(f"account remaining {remaining:,} < {REMAINING_FLOOR:,}")
     return dict(nfl_mtd=mtd, remaining=remaining, last_call=last.get("ts") if last else None, month=month,
                 guard=dict(tripped=bool(reasons), reasons=reasons, mtd_limit=NFL_MTD_LIMIT, remaining_floor=REMAINING_FLOOR))
+
+
+# ---------------- cross-venue line shop: The Odds API us_ex region (Novig, ProphetX, Polymarket, Kalshi) ----------------
+EXCHANGE_REGION = "us_ex"
+EXCHANGE_MARKETS = ["player_anytime_td", "player_1st_td", "player_rush_yds", "player_reception_yds", "player_rush_yds_alternate", "player_reception_yds_alternate"]
+EXCHANGE_CREDITS_PER_GAME = len(EXCHANGE_MARKETS)        # The Odds API charges 1 credit per market RETURNED per region per event (probe 2026-10-18: 6 when all six came back, 1 for a game with Kalshi only)
+
+
+def exchange_mode():
+    """EXCHANGE_PULL env: 'all' (scheduled runs: every game with an edge), 'final' (kickoff loops: only a game's final pre-kickoff pull),
+       'off' (default: early-week and manual pulls spend nothing on us_ex). The budget guard (budget_projection stage >= 1) forces off."""
+    m = (os.environ.get("EXCHANGE_PULL") or "off").strip().lower()
+    return m if m in ("all", "final", "off") else "off"
+
+
+def exchange_games(edge_teams, games, now, mode, step_min=10, cutoff_min=30):
+    """Which games get a us_ex call this pull: games with >= 1 edge on the board; in 'final' mode only those whose kickoff is between the
+       cutoff and cutoff + step (the last pull at which the game is still actionable). `games` = run_week's game dicts (home, away, kick_utc)."""
+    import pandas as pd
+    if mode == "off": return []
+    out = []
+    for g in games:
+        if g["home"] not in edge_teams and g["away"] not in edge_teams: continue
+        if mode == "final":
+            try: km = (pd.to_datetime(g["kick_utc"], utc=True) - now) / pd.Timedelta(minutes=1)
+            except (TypeError, ValueError): continue
+            if not (cutoff_min <= km < cutoff_min + step_min): continue
+        out.append(g)
+    return out
+
+
+def fetch_exchange(events, event_ids, api_key=None, fetch=None):
+    """One us_ex call per listed event (cost: markets returned, <= EXCHANGE_CREDITS_PER_GAME). Returns {event_id: response}; errors are
+       skipped and counted in FETCH['exchange_errors']. Nothing here touches events' props (the edge rule never sees these quotes)."""
+    api_key = api_key or os.environ.get("ODDS_API_KEY")
+    FETCH["exchange_events"], FETCH["exchange_errors"] = 0, 0
+    if not (api_key or fetch) or not event_ids: return {}
+    base = dict(apiKey=api_key or "x", regions=EXCHANGE_REGION, oddsFormat="american", markets=",".join(EXCHANGE_MARKETS))
+    out = {}
+    for ev in events or []:
+        if ev["id"] not in event_ids: continue
+        try:
+            out[ev["id"]] = _get(f"{BASE}/events/{ev['id']}/odds", base, fetch); FETCH["exchange_events"] += 1
+        except Exception as e:
+            print("exchange fail", ev.get("id"), e); FETCH["exchange_errors"] += 1
+        time.sleep(0.2)
+    return out
+
+
+# ---------------- credit budget: projected balance at the billing reset (the 17th), staged guard ----------------
+RESET_DAY, PROJECTED_FLOOR = 17, 10_000            # plan resets on the 17th; below 10,000 projected at the reset: stage 1 skips us_ex, stage 2 halves the kickoff-loop cadence
+SCHEDULED_PULLS_PER_WEEK, PICKEM_CREDITS_PER_GAME = 4, 7
+MARKETS_PER_GAME = 8                               # PROPS_SOURCE=oddsapi: 4 TD + 4 yardage markets per not-yet-kicked-off game, region us
+
+
+def next_reset(now):
+    import datetime as dt
+    y, m = now.year, now.month
+    if now.day >= RESET_DAY: m += 1
+    if m > 12: y, m = y + 1, 1
+    return dt.datetime(y, m, RESET_DAY, tzinfo=dt.timezone.utc)
+
+
+def planned_weekly(windows=None, fn="pull_windows.json", exchange=True):
+    """Planned Odds API credits per week from pull_windows.json (kickoff loops + early-week pulls) plus the scheduled runs, the pick'em
+       scanner and the us_ex line shop (scheduled pulls + one final pre-kickoff pull per game). {total, loops, early, scheduled, pickem, exchange, games}."""
+    w = windows
+    if w is None and os.path.exists(fn):
+        try: w = json.load(open(fn))
+        except ValueError: w = None
+    games = sum(len(c.get("games", [])) for c in (w or {}).get("clusters", [])) or 14
+    loops = int((w or {}).get("odds_api_credits") or 0) or 7300
+    early = int(((w or {}).get("early") or {}).get("credits") or 0)
+    sched = SCHEDULED_PULLS_PER_WEEK * (2 + MARKETS_PER_GAME * games)
+    pick = PICKEM_CREDITS_PER_GAME * games
+    ex = EXCHANGE_CREDITS_PER_GAME * games * (SCHEDULED_PULLS_PER_WEEK + 1) if exchange else 0
+    return dict(total=loops + early + sched + pick + ex, loops=loops, early=early, scheduled=sched, pickem=pick, exchange=ex, games=games)
+
+
+def observed_daily(rows, now, days=3):
+    """Account burn per day over the trailing window (3 days: a one-off manual spike clears in three days) from the `remaining` series in the
+       usage log (every call records the account's remaining credits, so the drop between records covers everything spent in between,
+       pipeline or not). None without a 1-day span or across a reset (remaining rises)."""
+    import datetime as dt
+    lo = (now - dt.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    pts = [(r["ts"], r["remaining"]) for r in rows if r.get("remaining") is not None and str(r.get("ts", "")) >= lo]
+    if len(pts) < 2: return None
+    pts.sort()
+    (t0, r0), (t1, r1) = pts[0], pts[-1]
+    span = (dt.datetime.fromisoformat(t1.replace("Z", "+00:00")) - dt.datetime.fromisoformat(t0.replace("Z", "+00:00"))).total_seconds() / 86400
+    if span < 1 or r1 > r0: return None
+    return (r0 - r1) / span
+
+
+def budget_projection(now=None, remaining=None, fn=USAGE_FILE, windows=None, windows_fn="pull_windows.json"):
+    """Projected account balance at the next billing reset and the guard stage. burn/day = max(planned pipeline burn, observed trailing
+       3-day burn); stage 1 (projected < PROJECTED_FLOOR): skip us_ex; stage 2 (still under the floor without us_ex): halve the kickoff-loop
+       cadence as well. `remaining` defaults to the newest usage record."""
+    import datetime as dt
+    now = now or dt.datetime.now(dt.timezone.utc)
+    rows = []
+    if os.path.exists(fn):
+        for ln in open(fn):
+            ln = ln.strip()
+            if ln:
+                try: rows.append(json.loads(ln))
+                except ValueError: pass
+    if remaining is None:
+        rem_rows = [r for r in rows if r.get("remaining") is not None]
+        remaining = rem_rows[-1]["remaining"] if rem_rows else None
+    reset = next_reset(now); days = max((reset - now).total_seconds() / 86400, 0)
+    plan = planned_weekly(windows, windows_fn); planned_day = plan["total"] / 7; ex_day = plan["exchange"] / 7
+    obs = observed_daily(rows, now)
+    burn = max(planned_day, obs or 0)
+    out = dict(remaining=remaining, reset_at=reset.strftime("%Y-%m-%dT%H:%M:%SZ"), days_to_reset=round(days, 2), planned_per_day=round(planned_day),
+               observed_per_day=None if obs is None else round(obs), burn_per_day=round(burn), planned=plan, floor=PROJECTED_FLOOR,
+               projected_at_reset=None, stage=0, actions=[])
+    if remaining is None: return out
+    proj = remaining - burn * days
+    out["projected_at_reset"] = round(proj)
+    if proj < PROJECTED_FLOOR:
+        out["stage"] = 1; out["actions"].append("skip us_ex (exchange) pulls")
+        if proj + ex_day * days < PROJECTED_FLOOR:
+            out["stage"] = 2; out["actions"].append("kickoff loops pull every 20 min instead of 10")
+    return out
+
+
 TWO_PLUS = ("player_tds_over", 1.5)
 # The Odds API calls first-TD "player_1st_td"; the rest of the code uses "player_first_td".
 MARKET_ALIAS = {"player_1st_td": "player_first_td"}
@@ -162,8 +291,8 @@ def _get(url, params, fetch=None):
     with urllib.request.urlopen(f"{url}?{q}", timeout=30) as r:
         left = r.headers.get("x-requests-remaining")
         if left:
-            print("odds api credits remaining:", left, "| this call:", r.headers.get("x-requests-last"))
-            log_usage(url.replace(BASE, ""), r.headers)
+            print("odds api credits remaining:", left, "| this call:", r.headers.get("x-requests-last"), "| region:", params.get("regions", "us"))
+            log_usage(url.replace(BASE, ""), r.headers, region=params.get("regions"))
         return json.load(r)
 
 

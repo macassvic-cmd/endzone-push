@@ -63,7 +63,7 @@ def run_pull():
     """One build. Budget guard (loops only): NFL credits this UTC month over odds.NFL_MTD_LIMIT, or the account's remaining credits
        under odds.REMAINING_FLOOR, drop The Odds API from this pull (SharpAPI + Kalshi only; with PROPS_SOURCE=oddsapi the board
        says "fallback source"). The scheduled runs (update.yml) are not guarded. Either way run_week.py puts the state on the site."""
-    env = dict(os.environ)
+    env = dict(os.environ); stage = 0
     if env.get("ODDS_API_KEY"):
         sys.path.insert(0, os.getcwd()); import odds as O
         u = O.usage_summary()
@@ -72,8 +72,14 @@ def run_pull():
             env["ODDS_API_KEY"] = ""; env["ODDS_GUARD_TRIPPED"] = "1"
         else:
             print(f"odds api budget: NFL credits this month {u['nfl_mtd']:,} (limit {u['guard']['mtd_limit']:,}), remaining {u['remaining']} (floor {u['guard']['remaining_floor']:,})", flush=True)
+        # projection guard (odds.budget_projection): stage 1 = run_week skips the us_ex line-shop pulls, stage 2 = this loop also doubles its step
+        b = O.budget_projection()
+        stage = int(b.get("stage") or 0)
+        if stage: print(f"ODDS API PROJECTION GUARD stage {stage}: projected {b['projected_at_reset']:,} at the {b['reset_at'][:10]} reset (floor {b['floor']:,}); " + "; ".join(b["actions"]), flush=True)
+        env["ODDS_GUARD_STAGE"] = str(stage)
     r = subprocess.run([sys.executable, "run_week.py"], env=env)
     if r.returncode: raise SystemExit(f"run_week.py failed ({r.returncode})")
+    return stage
 
 
 def sleep_until(t, label):
@@ -85,7 +91,7 @@ def sleep_until(t, label):
 def loop(mode, start, end, step_min, iterations, max_minutes, push):
     t_begin = utcnow()
     if start: sleep_until(start, "waiting for the window")
-    n = 0; remaining = False
+    n = 0; remaining = False; step_eff = step_min
     while True:
         t0 = utcnow()
         if end and t0 >= end: print(f"last kickoff {end:%H:%M}Z passed: stop"); break
@@ -93,12 +99,16 @@ def loop(mode, start, end, step_min, iterations, max_minutes, push):
         if (t0 - t_begin).total_seconds() / 60 > max_minutes:
             remaining = bool(end and t0 < end); print(f"job cap {max_minutes} min reached; remaining={remaining}"); break
         print(f"\n===== pull {n + 1} at {t0:%Y-%m-%d %H:%M:%S}Z (mode {mode}, step {step_min} min, end {end})", flush=True)
-        if mode in ("loop", "dry_run"): os.environ["IN_LOOP"] = "1"          # kickoff loop: the 15-min price-age limit applies (rules.price_age_limit)
-        run_pull(); n += 1
+        if mode in ("loop", "dry_run"):
+            os.environ["IN_LOOP"] = "1"                                       # kickoff loop: the 15-min price-age limit applies (rules.price_age_limit)
+            os.environ.setdefault("EXCHANGE_PULL", "final")                   # us_ex only on a game's final pre-kickoff pull (odds.exchange_games)
+        os.environ["LOOP_STEP_MIN"] = str(step_eff)
+        stage = run_pull(); n += 1
+        if stage >= 2 and step_eff == step_min: step_eff = step_min * 2; print(f"projection guard stage 2: loop step {step_min} -> {step_eff} min", flush=True)
         if os.environ.get("PUBLISH", "1") == "0": print("PUBLISH=0: board not published")
         else: publish_board(t0.strftime("%Y-%m-%dT%H:%MZ"), push)
         if mode == "once": break
-        nxt = t0 + dt.timedelta(minutes=step_min)
+        nxt = t0 + dt.timedelta(minutes=step_eff)
         if end and nxt >= end: print("the next pull would fall after the last kickoff: stop"); break
         sleep_until(nxt, "next pull")
     out(pulls=n, remaining=str(remaining).lower(), resume_start=utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"))
@@ -109,6 +119,15 @@ def merge_first_seen(theirs, ours):
     m = dict(theirs or {})
     for k, v in (ours or {}).items(): m.setdefault(k, v)
     return m
+
+
+def merge_jsonl(theirs, ours):
+    """Union of two JSON-lines logs (exact-line dedupe), sorted by the record's ts; keeps every call's credit record from every job."""
+    rows = {ln.strip() for ln in (theirs or "").splitlines() if ln.strip()} | {ln.strip() for ln in (ours or "").splitlines() if ln.strip()}
+    def key(ln):
+        try: return json.loads(ln).get("ts", "")
+        except ValueError: return ""
+    return "".join(ln + "\n" for ln in sorted(rows, key=key))
 
 
 def select_pulls(paths, step_min):
@@ -132,8 +151,9 @@ def finalize(step_min, push):
     for p in new_pulls: shutil.copy(p, PULLS_OUT)
     keep = select_pulls(new_pulls, step_min)
     logs = [p for p in changed(LOG_DIRS) if p.endswith(".json")]
-    print(f"finalize: {len(new_pulls)} new pull(s), keeping {len(keep)} for main ({', '.join(os.path.basename(k) for k in keep)}); {len(logs)} log file(s) changed")
-    if not keep and not logs: print("nothing to commit"); return
+    jsonl = [p for p in changed(LOG_DIRS) if p.endswith(".jsonl")]           # odds_api_usage.jsonl: union of records (credits per pull type, projection guard input)
+    print(f"finalize: {len(new_pulls)} new pull(s), keeping {len(keep)} for main ({', '.join(os.path.basename(k) for k in keep)}); {len(logs)} log file(s) changed, {len(jsonl)} usage log(s)")
+    if not keep and not logs and not jsonl: print("nothing to commit"); return
     for attempt in range(4):
         sh(["git", "fetch", "-q", "origin", "main"])
         wt = tempfile.mkdtemp(prefix="pub_")
@@ -148,7 +168,11 @@ def finalize(step_min, push):
                 os.makedirs(os.path.join(wt, os.path.dirname(p)), exist_ok=True)
                 json.dump(merged, open(os.path.join(wt, p), "w"), indent=0)
                 print(f"   {p}: upstream {len(theirs)} keys + {len(merged) - len(theirs)} new")
-            sh(["git", "add", "-A", "--", *keep, *logs], cwd=wt)
+            for p in jsonl:
+                r = subprocess.run(["git", "show", f"origin/main:{p}"], capture_output=True, text=True)
+                merged = merge_jsonl(r.stdout if r.returncode == 0 else "", open(p).read())
+                open(os.path.join(wt, p), "w").write(merged); print(f"   {p}: {merged.count(chr(10))} records after merge")
+            sh(["git", "add", "-A", "--", *keep, *logs, *jsonl], cwd=wt)
             if sh(["git", "diff", "--cached", "--quiet"], check=False, cwd=wt) == 0: print("no changes vs origin/main"); return
             msg = f"Pull loop {utcnow():%Y-%m-%d %H:%M} UTC: {len(new_pulls)} pull(s), {len(keep)} kept, logs merged"
             sh(["git", "commit", "-q", "-m", msg], cwd=wt)

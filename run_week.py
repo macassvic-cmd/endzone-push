@@ -7,6 +7,7 @@ Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 import sys, os, json, collections, numpy as np, pandas as pd
 import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
 import rules as RU, alerts as AL
+import lineshop as LS, venues as V, pickem_ud as PU
 from nansafe import val, flag, text, num, isnan
 
 DATA, OUT = "data", os.environ.get("OUT_DIR", ".")       # OUT_DIR: write the slate files elsewhere (replays never touch the published ones)
@@ -125,11 +126,12 @@ if events and os.environ.get("KALSHI", "on") != "off":
         print(f"kalshi markets attached: {_n} ({_liq} with >= ${K.MIN_DOLLARS_AT_ASK:.0f} at the ask; the rest are reference-only)")
     except Exception as e:
         print("kalshi unavailable:", e)
+PULL_FN = None
 if events and not os.environ.get("ODDS_MOCK") and not odds_asof:
     # keep every real pull: odds_history/<season>_w<week>_<UTC stamp>.json (committed by the workflow) for blend fitting and closing-line value
     os.makedirs("odds_history", exist_ok=True)
     _fn = f"odds_history/{season}_w{week}_{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z.json"
-    json.dump(events, open(_fn, "w")); print("saved odds pull to", _fn)
+    json.dump(events, open(_fn, "w")); print("saved odds pull to", _fn); PULL_FN = _fn
 def _has_source(evs, src):
     return any((o.get("source") or "oddsapi") == src and "yds" in m["key"] for e in evs or [] for b in e.get("props", {}).get("bookmakers", []) for m in b["markets"] for o in m["outcomes"][:1])
 YARDS_EFFECTIVE = YARDS_SOURCE
@@ -140,6 +142,11 @@ elif YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
 else:
     print(f"yards source: {YARDS_EFFECTIVE}" + (f" (books {', '.join(YP.YARD_BOOKS)})" if YARDS_EFFECTIVE == "oddsapi" else ""))
 ODDS_USAGE = O.usage_summary()
+# credit budget: projected balance at the billing reset (the 17th) from the planned pipeline burn and the trailing observed burn; stage 1 skips the
+# us_ex line-shop pulls, stage 2 also halves the kickoff-loop cadence (pull_loop); the site shows the projection on the Edge Board notice
+BUDGET = O.budget_projection(now=NOW_UTC.to_pydatetime())
+print(f"odds api budget: remaining {BUDGET['remaining']}, burn {BUDGET['burn_per_day']}/day (planned {BUDGET['planned_per_day']}, observed {BUDGET['observed_per_day']}), "
+      f"projected {BUDGET['projected_at_reset']} at the {BUDGET['reset_at'][:10]} reset (floor {BUDGET['floor']:,}), guard stage {BUDGET['stage']}")
 lines = O.game_lines(events)
 board = O.prop_board(events)
 hold = O.measure_hold(events)          # per-book overround measured from this week's boards
@@ -334,6 +341,7 @@ vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
 # ---------- yard ladders: rushing / receiving / passing yards from the same sim games ----------
 YARD_KINDS = [k for k, ok in Y.SHIP.items() if ok]        # kinds that passed the backtest gate (yards.SHIP)
 yard_rows, yard_edges, alt_research = [], [], []
+_yb = {}                                                                               # verified yard board (the line shop reads every book's listed rung from it)
 if YARD_KINDS:
     _yc = Y.prep(_cache["past"], season)
     _tv, _plv, _qv = Y.build(p, s2, season, week, active, qbo, depth, snaps3, rookies, _cache, _yc, wind=wind)
@@ -456,6 +464,57 @@ for e in edges: e.setdefault("kick_utc", kick_utc(teams[e["team"]]["gametime"]) 
 _parts = RU.split_board(edges)
 print(f"board: {len(_parts['main'])} main, {len(_parts['bench'])} bench at {RU.BENCH_STAKE}u | hidden passing-yard rungs {len(_parts['hidden'])} | "
       f"blocked rotational > {RU.MAX_RATIO_ROT}x {len(_parts['blocked'])}")
+
+# ---------- cross-venue line shop (display + data only): the flag set above is final; this adds WHERE to bet ----------
+# us_ex (Novig, ProphetX, Polymarket) is pulled only for games with >= 1 edge on the board, only on scheduled pulls (EXCHANGE_PULL=all) and on a
+# game's final pre-kickoff loop pull (EXCHANGE_PULL=final), never when the budget guard is at stage 1+. Saved pulls carry the rows under
+# event["exchange"], so ODDS_MOCK replays reuse them without spending credits.
+_board_edges = _parts["main"] + _parts["bench"]
+EX_MODE, EX_SKIP, _ex_raw = O.exchange_mode(), None, {}
+if BUDGET.get("stage", 0) >= 1 and EX_MODE != "off":
+    EX_SKIP = f"budget guard stage {BUDGET['stage']}: projected {BUDGET['projected_at_reset']:,} credits at the {BUDGET['reset_at'][:10]} reset, under {BUDGET['floor']:,}"; EX_MODE = "off"
+if os.environ.get("ODDS_MOCK") or odds_asof:
+    _ex_raw = {e["id"]: e["exchange"] for e in events or [] if e.get("exchange")}
+    EX_MODE = "saved" if _ex_raw else "off"
+elif EX_MODE != "off" and events and board:
+    _teams = {e["team"] for e in _board_edges}
+    _gl = O.exchange_games(_teams, games, NOW_UTC, EX_MODE, step_min=int(os.environ.get("LOOP_STEP_MIN") or 10), cutoff_min=RU.KICKOFF_CUTOFF_MIN)
+    _want = {(g["away"], g["home"]) for g in _gl}
+    _ids = {ev["id"] for ev in events if (O.TEAM_ABBR.get(ev["away_team"]), O.TEAM_ABBR.get(ev["home_team"])) in _want}
+    _ex_raw = O.fetch_exchange(events, _ids)
+    for ev in events:
+        if ev["id"] in _ex_raw: ev["exchange"] = _ex_raw[ev["id"]]
+    if _ex_raw and PULL_FN: json.dump(events, open(PULL_FN, "w"))                      # the saved pull carries the exchange rows for replays / research
+    print(f"exchange (us_ex): mode {EX_MODE}, {len(_gl)} game(s) with edges due, {O.FETCH.get('exchange_events', 0)} fetched, {O.FETCH.get('exchange_errors', 0)} errors")
+if EX_SKIP: print("EXCHANGE PULL SKIPPED:", EX_SKIP)
+LINESHOP = LS.attach(_board_edges, events, board, _yb, list(_ex_raw.values()))
+LINESHOP.update(mode=EX_MODE, skipped=EX_SKIP, games_pulled=len(_ex_raw), stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL,
+                venues_known=list(V.VENUES))
+print(f"line shop: venues {LINESHOP['venues'] or 'books + Kalshi only'}; {LINESHOP['edges_with_exchange_quote']} edges with an exchange quote, best place off the flagging book on "
+      f"{LINESHOP['best_off_book']}; {LINESHOP['outliers']} outlier quotes greyed, {LINESHOP['ladders_rejected']} exchange ladders failed verification (research-only)")
+if BUDGET.get("stage") and not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    print("discord (budget guard):", AL.notify_guard(BUDGET))
+
+# ---------- Underdog pick'em flags (read-only; PICKEM_SOURCE=off disables; one fetch per scheduled run, cached in ud_lines.json) ----------
+UD_SUMMARY = None
+if PU.enabled():
+    _ud = PU.lines(NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), fetch=bool(os.environ.get("UD_FETCH")) and not os.environ.get("ODDS_MOCK"), write_cache=(OUT == "." and not os.environ.get("ODDS_MOCK")))
+    _slate = [(r.pid, r["name"], r.team) for _, r in df.iterrows()]
+    _tdb = {}
+    for _, r in df.iterrows():
+        for _pre, _mk in (("any_", "any"), ("first_", "first")):
+            _v = val(r, _pre + "blend_p")
+            if _v is not None: _tdb[(r.pid, _mk)] = _v
+    UD_SUMMARY = PU.flag(_ud, _slate, yard_rows, _tdb)
+    if UD_SUMMARY:
+        _udk = {(lg["pid"], lg["market"], lg.get("kind"), lg["line"]): lg for lg in UD_SUMMARY["legs"]}
+        for e in _board_edges:
+            lg = _udk.get((e["pid"], "yds", e.get("kind"), float(e["line"]))) if e["market"] in ("yds", "yds_alt") else _udk.get((e["pid"], e["market"], None, 0.5))
+            if lg: e["ud"] = dict({k: lg[k] for k in ("ud_stat", "line", "breakeven", "margins", "higher", "lower", "blend_higher", "ref")}, side="higher", margin=lg["margins"].get("higher"), flag=lg["flag_higher"])   # an edge is a higher bet
+        print(f"underdog: {UD_SUMMARY['ud_lines']} lines (fetched {UD_SUMMARY['fetched']}), {UD_SUMMARY['matched']} match our lines, {UD_SUMMARY['flagged']} flagged "
+              f"(blend beats the {UD_SUMMARY['ref']} break-even by >= {UD_SUMMARY['flag_margin']:.0%}), {len(UD_SUMMARY['dropped_other_team'])} same-name / other-team drops")
+    else: print("underdog: no lines (no cache yet or fetch failed)")
+else: print("underdog: off (PICKEM_SOURCE)")
 # timing rules (rules.py), on the board rows only (hidden / blocked rows go to the research logs whatever the clock says): nothing is
 # actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN is set) on a price older than
 # that; held edges are shown with the reason, never logged for CLV, never graded
@@ -482,13 +541,14 @@ if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
 RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
                  bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK,
                  kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=MAX_AGE, loop_price_age_min=RU.MAX_PRICE_AGE_MIN, in_loop=bool(os.environ.get("IN_LOOP")),
-                 bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
+                 bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE,
+                 venue_stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
-            as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
+            as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held, lineshop=LINESHOP, pickem_ud=UD_SUMMARY,
             odds_api=dict(props_source=PROPS_SOURCE, props_from_week=O.props_from_week(), props_effective="sharpapi" if FALLBACK else PROPS_SOURCE, fallback=FALLBACK,
                           books=list(O.PRIMARY_BOOKS) if PROPS_SOURCE == "oddsapi" else None,
                           yards_source=YARDS_SOURCE, yards_from_week=O.yards_from_week(), yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
-                          loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), **ODDS_USAGE),
+                          loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), budget=BUDGET, **ODDS_USAGE),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),
             qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),

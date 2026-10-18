@@ -81,6 +81,10 @@ jobs:
           YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}        # repository variable: first week the Odds API yardage feed prices the board
           PROPS_SOURCE: ${{ vars.PROPS_SOURCE || 'sharpapi' }}      # repository variable: oddsapi = The Odds API primary for every prop market, SharpAPI fallback only
           PROPS_FROM_WEEK: ${{ vars.PROPS_FROM_WEEK || '' }}
+          PULL_TYPE: scheduled                                      # tags every Odds API usage record (credits per pull type)
+          EXCHANGE_PULL: ${{ vars.EXCHANGE_PULL || 'all' }}         # us_ex line shop on scheduled pulls for every game with an edge (off = never; the budget guard also skips it)
+          UD_FETCH: "1"                                             # one Underdog pick'em board fetch per scheduled run, cached in ud_lines.json (loops read the cache)
+          PICKEM_SOURCE: ${{ vars.PICKEM_SOURCE || 'underdog' }}    # off = no Underdog flags anywhere
         run: python run_week.py
       - name: Grade (then check the headline, its breakdown and the week table reconcile)
         id: grade
@@ -101,6 +105,7 @@ jobs:
           git config user.name "endzone-bot"
           git config user.email "actions@users.noreply.github.com"
           git add latest.json slate_*.json results.json odds_history edge_log draws.bin bets_frozen.json parlay_log research pull_windows.json odds_api_usage.jsonl
+          git add ud_lines.json 2>/dev/null || true
           if git diff --cached --quiet; then echo "no changes"; else
             git commit -m "Projections $(date -u +'%Y-%m-%d %H:%M') UTC"
             git push
