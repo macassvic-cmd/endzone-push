@@ -64,6 +64,18 @@ def fallback_reason(events):
     return None
 
 
+def tag_sources(events):
+    """Every Odds API prop outcome carries source="oddsapi" and ts = its market's last_update (the capture time the price-age rule
+       reads). Must run on every pull: without ts the timing rule holds the edge as "price age unknown" (the 2026-10-18 02:39Z go-live
+       pull held 88 edges because the tagging lived inside the SharpAPI merge, which the primary mode no longer runs)."""
+    for e in events or []:
+        for b in e.get("props", {}).get("bookmakers", []):
+            for m in b["markets"]:
+                for o in m["outcomes"]:
+                    o.setdefault("source", "oddsapi"); o.setdefault("ts", m.get("last_update") or b.get("last_update"))
+    return events
+
+
 def only_books(events, titles, keep=("Kalshi",)):
     """Copy of `events` keeping only the prop bookmakers in `titles` (plus `keep`, Kalshi); game lines (spreads/totals) untouched."""
     want = {t.lower() for t in titles} | {t.lower() for t in keep}

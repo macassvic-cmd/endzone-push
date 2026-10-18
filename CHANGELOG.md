@@ -1423,3 +1423,53 @@ override is wired anywhere in CI. Model, blends, rules and board logic are untou
   any tripped guard.
 - Test: `test_yards_source.py::test_go_live_week_gate` (4/4); local DRY_RUN of week 6 under the live flag printed
   "YARDS_SOURCE=oddsapi goes live from week 7; week 6 stays on SharpAPI" and fetched no yardage markets.
+
+### 2026-10-18 03:00 UTC — The Odds API is primary for every NFL prop market (PROPS_SOURCE=oddsapi), live for week 6
+
+User instruction (2026-10-18): Odds API primary for everything SharpAPI fed (yardage main + alt, anytime, first, 2+ TD), fixed book
+set DraftKings, FanDuel, BetMGM, Caesars, Hard Rock Bet, BetRivers, Fanatics, ESPN BET (`odds.PRIMARY_BOOKS`), region us; SharpAPI
+fallback only (an Odds API call errors, no key, or the credit guard trips) with "Fallback source" on the site; Kalshi, model, blends,
+rules and board logic unchanged. Repository variable `PROPS_SOURCE=oddsapi` set 02:38 UTC; no `PROPS_FROM_WEEK` gate, so the Sunday
+loops (first at 10:30 UTC) run on it. Revert = set the variable back to `sharpapi` (next pull picks it up, no commit).
+
+- `odds.props_source(week)`, `props_from_week()`, `fallback_reason(events)` (guard tripped / no key / lines call failed / any props
+  call errored / games but no prop prices; an empty slate is not a failure), `only_books()` (props only, Kalshi kept, game lines never
+  filtered), `FETCH` accounting in `fetch_all`; primary fetches the 4 TD + 4 yardage markets (8 credits per game). `run_week.py`
+  fetches SharpAPI only on fallback (or `KEEP_BOTH=1` research pulls that keep both feeds' rows for every market and book); on
+  fallback the yard ladders come from SharpAPI's verified DK/FD ladders and the TD board merges both feeds (fresher quote per book),
+  exactly the pre-switch behaviour. `latest.json.odds_api` carries props_source / props_effective / fallback / books; the board notice
+  reads "Prices: The Odds API (every prop market, region us; books …) + Kalshi" or a highlighted "Fallback source: SharpAPI … reason".
+- Fix: dispatched pull loops never had the Odds API key (`use_odds` defaulted off and the dispatcher does not pass it), so the
+  yardage-only flip approved earlier would not have reached the loops. `pull_loop.yml` now passes the key whenever PROPS_SOURCE or
+  YARDS_SOURCE is oddsapi. Scheduled runs were unaffected.
+- Tests: `test_yards_source.py` 5/5 (markets per event, per-event error accounting, every fallback reason, fixed books + Kalshi,
+  PROPS_FROM_WEEK gate); ladders 8/8, loops 3/3. Default-mode replay of the 21:11 UTC pull is identical to the pre-change build.
+
+Replay of the 02:33 UTC week-6 pull (KEEP_BOTH: SharpAPI DK/FD + Odds API every us book, same sim draws, AS_OF 02:33:30Z):
+old = SharpAPI DK/FD anytime, first, yardage + Odds API 2+ TD / pass TDs from every us book (incl. Bovada, BetOnline); new = Odds API
+every market, fixed set + Kalshi. 103 -> 105 edges.
+
+| Market | Old | New | Added | Removed | Shared | Shared rows |
+|---|---|---|---|---|---|---|
+| Anytime TD | 36 | 28 | 1 | 9 | 27 | books 2–3 -> 5–7; mean \|ΔMARKET\| 0.003 (max 0.010), mean ΔEV +3.7 pts (better best prices at BetMGM / BetRivers) |
+| First TD | 8 | 13 | 12 | 7 | 1 | the old path never fetched first-TD prices from The Odds API (SharpAPI gave FanDuel + Kalshi only): 5 books of first-TD prices arrive at once |
+| 2+ TD | 21 | 15 | 0 | 6 | 15 | mean \|ΔMARKET\| 0.0002; the fixed set drops Bovada / BetOnline (books 8–9 -> 5–7) |
+| Yards main | 3 | 3 | 2 | 2 | 1 | second-book anchors move |
+| Yards alt | 35 | 46 | 14 | 3 | 32 | mean \|ΔMARKET\| 0.008 (max 0.034), mean ΔEV +2.0 pts, BetRivers prices best on 11 of 14 added |
+
+Every removed TD row fails the same rule: EV at the median book < 5% once the median runs over 5–7 books instead of 2–3 (e.g. Deion
+Burks anytime +2700 FanDuel: EV at best +35%, at the median −13%; Romeo Doubs 2+ TD +2500: median EV +9% -> −1% without the offshore
+books). The 12 added first-TD rows are longshots (+3500 to +11000 at DraftKings / BetMGM / FanDuel, 4–6 books) that were invisible
+before; the existing role / ratio / bench rules decide their stake. Over the 870 TD player-market rows priced by both builds the
+no-vig market moved −0.004 on average (mean |Δ| 0.005; 54 rows by 2+ pts). Model probabilities: identical on every yard edge; on 17 of
+299 players p(anytime) moved by at most 0.0005 because INFLATE_POOL scales the shares of *listed* players and the listed set differs by
+a few names between feeds (model code untouched). Hard Rock Bet and ESPN BET returned no props in this pull.
+
+Credits with the Odds API in every loop (2 for lines + 8 markets per not-yet-kicked-off game per pull): week 6 clusters Thu 2,158,
+Sun 10:30 2,006, Sun 14:00 2,630, Sun 21:20 334, Mon 182 = ~7,310 per week; plus ~460 for the four scheduled runs and the pick'em
+scanner's ~150: ~34K per month on the 100K plan, under the 40K NFL month-to-date guard. Guards unchanged (loops only: NFL month-to-date
+> 40,000 or account remaining < 20,000 -> fallback source for that pull, flagged on the site); every call logged with tag `nfl`.
+- 03:05 UTC fix after the first live once-run (02:39 UTC): it held 88 edges as "price age unknown" because the capture timestamp on
+  Odds API quotes was set inside the SharpAPI merge, which primary mode no longer runs. `odds.tag_sources()` now stamps every Odds API
+  outcome (source, ts = market last_update) on every pull; replaying the 02:39 pull with the fix holds 0 edges (104 on the board).
+  Test added (tag -> board capture time). Republished with a once-run.

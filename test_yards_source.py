@@ -131,6 +131,11 @@ def test_props_source_primary_markets_fallback_and_books():
         assert kept == ["DraftKings", "Kalshi", "ESPN BET"], kept
         assert O.only_books(evs, O.PRIMARY_BOOKS)[0]["bookmakers"] == [dict(key="bovada")], "game lines are never filtered"
         assert tuple(O.PRIMARY_BOOKS) == tuple(YP.YARD_BOOKS) and len(O.PRIMARY_BOOKS) == 8
+        tagged = O.tag_sources([dict(props=dict(bookmakers=[dict(title="DraftKings", markets=[dict(key="player_anytime_td", last_update="2026-10-18T02:39:00Z",
+                                                                                                   outcomes=[dict(name="Yes", description="A B", price=200), dict(name="Yes", description="C D", price=300, source="sharpapi", ts="x")])])]))])
+        outs = tagged[0]["props"]["bookmakers"][0]["markets"][0]["outcomes"]
+        assert outs[0]["source"] == "oddsapi" and outs[0]["ts"] == "2026-10-18T02:39:00Z" and outs[1]["source"] == "sharpapi" and outs[1]["ts"] == "x", outs
+        assert O.prop_board(tagged)[("player_anytime_td", O.norm_name("A B"), None)]["DraftKings"]["ts"] == "2026-10-18T02:39:00Z", "capture time reaches the board (price-age rule)"
     finally:
         for k, v in saved.items():
             if v is None: os.environ.pop(k, None)

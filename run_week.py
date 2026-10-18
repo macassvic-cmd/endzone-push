@@ -47,11 +47,7 @@ def merge_sources(oa, sa, keep_both=False):
        fresher quote per market (Odds API market last_update vs SharpAPI row timestamp). Every outcome keeps its source.
        keep_both (research pulls): keep both feeds' rows for every market so a replay can split them by source."""
     def key(e): return (O.TEAM_ABBR.get(e["away_team"], e["away_team"]), O.TEAM_ABBR.get(e["home_team"], e["home_team"]))
-    for e in oa or []:
-        for b in e.get("props", {}).get("bookmakers", []):
-            for m in b["markets"]:
-                for o in m["outcomes"]:
-                    o.setdefault("source", "oddsapi"); o.setdefault("ts", m.get("last_update") or b.get("last_update"))
+    O.tag_sources(oa)
     out = {key(e): e for e in (oa or [])}
     for e in sa or []:
         k = key(e)
@@ -108,6 +104,7 @@ if PROPS_SOURCE == "oddsapi":
     if (FALLBACK or KEEP_BOTH) and have_sharp:
         sharp = fetch_sharp("fallback" if FALLBACK else "research")
     if FALLBACK and not sharp: FALLBACK += " (SharpAPI unavailable too)"
+O.tag_sources(events)                                                 # capture time on every Odds API quote (price-age rule), merge or not
 if sharp:
     events = merge_sources(events, sharp, keep_both=KEEP_BOTH)
 if PROPS_SOURCE == "oddsapi" and events and not KEEP_BOTH:
