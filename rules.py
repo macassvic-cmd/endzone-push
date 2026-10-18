@@ -3,6 +3,7 @@
 An edge needs EV >= MIN_EV at the median book and at the best book, MIN_BOOKS or more books, and no weak-spot tag.
 Every field is read NaN-safely (nansafe): a missing or NaN column never drops or admits a row by accident.
 """
+import os
 import pandas as pd
 from nansafe import val, flag, text, num, isnan
 
@@ -24,6 +25,10 @@ BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS = 6, 0.25, 2.5, ("pas
 # off the board (shown with the reason, never logged, never graded). MAX_PRICE_AGE_MIN = None shows the price age on every
 # row without enforcing a limit; the user sets the number.
 KICKOFF_CUTOFF_MIN, MAX_PRICE_AGE_MIN = 30, 15
+# Staleness (2026-10-18): the price-age limit applies only inside kickoff loops (pull_loop sets IN_LOOP=1; pulls every 10 min). Outside
+# them (scheduled and early-week pulls) an edge stays on the board until the next pull, labelled with its price age, and the viewer
+# bets only at or better than BET DOWN TO. The kickoff cutoff applies everywhere.
+BET_DOWN_TO_RULE = "bet only if your book's price is at or better than BET DOWN TO"
 # Listing rule (2026-10-15): an alternate yard rung is actionable only when the named book lists that exact rung at that
 # price on the verified board (yard_prices.verify_ladders); curve values never stand in for a price.
 LISTED_RULE = "actionable alt rungs are listed at the named book at the named price; unlisted or unverified rungs are research-only"
@@ -31,6 +36,30 @@ LISTED_RULE = "actionable alt rungs are listed at the named book at the named pr
 
 def stake_for(role):
     return BENCH_STAKE if role == "Bench" else 1.0
+
+
+def bet_down_to(blend_p, min_ev=MIN_EV):
+    """Worst American price at which EV at the model-market blend is still >= min_ev: decimal 1 + min_ev over blend_p, rounded to the
+       nearest American price that keeps EV >= min_ev (never rounded past the threshold). None without a usable probability."""
+    try:
+        p = float(blend_p)
+    except (TypeError, ValueError):
+        return None
+    if not (0 < p < 1): return None
+    dec = (1 + min_ev) / p
+    am = int(round((dec - 1) * 100)) if dec >= 2 else int(round(-100 / (dec - 1)))
+    # rounding to a whole American price can land a hair short of the threshold: step one tick toward the bettor until EV >= min_ev
+    def ev(a): return p * (1 + (a / 100 if a > 0 else 100 / -a)) - 1
+    for _ in range(3):
+        if ev(am) >= min_ev - 1e-9: break
+        am = am + 1 if am > 0 else am + 1 if am < -100 else -100            # +100 and -100 are the same price; move toward longer odds
+        if am == -99 or am == 0: am = 100
+    return am
+
+
+def price_age_limit():
+    """MAX_PRICE_AGE_MIN inside a kickoff loop (IN_LOOP=1), no limit otherwise (price age is shown instead)."""
+    return MAX_PRICE_AGE_MIN if os.environ.get("IN_LOOP") else None
 
 
 def ratio_of(model_p, mkt_p):
@@ -63,11 +92,15 @@ def price_age_min(captured, now):
         return None
 
 
-def not_actionable(e, now, kickoff_cutoff=None, max_age=None):
+_DEFAULT = object()
+
+
+def not_actionable(e, now, kickoff_cutoff=None, max_age=_DEFAULT):
     """Reasons an edge cannot be acted on at `now`: kickoff within the cutoff (or underway), or a price older than the age limit.
-       [] when it is actionable. Sets e['kick_min'] and e['age_min'] as a side effect so the page can show them."""
+       [] when it is actionable. Sets e['kick_min'] and e['age_min'] as a side effect so the page can show them.
+       max_age: omitted -> MAX_PRICE_AGE_MIN; None -> no age limit (outside kickoff loops, see price_age_limit)."""
     cut = KICKOFF_CUTOFF_MIN if kickoff_cutoff is None else kickoff_cutoff
-    lim = MAX_PRICE_AGE_MIN if max_age is None else max_age
+    lim = MAX_PRICE_AGE_MIN if max_age is _DEFAULT else max_age
     why = []
     km = minutes_to_kick(e.get("kick_utc"), now); e["kick_min"] = None if km is None else round(km, 1)
     if km is None: why.append("kickoff unknown")
@@ -86,7 +119,7 @@ def split_board(edges):
     out = dict(main=[], bench=[], blocked=[], hidden=[])
     for e in edges:
         role = e.get("role") if isinstance(e.get("role"), str) else "Unknown"
-        e["stake"] = stake_for(role); e["ratio"] = ratio_of(e.get("model_p"), e.get("mkt_p"))
+        e["stake"] = stake_for(role); e["ratio"] = ratio_of(e.get("model_p"), e.get("mkt_p")); e["bet_down_to"] = bet_down_to(e.get("blend_p"))
         if e.get("kind") in HIDDEN_KINDS:
             out["hidden"].append(dict(e, reasons=["pass-yds hidden"]))
         elif ratio_blocked(role, e.get("model_p"), e.get("mkt_p")):

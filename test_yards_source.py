@@ -83,10 +83,10 @@ def test_usage_summary_and_guard():
         for r in rows: f.write(json.dumps(r) + "\n")
     u = O.usage_summary(fn, now=now)
     assert u["nfl_mtd"] == 30086 and u["remaining"] == 55914 and not u["guard"]["tripped"], u
-    with open(fn, "a") as f: f.write(json.dumps(dict(ts="2026-10-25T14:55:00Z", tag="nfl", path="/odds", cost=10000, used=54086, remaining=45914)) + "\n")
+    with open(fn, "a") as f: f.write(json.dumps(dict(ts="2026-10-25T14:55:00Z", tag="nfl", path="/odds", cost=30000, used=74086, remaining=25914)) + "\n")
     u = O.usage_summary(fn, now=now)
-    assert u["nfl_mtd"] == 40086 and u["guard"]["tripped"] and "40,086 > 40,000" in u["guard"]["reasons"][0], u
-    with open(fn, "a") as f: f.write(json.dumps(dict(ts="2026-10-25T14:56:00Z", tag="pickem", path="/odds", cost=30000, used=84086, remaining=15914)) + "\n")
+    assert u["nfl_mtd"] == 60086 and u["guard"]["tripped"] and "60,086 > 60,000" in u["guard"]["reasons"][0], u
+    with open(fn, "a") as f: f.write(json.dumps(dict(ts="2026-10-25T14:56:00Z", tag="pickem", path="/odds", cost=10000, used=84086, remaining=15914)) + "\n")
     u = O.usage_summary(fn, now=now)
     assert u["guard"]["tripped"] and any("15,914 < 20,000" in r for r in u["guard"]["reasons"]), u
     assert O.usage_summary(fn + ".missing", now=now)["nfl_mtd"] == 0

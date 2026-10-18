@@ -6,7 +6,7 @@ Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
 """
 import sys, os, json, collections, numpy as np, pandas as pd
 import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
-import rules as RU
+import rules as RU, alerts as AL
 from nansafe import val, flag, text, num, isnan
 
 DATA, OUT = "data", os.environ.get("OUT_DIR", ".")       # OUT_DIR: write the slate files elsewhere (replays never touch the published ones)
@@ -459,7 +459,8 @@ print(f"board: {len(_parts['main'])} main, {len(_parts['bench'])} bench at {RU.B
 # timing rules (rules.py), on the board rows only (hidden / blocked rows go to the research logs whatever the clock says): nothing is
 # actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN is set) on a price older than
 # that; held edges are shown with the reason, never logged for CLV, never graded
-_act = [(e, RU.not_actionable(e, NOW_UTC)) for e in _parts["main"] + _parts["bench"]]
+MAX_AGE = RU.price_age_limit()                                        # 15 min inside a kickoff loop (IN_LOOP=1), no limit outside (age shown, BET DOWN TO rule)
+_act = [(e, RU.not_actionable(e, NOW_UTC, max_age=MAX_AGE)) for e in _parts["main"] + _parts["bench"]]
 held = [dict(e, reasons=w) for e, w in _act if w]
 edges = [e for e, w in _act if not w]
 print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
@@ -467,7 +468,9 @@ clean = lambda d: d.replace({np.nan: None})
 if DRY_RUN: print("DRY_RUN: edges, research rows and paper parlays not logged")
 if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
     _flag = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"     # flag time = the pull the prices came from
-    if edges: print("edges newly logged for CLV:", C.log_edges(edges, season, week, _flag))
+    if edges:
+        _new = C.log_edges(edges, season, week, _flag); print("edges newly logged for CLV:", len(_new))
+        if _new: print("discord:", AL.notify_new_edges(_new, season, week, _flag))      # first-seen only; no-op without DISCORD_WEBHOOK_URL
     if _parts["hidden"]: print("passing-yard rungs newly logged for research:", C.log_research("pass_yds", _parts["hidden"], season, week, _flag))
     if _parts["blocked"]: print("ratio-blocked rotational edges newly logged for research:", C.log_research("ratio_block", _parts["blocked"], season, week, _flag))
 _pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
@@ -478,7 +481,8 @@ if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
 # the live thresholds, published so the page labels rungs with the same numbers the board and grading use (never re-defined in display code)
 RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
                  bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK,
-                 kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=RU.MAX_PRICE_AGE_MIN, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
+                 kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=MAX_AGE, loop_price_age_min=RU.MAX_PRICE_AGE_MIN, in_loop=bool(os.environ.get("IN_LOOP")),
+                 bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
             odds_api=dict(props_source=PROPS_SOURCE, props_from_week=O.props_from_week(), props_effective="sharpapi" if FALLBACK else PROPS_SOURCE, fallback=FALLBACK,

@@ -55,8 +55,24 @@ def week_windows(sched, season, week, lead_h=LEAD_H, step_min=STEP_MIN):
                          kickoffs=[k.strftime("%Y-%m-%dT%H:%MZ") for k in c["kicks"]],
                          games=[f"{a}@{h}" for a, h in zip(games.away_team, games.home_team)]))
     return dict(season=int(season), week=int(week), lead_h=lead_h, step_min=step_min, max_job_min=MAX_JOB_MIN,
-                odds_api_credits=sum(r["odds_api_credits"] for r in rows), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull ({'PROPS_SOURCE' if MARKETS_PER_EVENT == 8 else 'YARDS_SOURCE'}=oddsapi, region us)",
+                odds_api_credits=sum(r["odds_api_credits"] for r in rows), early=early_pull_credits(rows, int(len(s))), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull ({'PROPS_SOURCE' if MARKETS_PER_EVENT == 8 else 'YARDS_SOURCE'}=oddsapi, region us)",
                 generated=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), clusters=rows)
+
+
+def early_pull_credits(clusters, n_games, hours_per_day=6, days=5, markets=None):
+    """Early-week pulls (pull_dispatch: 8 AM-11 PM PT every 3 h, Tue-Sat): slots not inside a kickoff-loop window x (lines + markets x
+       every game of the week). An upper bound: before props post a pull costs ~2 credits."""
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    markets = MARKETS_PER_EVENT if markets is None else markets
+    if not clusters: return dict(slots=0, credits=0)
+    P = lambda s: dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    last = max(P(c["end"]) for c in clusters).astimezone(ZoneInfo("America/Los_Angeles"))
+    # the week's Tuesday..Saturday before the last kickoff (Sunday/Monday games): slots at 8, 11, 14, 17, 20, 23 PT
+    sunday = (last - dt.timedelta(days=(last.weekday() + 1) % 7)).replace(hour=0, minute=0, second=0, microsecond=0)
+    slots = [(sunday - dt.timedelta(days=7 - d)).replace(hour=h) for d in range(2, 7) for h in (8, 11, 14, 17, 20, 23)]
+    n = sum(1 for s in slots if not any(P(c["start"]) - dt.timedelta(minutes=30) <= s.astimezone(dt.timezone.utc) <= P(c["end"]) + dt.timedelta(minutes=10) for c in clusters))   # same padding as pull_dispatch.in_cluster
+    return dict(slots=n, credits=int(n * (LINES_CREDITS + markets * n_games)))
 
 
 def next_week(sched, now=None):
@@ -80,5 +96,6 @@ if __name__ == "__main__":
     for c in w["clusters"]:
         print(f"  {c['start'][:16]}Z -> {c['end'][:16]}Z  {c['minutes'] / 60:.2f} h, {c['pulls']} pulls, {len(c['games'])} games, ~{c['odds_api_credits']} Odds API credits with yardage" + ("  [chained: 2 jobs]" if c["chained"] else "") + " | " + ", ".join(c["games"]))
     print(f"  week total with The Odds API in every loop: ~{w['odds_api_credits']} credits ({w['credits_note']})")
+    print(f"  early-week pulls (Tue-Sat, 8 AM-11 PM PT every 3 h, outside loop windows): {w['early']['slots']} pulls, up to ~{w['early']['credits']} credits; week total ~{w['odds_api_credits'] + w['early']['credits']}")
     if g("--write"):
         json.dump(w, open(g("--write"), "w"), indent=1); print("written", g("--write"))

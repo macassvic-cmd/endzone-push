@@ -14,11 +14,11 @@ EDGE_DIR, ODDS_DIR, RESEARCH_DIR = "edge_log", "odds_history", "research"   # ru
 
 
 def log_edges(edges, season, week, stamp):
-    """Append first-seen edges to edge_log/<season>_w<week>.json. Returns the number newly logged."""
+    """Append first-seen edges to edge_log/<season>_w<week>.json. Returns the list of edges newly logged this run (len() = count)."""
     os.makedirs(EDGE_DIR, exist_ok=True)
     fn = f"{EDGE_DIR}/{season}_w{week}.json"
     log = json.load(open(fn)) if os.path.exists(fn) else {}
-    n = 0
+    new = []
     for e in edges:
         key = f"{e['pid']}|{e['market']}"
         if key in log:
@@ -29,10 +29,10 @@ def log_edges(edges, season, week, stamp):
         log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], team=e["team"], role=e.get("role"), kind=e.get("kind"), line=e.get("line"),
                         flagged=stamp, best=e["best"], book=e["book"], med=e["med"], mkt_p=e["mkt_p"],
                         blend_p=e["blend_p"], model_p=e["model_p"], ev=e["ev"], ev_med=e["ev_med"], rule=e.get("rule"),
-                        stake=e.get("stake", 1.0), ratio=e.get("ratio"))
-        n += 1
+                        stake=e.get("stake", 1.0), ratio=e.get("ratio"), bet_down_to=e.get("bet_down_to"))
+        new.append(e)
     json.dump(log, open(fn, "w"), indent=0)
-    return n
+    return new
 
 
 def log_research(tag, rows, season, week, stamp):

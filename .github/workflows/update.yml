@@ -64,6 +64,7 @@ jobs:
           python test_ladder_integrity.py
           python test_pull_loop.py
           python test_yards_source.py
+          python test_board_rules.py
           python refresh.py --data-only
           PROPS_SOURCE="${{ vars.PROPS_SOURCE || 'sharpapi' }}" python pull_windows.py --write pull_windows.json
       - name: Smoke-test grading on the committed slates (fails loudly before any odds are pulled)
@@ -76,6 +77,7 @@ jobs:
           ODDS_SAVE: odds_raw.json
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
           YARDS_SOURCE: ${{ vars.YARDS_SOURCE || 'sharpapi' }}     # repository variable: flip to oddsapi to go live (no commit needed)
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}   # alert on first-seen edges (alerts.py); no-op when the secret is absent
           YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}        # repository variable: first week the Odds API yardage feed prices the board
           PROPS_SOURCE: ${{ vars.PROPS_SOURCE || 'sharpapi' }}      # repository variable: oddsapi = The Odds API primary for every prop market, SharpAPI fallback only
           PROPS_FROM_WEEK: ${{ vars.PROPS_FROM_WEEK || '' }}

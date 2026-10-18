@@ -8,7 +8,7 @@ name: Pull loop
 # Started by pull_dispatch.yml (>= 30 min ahead, every 30 min as backup), by hand (mode once = one pull + publish; dry_run = a
 # few short iterations), or by repository_dispatch type pull_loop with client_payload {mode, start, end, step_min}.
 
-run-name: "pull loop ${{ inputs.mode || github.event.client_payload.mode || 'loop' }} ${{ inputs.start || github.event.client_payload.start || 'now' }} -> ${{ inputs.end || github.event.client_payload.end || 'open' }}"
+run-name: "pull loop ${{ inputs.label || github.event.client_payload.label || '' }} ${{ inputs.mode || github.event.client_payload.mode || 'loop' }} ${{ inputs.start || github.event.client_payload.start || 'now' }} -> ${{ inputs.end || github.event.client_payload.end || 'open' }}"
 
 on:
   workflow_dispatch:
@@ -52,6 +52,10 @@ on:
         description: "Research pull: fetch SharpAPI too and keep both feeds' rows for every market and book (source-split replays)"
         type: boolean
         default: false
+      label:
+        description: "Tag for the run title (the dispatcher uses 'early <slot>' to keep early-week pulls idempotent)"
+        type: string
+        default: ""
       publish:
         description: "Publish the board to the board branch (off = pull, build and save the odds only)"
         type: boolean
@@ -106,6 +110,7 @@ jobs:
           python test_ladder_integrity.py
           python test_pull_loop.py
           python test_yards_source.py
+          python test_board_rules.py
           python refresh.py --data-only
       - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
         run: python results.py
@@ -113,6 +118,7 @@ jobs:
         id: run
         env:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
           PYTHONUNBUFFERED: "1"
         run: python pull_loop.py --mode "$MODE" --start "$START" --end "$END" --step-min "$STEP" --iterations "$ITER" --max-minutes "$MAX_MINUTES"
@@ -145,6 +151,7 @@ jobs:
       - name: Pull loop (continued)
         env:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
           PYTHONUNBUFFERED: "1"
         run: python pull_loop.py --mode loop --start "${{ needs.loop.outputs.resume_start }}" --end "$END" --step-min "$STEP" --max-minutes "$MAX_MINUTES"

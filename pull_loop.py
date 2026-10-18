@@ -93,6 +93,7 @@ def loop(mode, start, end, step_min, iterations, max_minutes, push):
         if (t0 - t_begin).total_seconds() / 60 > max_minutes:
             remaining = bool(end and t0 < end); print(f"job cap {max_minutes} min reached; remaining={remaining}"); break
         print(f"\n===== pull {n + 1} at {t0:%Y-%m-%d %H:%M:%S}Z (mode {mode}, step {step_min} min, end {end})", flush=True)
+        if mode in ("loop", "dry_run"): os.environ["IN_LOOP"] = "1"          # kickoff loop: the 15-min price-age limit applies (rules.price_age_limit)
         run_pull(); n += 1
         if os.environ.get("PUBLISH", "1") == "0": print("PUBLISH=0: board not published")
         else: publish_board(t0.strftime("%Y-%m-%dT%H:%MZ"), push)

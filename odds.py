@@ -15,7 +15,7 @@ PROP_MARKETS = ["player_anytime_td", "player_1st_td", "player_pass_tds", "player
 PROP_MARKETS_TRIMMED = ["player_tds_over", "player_pass_tds"]   # with SharpAPI covering DK/FD anytime, first TD and yardage: 2 markets per event instead of 4
 YARD_MARKETS = ["player_rush_yds", "player_reception_yds", "player_rush_yds_alternate", "player_reception_yds_alternate"]   # YARDS_SOURCE=oddsapi: 4 credits per event (us)
 USAGE_FILE, USAGE_TAG = "odds_api_usage.jsonl", os.environ.get("ODDS_API_TAG", "nfl")   # one line per paid call: ts, tag, path, cost, used, remaining
-NFL_MTD_LIMIT, REMAINING_FLOOR = 40_000, 20_000                                        # budget guard (pull loops only; scheduled runs keep the Odds API)
+NFL_MTD_LIMIT, REMAINING_FLOOR = 60_000, 20_000                                        # budget guard (pull loops only; scheduled runs keep the Odds API); 60K since 2026-10-18 (early-week pulls, NBA expansion off)
 
 
 def yards_source(week=None):

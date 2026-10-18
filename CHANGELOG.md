@@ -1473,3 +1473,29 @@ scanner's ~150: ~34K per month on the 100K plan, under the 40K NFL month-to-date
   Odds API quotes was set inside the SharpAPI merge, which primary mode no longer runs. `odds.tag_sources()` now stamps every Odds API
   outcome (source, ts = market last_update) on every pull; replaying the 02:39 pull with the fix holds 0 edges (104 on the board).
   Test added (tag -> board capture time). Republished with a once-run.
+
+### 2026-10-18 — Board workflow: BET DOWN TO, staleness by mode, early-week pulls, Discord alerts (no model changes)
+
+User instruction (2026-10-18). Model, blends, edge rules (EV ≥ 5% at the median and best book, 2+ books) and grading untouched.
+
+1. **Early-week pulls.** `pull_dispatch.py` (every 30 min, now all day) also starts a `Pull loop` once-run at 8 AM, 11 AM, 2 PM, 5 PM,
+   8 PM and 11 PM PT on Tuesday–Saturday (DST-aware), skipping a slot inside or within 30 min before a kickoff-loop window;
+   idempotent through the run title ("early <slot>"). Before props post a pull costs ~2 credits, so the cadence starts itself on
+   the day props post. Credits per week with 14 games (2 for lines + 8 markets per game per pull): kickoff loops ~7,310, early-week
+   28 pulls up to ~3,190, four scheduled runs ~460, pick'em ~150 → ~11,100 per week, ~48K per month. NFL month-to-date guard
+   raised 40K → 60K (`odds.NFL_MTD_LIMIT`); remaining-credit floor stays 20K. `pull_windows.json` carries the early-pull estimate.
+2. **BET DOWN TO.** `rules.bet_down_to(blend_p)` = the worst American price at which EV at the model–market blend is still ≥ 5%
+   (decimal 1.05 / blend, rounded without crossing the threshold); set on every edge in `split_board`, logged in the edge log, shown
+   next to BEST on the Edge Board and in the yards Actionable card (↓ price).
+3. **Staleness.** `rules.price_age_limit()`: 15 min only inside kickoff loops (`IN_LOOP=1`, set by pull_loop for loop / dry_run
+   pulls); scheduled and early-week pulls have no age limit, so edges stay on the board until the next pull with their price age
+   shown. The 30-min kickoff cutoff applies everywhere. The page states the rule in force: "bet only if your book's price is at or
+   better than BET DOWN TO" (and "Kickoff-loop build: prices older than 15 min are held" on loop builds). `latest.json.rules`
+   carries max_price_age_min (per build), loop_price_age_min, in_loop and bet_down_to_rule.
+4. **Discord.** `alerts.py` posts every first-seen edge (the rows `clv.log_edges` just appended: player, bet, best book + price, BET
+   DOWN TO, EV, role and stake) to `DISCORD_WEBHOOK_URL` — the same secret name as the arc-lab health watchdog — chunked under 2,000
+   characters; without the secret the run log says what it would have posted. Never fails a pull. The secret must be added to this
+   repository (`gh secret set DISCORD_WEBHOOK_URL`).
+5. Tests: `test_board_rules.py` (BET DOWN TO threshold at every probability, age limit by mode, split_board field, Discord
+   formatting and chunking), `test_pull_loop.py::test_early_week_slots_and_cluster_skip` (slots, grace, DST, cluster skip, credit
+   count). Replay of this week's pulls (Tue–Sat availability vs kickoff loops, CLV vs close) reported separately.

@@ -52,6 +52,27 @@ def test_merge_first_seen_and_kept_pulls():
     print("  merge and kept-pull rule ok")
 
 
+def test_early_week_slots_and_cluster_skip():
+    """Dispatcher early-week pulls: 8 AM-11 PM PT every 3 h on Tue-Sat only, live for 45 min after the slot, DST-aware; a slot inside a
+       kickoff-loop window is skipped."""
+    import datetime as dt
+    import pull_dispatch as PD
+    U = lambda s: dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    assert PD.early_slots(U("2026-10-20T15:10:00Z")) == [U("2026-10-20T15:00:00Z")], "Tue 8:10 AM PDT -> the 8 AM slot"
+    assert PD.early_slots(U("2026-10-20T15:50:00Z")) == [], "45 min grace passed"
+    assert PD.early_slots(U("2026-10-21T06:20:00Z")) == [U("2026-10-21T06:00:00Z")], "Tue 11 PM PDT = Wed 06:00Z"
+    assert PD.early_slots(U("2026-10-19T15:10:00Z")) == [], "Monday: no early pulls"
+    assert PD.early_slots(U("2026-10-25T15:10:00Z")) == [], "Sunday: kickoff loops only"
+    assert PD.early_slots(U("2026-10-24T21:05:00Z")) == [U("2026-10-24T21:00:00Z")], "Sat 2 PM PDT"
+    assert PD.early_slots(U("2026-11-03T16:10:00Z")) == [U("2026-11-03T16:00:00Z")], "after the DST change 8 AM PST = 16:00Z"
+    clusters = [dict(start="2026-10-22T21:15:00Z", end="2026-10-23T00:15:00Z")]
+    assert PD.in_cluster(U("2026-10-22T21:00:00Z"), clusters) and PD.in_cluster(U("2026-10-23T00:00:00Z"), clusters) and not PD.in_cluster(U("2026-10-22T18:00:00Z"), clusters)
+    import pull_windows as PW
+    e = PW.early_pull_credits(clusters + [dict(start="2026-10-25T14:00:00Z", end="2026-10-25T20:25:00Z")], 14, markets=8)
+    assert e["slots"] == 28 and e["credits"] == 28 * (2 + 8 * 14), e      # 30 Tue-Sat slots minus the two inside Thursday's loop
+    print(f"  early slots: Tue-Sat PT, 45-min grace, DST ok; {e['slots']} slots/week ~{e['credits']} credits at 14 games")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     failed = 0

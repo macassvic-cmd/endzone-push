@@ -8,7 +8,7 @@ name: Pull dispatcher
 
 on:
   schedule:
-    - cron: "*/30 9-23 * * *"
+    - cron: "*/30 * * * *"    # all day: the early-week slots (8 AM-11 PM PT every 3 h) fall at 00/03/06 UTC too
   workflow_dispatch:
     inputs:
       dry_run:
