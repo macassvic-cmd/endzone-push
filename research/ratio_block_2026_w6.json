@@ -82,5 +82,34 @@
 "rotational > 2.5x market"
 ],
 "flagged": "20261018T0239Z"
+},
+"00-0040563|any|None|None": {
+"bet": "Efton Chism III Anytime TD",
+"pid": "00-0040563",
+"market": "any",
+"team": "NE",
+"model_p": 0.29155,
+"mkt_p": 0.1142,
+"blend_p": 0.2029,
+"best": 727,
+"book": "Kalshi",
+"ev": 0.6777,
+"med": 600,
+"ev_med": 0.4201,
+"nbooks": 7,
+"games": 6,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": 727,
+"kalshi_liquid": true,
+"captured": "2026-10-18T03:46:44Z",
+"kick_utc": "2026-10-18T17:00Z",
+"stake": 1.0,
+"ratio": 2.55,
+"bet_down_to": 418,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261018T0347Z"
 }
 }
