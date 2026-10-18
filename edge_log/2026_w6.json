@@ -3882,5 +3882,1751 @@
 "stake": 0.25,
 "ratio": 2.4,
 "bet_down_to": 13716
+},
+"00-0040870|any": {
+"pid": "00-0040870",
+"bet": "Ja'Kobi Lane Anytime TD",
+"market": "any",
+"team": "BAL",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 700,
+"book": "BetMGM",
+"med": 638,
+"mkt_p": 0.1142,
+"blend_p": 0.1625,
+"model_p": 0.21078333333333332,
+"ev": 0.3001,
+"ev_med": 0.1993,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.85,
+"bet_down_to": 547,
+"best_venue": {
+"venue": "BetMGM",
+"price": 700,
+"net": 700,
+"size_label": "",
+"captured": "2026-10-18T16:15:58Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 700,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 650,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 650,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 625,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 575,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 480,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 608,
+"ok": false
+}
+]
+},
+"00-0040870|two": {
+"pid": "00-0040870",
+"bet": "Ja'Kobi Lane 2+ TD",
+"market": "two",
+"team": "BAL",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 10000,
+"book": "FanDuel",
+"med": 6750,
+"mkt_p": 0.0105,
+"blend_p": 0.0184,
+"model_p": 0.026183333333333333,
+"ev": 0.8539,
+"ev_med": 0.2573,
+"rule": null,
+"stake": 1.0,
+"ratio": 2.49,
+"bet_down_to": 5607,
+"best_venue": {
+"venue": "FanDuel",
+"price": 10000,
+"net": 10000,
+"size_label": "",
+"captured": "2026-10-18T16:15:58Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 10000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 9000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 7500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 6000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 5000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 5000,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
+},
+"00-0023459|first": {
+"pid": "00-0023459",
+"bet": "Aaron Rodgers First TD",
+"market": "first",
+"team": "PIT",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 6000,
+"book": "Caesars",
+"med": 6000,
+"mkt_p": 0.0122,
+"blend_p": 0.0181,
+"model_p": 0.023966666666666667,
+"ev": 0.1032,
+"ev_med": 0.1032,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.96,
+"bet_down_to": 5702,
+"best_venue": {
+"venue": "Caesars",
+"price": 6000,
+"net": 6000,
+"size_label": "",
+"captured": "2026-10-18T16:15:58Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "Caesars",
+"net": 6000,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 6000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 6000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 6000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 5500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 5000,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
+},
+"00-0041489|two": {
+"pid": "00-0041489",
+"bet": "Germie Bernard 2+ TD",
+"market": "two",
+"team": "PIT",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 3000,
+"book": "DraftKings",
+"med": 3000,
+"mkt_p": 0.0288,
+"blend_p": 0.0373,
+"model_p": 0.045783333333333336,
+"ev": 0.1558,
+"ev_med": 0.1558,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.59,
+"bet_down_to": 2716,
+"best_venue": {
+"venue": "DraftKings",
+"price": 3000,
+"net": 3000,
+"size_label": "",
+"captured": "2026-10-18T16:15:48Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 3000,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 3000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 3000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 3000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2300,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1900,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 3227,
+"ok": false
+}
+]
+},
+"00-0037840|two": {
+"pid": "00-0037840",
+"bet": "Kyren Williams 2+ TD",
+"market": "two",
+"team": "LA",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 329,
+"book": "Kalshi",
+"med": 300,
+"mkt_p": 0.2042,
+"blend_p": 0.2679,
+"model_p": 0.3316,
+"ev": 0.1493,
+"ev_med": 0.0716,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.62,
+"bet_down_to": 292,
+"best_venue": {
+"venue": "Kalshi",
+"price": 329,
+"net": 329,
+"size_label": "$8,236 at the ask",
+"captured": "2026-10-18T16:16:20Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract"
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 329,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 300,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 300,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 300,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 270,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 265,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 210,
+"ok": true
+}
+]
+},
+"00-0038563|two": {
+"pid": "00-0038563",
+"bet": "Tre Tucker 2+ TD",
+"market": "two",
+"team": "LV",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 3000,
+"book": "DraftKings",
+"med": 2250,
+"mkt_p": 0.0308,
+"blend_p": 0.0449,
+"model_p": 0.05895,
+"ev": 0.3908,
+"ev_med": 0.0543,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.91,
+"bet_down_to": 2239,
+"best_venue": {
+"venue": "DraftKings",
+"price": 3000,
+"net": 3000,
+"size_label": "",
+"captured": "2026-10-18T16:15:15Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 3000,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 3000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 2500,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 2000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1900,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 3227,
+"ok": false
+}
+]
+},
+"00-0039919|yds|rec|59.5": {
+"pid": "00-0039919",
+"bet": "Rome Odunze Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CHI",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261018T1616Z",
+"best": 194,
+"book": "FanDuel",
+"med": 194,
+"mkt_p": 0.3361,
+"blend_p": 0.368,
+"model_p": 0.4,
+"ev": 0.082,
+"ev_med": 0.082,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.19,
+"bet_down_to": 186,
+"best_venue": {
+"venue": "FanDuel",
+"price": 194,
+"net": 194,
+"size_label": "",
+"captured": "2026-10-18T16:15:39Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 175,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 165,
+"ok": true
+}
+]
+},
+"00-0040870|yds|rec|10.5": {
+"pid": "00-0040870",
+"bet": "Ja'Kobi Lane Over 10.5 rec yds",
+"market": "yds",
+"team": "BAL",
+"role": "Rotational",
+"kind": "rec",
+"line": 10.5,
+"flagged": "20261018T1616Z",
+"best": -110,
+"book": "BetRivers",
+"med": -111,
+"mkt_p": 0.4945,
+"blend_p": 0.6103,
+"model_p": 0.7261,
+"ev": 0.1651,
+"ev_med": 0.1601,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.47,
+"bet_down_to": -138,
+"best_venue": {
+"venue": "BetRivers",
+"price": -110,
+"net": -110,
+"size_label": "",
+"captured": "2026-10-18T16:15:46Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": -110,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0040870|yds|rec|19.5": {
+"pid": "00-0040870",
+"bet": "Ja'Kobi Lane Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "BAL",
+"role": "Rotational",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261018T1616Z",
+"best": 200,
+"book": "FanDuel",
+"med": 200,
+"mkt_p": 0.3152,
+"blend_p": 0.4451,
+"model_p": 0.5749,
+"ev": 0.3352,
+"ev_med": 0.3352,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.82,
+"bet_down_to": 136,
+"best_venue": {
+"venue": "FanDuel",
+"price": 200,
+"net": 200,
+"size_label": "",
+"captured": "2026-10-18T16:15:58Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 200,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 195,
+"ok": true
+}
+]
+},
+"00-0039032|yds|rush|19.5": {
+"pid": "00-0039032",
+"bet": "Tyjae Spears Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "TEN",
+"role": "Rotational",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261018T1616Z",
+"best": 194,
+"book": "FanDuel",
+"med": 194,
+"mkt_p": 0.342,
+"blend_p": 0.3626,
+"model_p": 0.3832,
+"ev": 0.066,
+"ev_med": 0.066,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.12,
+"bet_down_to": 190,
+"best_venue": {
+"venue": "FanDuel",
+"price": 194,
+"net": 194,
+"size_label": "",
+"captured": "2026-10-18T16:15:46Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 168,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 165,
+"ok": true
+}
+]
+},
+"00-0040170|yds|rec|24.5": {
+"pid": "00-0040170",
+"bet": "Elic Ayomanor Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "TEN",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261018T1616Z",
+"best": 185,
+"book": "DraftKings",
+"med": 185,
+"mkt_p": 0.3459,
+"blend_p": 0.3701,
+"model_p": 0.3943,
+"ev": 0.0549,
+"ev_med": 0.0549,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.14,
+"bet_down_to": 184,
+"best_venue": {
+"venue": "DraftKings",
+"price": 185,
+"net": 185,
+"size_label": "",
+"captured": "2026-10-18T16:16:08Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 185,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 178,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 155,
+"ok": true
+}
+]
+},
+"00-0040734|yds|rush|39.5": {
+"pid": "00-0040734",
+"bet": "TreVeyon Henderson Over 39.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Rotational",
+"kind": "rush",
+"line": 39.5,
+"flagged": "20261018T1616Z",
+"best": 182,
+"book": "DraftKings",
+"med": 182,
+"mkt_p": 0.3529,
+"blend_p": 0.3741,
+"model_p": 0.3954,
+"ev": 0.0551,
+"ev_med": 0.0551,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.12,
+"bet_down_to": 181,
+"best_venue": {
+"venue": "DraftKings",
+"price": 182,
+"net": 182,
+"size_label": "",
+"captured": "2026-10-18T16:16:00Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 182,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 165,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 154,
+"ok": true
+}
+]
+},
+"00-0035676|yds|rec|79.5": {
+"pid": "00-0035676",
+"bet": "A.J. Brown Over 79.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Starter",
+"kind": "rec",
+"line": 79.5,
+"flagged": "20261018T1616Z",
+"best": 275,
+"book": "BetRivers",
+"med": 275,
+"mkt_p": 0.2703,
+"blend_p": 0.2947,
+"model_p": 0.3191,
+"ev": 0.1052,
+"ev_med": 0.1052,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.18,
+"bet_down_to": 257,
+"best_venue": {
+"venue": "BetRivers",
+"price": 275,
+"net": 275,
+"size_label": "",
+"captured": "2026-10-18T16:15:53Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 275,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 237,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 235,
+"ok": true
+}
+]
+},
+"00-0041032|yds|rec|20.5": {
+"pid": "00-0041032",
+"bet": "Kenyon Sadiq Over 20.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYJ",
+"role": "Starter",
+"kind": "rec",
+"line": 20.5,
+"flagged": "20261018T1616Z",
+"best": 100,
+"book": "BetMGM",
+"med": 100,
+"mkt_p": 0.4942,
+"blend_p": 0.5324,
+"model_p": 0.5707,
+"ev": 0.0649,
+"ev_med": 0.0649,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.15,
+"bet_down_to": -102,
+"best_venue": {
+"venue": "BetMGM",
+"price": 100,
+"net": 100,
+"size_label": "",
+"captured": "2026-10-18T16:16:12Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 100,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -109,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -117,
+"ok": true
+}
+]
+},
+"00-0040715|yds|rush|59.5": {
+"pid": "00-0040715",
+"bet": "Cam Skattebo Over 59.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Starter",
+"kind": "rush",
+"line": 59.5,
+"flagged": "20261018T1616Z",
+"best": 270,
+"book": "BetRivers",
+"med": 270,
+"mkt_p": 0.2769,
+"blend_p": 0.3142,
+"model_p": 0.3516,
+"ev": 0.1627,
+"ev_med": 0.1627,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.27,
+"bet_down_to": 235,
+"best_venue": {
+"venue": "BetRivers",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-10-18T16:16:04Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 245,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 210,
+"ok": true
+}
+]
+},
+"00-0038393|yds|rec|49.5": {
+"pid": "00-0038393",
+"bet": "Dontayvion Wicks Over 49.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "PHI",
+"role": "Starter",
+"kind": "rec",
+"line": 49.5,
+"flagged": "20261018T1616Z",
+"best": 279,
+"book": "DraftKings",
+"med": 279,
+"mkt_p": 0.2879,
+"blend_p": 0.2839,
+"model_p": 0.2799,
+"ev": 0.0759,
+"ev_med": 0.0759,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 0.97,
+"bet_down_to": 270,
+"best_venue": {
+"venue": "DraftKings",
+"price": 279,
+"net": 279,
+"size_label": "",
+"captured": "2026-10-18T16:15:32Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 279,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 215,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 210,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 210,
+"ok": true
+}
+]
+},
+"00-0037005|yds|rec|12.5": {
+"pid": "00-0037005",
+"bet": "Tommy Tremble Over 12.5 rec yds",
+"market": "yds",
+"team": "CAR",
+"role": "Starter",
+"kind": "rec",
+"line": 12.5,
+"flagged": "20261018T1616Z",
+"best": -113,
+"book": "FanDuel",
+"med": -114,
+"mkt_p": 0.5,
+"blend_p": 0.587,
+"model_p": 0.674,
+"ev": 0.1065,
+"ev_med": 0.1019,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.35,
+"bet_down_to": -126,
+"best_venue": {
+"venue": "FanDuel",
+"price": -113,
+"net": -113,
+"size_label": "",
+"captured": "2026-10-18T16:15:35Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+}
+]
+},
+"00-0038840|yds|rec|24.5": {
+"pid": "00-0038840",
+"bet": "Brycen Tremayne Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CAR",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261018T1616Z",
+"best": 224,
+"book": "DraftKings",
+"med": 224,
+"mkt_p": 0.3042,
+"blend_p": 0.3587,
+"model_p": 0.4131,
+"ev": 0.1621,
+"ev_med": 0.1621,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.36,
+"bet_down_to": 193,
+"best_venue": {
+"venue": "DraftKings",
+"price": 224,
+"net": 224,
+"size_label": "",
+"captured": "2026-10-18T16:15:32Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 224,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 198,
+"ok": true
+}
+]
+},
+"00-0039361|yds|rush|79.5": {
+"pid": "00-0039361",
+"bet": "Bucky Irving Over 79.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "TB",
+"role": "Starter",
+"kind": "rush",
+"line": 79.5,
+"flagged": "20261018T1616Z",
+"best": 220,
+"book": "BetRivers",
+"med": 220,
+"mkt_p": 0.3288,
+"blend_p": 0.3286,
+"model_p": 0.3283,
+"ev": 0.0514,
+"ev_med": 0.0514,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.0,
+"bet_down_to": 220,
+"best_venue": {
+"venue": "BetRivers",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-10-18T16:15:53Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 220,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 182,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 180,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 160,
+"ok": true
+}
+]
+},
+"00-0036139|yds|rush|18.5": {
+"pid": "00-0036139",
+"bet": "Rico Dowdle Over 18.5 rush yds",
+"market": "yds",
+"team": "PIT",
+"role": "Rotational",
+"kind": "rush",
+"line": 18.5,
+"flagged": "20261018T1616Z",
+"best": -110,
+"book": "BetRivers",
+"med": -111,
+"mkt_p": 0.4949,
+"blend_p": 0.5686,
+"model_p": 0.6423,
+"ev": 0.0856,
+"ev_med": 0.0809,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.3,
+"bet_down_to": -118,
+"best_venue": {
+"venue": "BetRivers",
+"price": -110,
+"net": -110,
+"size_label": "",
+"captured": "2026-10-18T16:15:53Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": -110,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0035640|yds|rec|69.5": {
+"pid": "00-0035640",
+"bet": "DK Metcalf Over 69.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "PIT",
+"role": "Starter",
+"kind": "rec",
+"line": 69.5,
+"flagged": "20261018T1616Z",
+"best": 220,
+"book": "BetRivers",
+"med": 220,
+"mkt_p": 0.3114,
+"blend_p": 0.3349,
+"model_p": 0.3584,
+"ev": 0.0717,
+"ev_med": 0.0717,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.15,
+"bet_down_to": 214,
+"best_venue": {
+"venue": "BetRivers",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-10-18T16:15:53Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 220,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 198,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 190,
+"ok": true
+}
+]
+},
+"00-0033307|yds|rec|49.5": {
+"pid": "00-0033307",
+"bet": "Kendrick Bourne Over 49.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Rotational",
+"kind": "rec",
+"line": 49.5,
+"flagged": "20261018T1616Z",
+"best": 286,
+"book": "DraftKings",
+"med": 286,
+"mkt_p": 0.2767,
+"blend_p": 0.2871,
+"model_p": 0.2975,
+"ev": 0.1083,
+"ev_med": 0.1083,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.08,
+"bet_down_to": 266,
+"best_venue": {
+"venue": "DraftKings",
+"price": 286,
+"net": 286,
+"size_label": "",
+"captured": "2026-10-18T16:16:10Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 286,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 240,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 230,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 210,
+"ok": true
+}
+]
+},
+"00-0035891|yds|rec|24.5": {
+"pid": "00-0035891",
+"bet": "Cody White Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261018T1616Z",
+"best": 226,
+"book": "DraftKings",
+"med": 226,
+"mkt_p": 0.3075,
+"blend_p": 0.3296,
+"model_p": 0.3517,
+"ev": 0.0745,
+"ev_med": 0.0745,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.14,
+"bet_down_to": 219,
+"best_venue": {
+"venue": "DraftKings",
+"price": 226,
+"net": 226,
+"size_label": "",
+"captured": "2026-10-18T16:15:15Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 226,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 200,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+}
+]
+},
+"00-0037291|yds|rec|39.5": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Rotational",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261018T1616Z",
+"best": 280,
+"book": "FanDuel",
+"med": 280,
+"mkt_p": 0.2653,
+"blend_p": 0.2916,
+"model_p": 0.3179,
+"ev": 0.108,
+"ev_med": 0.108,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.2,
+"bet_down_to": 261,
+"best_venue": {
+"venue": "FanDuel",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-10-18T16:16:15Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 280,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 235,
+"ok": true
+}
+]
+},
+"00-0039920|any": {
+"pid": "00-0039920",
+"bet": "Malachi Corley Anytime TD",
+"market": "any",
+"team": "CLE",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 3500,
+"book": "FanDuel",
+"med": 2500,
+"mkt_p": 0.0303,
+"blend_p": 0.0434,
+"model_p": 0.056516666666666666,
+"ev": 0.5627,
+"ev_med": 0.1286,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.87,
+"bet_down_to": 2320,
+"best_venue": {
+"venue": "FanDuel",
+"price": 3500,
+"net": 3500,
+"size_label": "",
+"captured": "2026-10-18T16:15:58Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 3500,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 2800,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2500,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2400,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 2400,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 3227,
+"ok": false
+}
+]
+},
+"00-0039796|any": {
+"pid": "00-0039796",
+"bet": "Rasheen Ali Anytime TD",
+"market": "any",
+"team": "BAL",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 4000,
+"book": "DraftKings",
+"med": 3250,
+"mkt_p": 0.0246,
+"blend_p": 0.0339,
+"model_p": 0.04315,
+"ev": 0.3897,
+"ev_med": 0.1355,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.75,
+"bet_down_to": 2998,
+"best_venue": {
+"venue": "DraftKings",
+"price": 4000,
+"net": 4000,
+"size_label": "",
+"captured": "2026-10-18T16:15:10Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 4000,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 4000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 3500,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 3000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 2500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1500,
+"ok": true
+}
+]
+},
+"00-0037614|first": {
+"pid": "00-0037614",
+"bet": "John Metchie III First TD",
+"market": "first",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 4000,
+"book": "FanDuel",
+"med": 3000,
+"mkt_p": 0.0233,
+"blend_p": 0.0364,
+"model_p": 0.049466666666666666,
+"ev": 0.4911,
+"ev_med": 0.1274,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.12,
+"bet_down_to": 2785,
+"best_venue": {
+"venue": "FanDuel",
+"price": 4000,
+"net": 4000,
+"size_label": "",
+"captured": "2026-10-18T16:15:35Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 4000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 3300,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 3000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2800,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 2500,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
+},
+"00-0037614|two": {
+"pid": "00-0037614",
+"bet": "John Metchie III 2+ TD",
+"market": "two",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 10000,
+"book": "DraftKings",
+"med": 8000,
+"mkt_p": 0.0084,
+"blend_p": 0.0148,
+"model_p": 0.021283333333333335,
+"ev": 0.4998,
+"ev_med": 0.2028,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.53,
+"bet_down_to": 6995,
+"best_venue": {
+"venue": "DraftKings",
+"price": 10000,
+"net": 10000,
+"size_label": "",
+"captured": "2026-10-18T16:15:32Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 10000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 10000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 8000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 7500,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 5000,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 9893,
+"ok": false
+}
+]
+},
+"00-0040644|any": {
+"pid": "00-0040644",
+"bet": "Trevor Etienne Anytime TD",
+"market": "any",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 1600,
+"book": "FanDuel",
+"med": 1300,
+"mkt_p": 0.0573,
+"blend_p": 0.077,
+"model_p": 0.09663333333333333,
+"ev": 0.3083,
+"ev_med": 0.0774,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.69,
+"bet_down_to": 1264,
+"best_venue": {
+"venue": "FanDuel",
+"price": 1600,
+"net": 1600,
+"size_label": "",
+"captured": "2026-10-18T16:15:35Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 1600,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1400,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1200,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1200,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 775,
+"ok": true
+}
+]
+},
+"00-0039050|any": {
+"pid": "00-0039050",
+"bet": "Payne Durham Anytime TD",
+"market": "any",
+"team": "TB",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 3500,
+"book": "FanDuel",
+"med": 2750,
+"mkt_p": 0.0285,
+"blend_p": 0.0371,
+"model_p": 0.0457,
+"ev": 0.3356,
+"ev_med": 0.0574,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.6,
+"bet_down_to": 2731,
+"best_venue": {
+"venue": "FanDuel",
+"price": 3500,
+"net": 3500,
+"size_label": "",
+"captured": "2026-10-18T16:16:00Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 3500,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 3000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 3000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 2500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1800,
+"ok": true
+}
+]
+},
+"00-0037277|two": {
+"pid": "00-0037277",
+"bet": "Teagan Quitoriano 2+ TD",
+"market": "two",
+"team": "ARI",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261018T1616Z",
+"best": 17500,
+"book": "Caesars",
+"med": 12500,
+"mkt_p": 0.0064,
+"blend_p": 0.0085,
+"model_p": 0.010733333333333333,
+"ev": 0.5034,
+"ev_med": 0.0763,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": 12253,
+"best_venue": {
+"venue": "Caesars",
+"price": 17500,
+"net": 17500,
+"size_label": "",
+"captured": "2026-10-18T16:15:06Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "Caesars",
+"net": 17500,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 13000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 12000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 10000,
+"ok": true
+}
+]
+},
+"00-0033699|yds|rush|19.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 19.5 rush yds",
+"market": "yds",
+"team": "WAS",
+"role": "Bench",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261018T1616Z",
+"best": -107,
+"book": "DraftKings",
+"med": -114,
+"mkt_p": 0.5,
+"blend_p": 0.568,
+"model_p": 0.636,
+"ev": 0.0988,
+"ev_med": 0.0662,
+"rule": "main line",
+"stake": 0.25,
+"ratio": 1.27,
+"bet_down_to": -117,
+"best_venue": {
+"venue": "DraftKings",
+"price": -107,
+"net": -107,
+"size_label": "",
+"captured": "2026-10-18T16:16:06Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -107,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -120,
+"ok": true
+}
+]
+},
+"00-0033699|yds|rush|29.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 29.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Bench",
+"kind": "rush",
+"line": 29.5,
+"flagged": "20261018T1616Z",
+"best": 191,
+"book": "DraftKings",
+"med": 191,
+"mkt_p": 0.3253,
+"blend_p": 0.398,
+"model_p": 0.4707,
+"ev": 0.1581,
+"ev_med": 0.1581,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.45,
+"bet_down_to": 164,
+"best_venue": {
+"venue": "DraftKings",
+"price": 191,
+"net": 191,
+"size_label": "",
+"captured": "2026-10-18T16:16:06Z",
+"fee": "none (vig in the price)"
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 191,
+"ok": true
+}
+]
 }
 }
