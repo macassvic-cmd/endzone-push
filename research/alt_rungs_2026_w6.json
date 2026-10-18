@@ -26629,5 +26629,41 @@
 "price"
 ],
 "flagged": "20261018T1659Z"
+},
+"00-0037248|rec|39.5": {
+"bet": "James Cook III Over 39.5 rec yds (alt)",
+"pid": "00-0037248",
+"market": "yds_alt",
+"kind": "rec",
+"line": 39.5,
+"team": "BUF",
+"model_p": 0.0643,
+"mkt_p": 0.0623,
+"blend_p": 0.0633,
+"best": 1720,
+"book": "DraftKings",
+"ev": 0.1516,
+"med": 1720,
+"ev_med": 0.1516,
+"nbooks": 2,
+"curve_rungs": 10,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.052,
+"captured": "2026-10-18T19:02:13.478976638Z",
+"kick_utc": "2026-10-18T20:25Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T1903Z"
 }
 }
