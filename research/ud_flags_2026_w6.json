@@ -1174,5 +1174,33 @@
 "ud_price": -176.0,
 "flagged": "20261018T1843Z",
 "kick_utc": "2026-10-19T00:20Z"
+},
+"00-0036244|Receiving Yards|14.5|higher": {
+"pid": "00-0036244",
+"name": "Colby Parkinson",
+"team": "LA",
+"bet": "Colby Parkinson Receiving Yards higher 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "higher",
+"blend": 0.5584,
+"breakeven": {
+"2-pick": 0.5431,
+"3-pick": 0.5284,
+"5-pick flex": 0.5097
+},
+"margins": {
+"2-pick": 0.0153,
+"3-pick": 0.03,
+"5-pick flex": 0.0487
+},
+"margin": 0.03,
+"ref": "3-pick",
+"mult": 1.13,
+"ud_price": 119.0,
+"flagged": "20261018T1907Z",
+"kick_utc": "2026-10-18T20:05Z"
 }
 }

@@ -5856,5 +5856,48 @@
 "ok": true
 }
 ]
+},
+"00-0039074|yds|rec|14.5": {
+"pid": "00-0039074",
+"bet": "Davis Allen Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261018T1907Z",
+"best": 235,
+"book": "FanDuel",
+"med": 235,
+"mkt_p": 0.3033,
+"blend_p": 0.3143,
+"model_p": 0.3253,
+"ev": 0.0529,
+"ev_med": 0.0529,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.07,
+"bet_down_to": 235,
+"best_venue": {
+"venue": "FanDuel",
+"price": 235,
+"net": 235,
+"size_label": "",
+"captured": "2026-10-18T19:07:27Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 235,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 191,
+"ok": true
+}
+]
 }
 }
