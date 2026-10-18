@@ -98,7 +98,7 @@ def lines(now_iso, fetch=False, cache=CACHE, write_cache=True):
     if fetch:
         try:
             d = normalize(fetch_board(), now_iso)
-            if write_cache: json.dump(d, open(cache, "w"), indent=0)
+            if write_cache: json.dump(d, open(cache, "w"), separators=(",", ":"))      # compact: the cache is rewritten by every scheduled run
             return d
         except Exception as e:
             print("underdog fetch failed:", e)
