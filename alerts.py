@@ -23,8 +23,9 @@ GUARD_STATE, GUARD_REPEAT_H = "odds_guard_alert.json", 12
 
 def guard_message(b):
     acts = "; ".join(b.get("actions") or []) or "none"
+    obs = "\u2013" if b.get("observed_per_day") is None else f"{b['observed_per_day']:,}"     # no backslash inside an f-string expression: CI runs Python 3.11
     return (f"**Endzone Lab \u00b7 Odds API credit guard stage {b['stage']}**\n"
-            f"Remaining {b['remaining']:,} \u00b7 burn {b['burn_per_day']:,}/day (planned {b['planned_per_day']:,}, observed {b['observed_per_day'] if b['observed_per_day'] is not None else '\u2013'}) "
+            f"Remaining {b['remaining']:,} \u00b7 burn {b['burn_per_day']:,}/day (planned {b['planned_per_day']:,}, observed {obs}) "
             f"\u00b7 projected **{b['projected_at_reset']:,}** at the {b['reset_at'][:10]} reset, floor {b['floor']:,}.\nActions: {acts}.")
 
 
