@@ -76,6 +76,7 @@ jobs:
           ODDS_SAVE: odds_raw.json
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
           YARDS_SOURCE: ${{ vars.YARDS_SOURCE || 'sharpapi' }}     # repository variable: flip to oddsapi to go live (no commit needed)
+          YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}        # repository variable: first week the Odds API yardage feed prices the board
         run: python run_week.py
       - name: Grade (then check the headline, its breakdown and the week table reconcile)
         id: grade

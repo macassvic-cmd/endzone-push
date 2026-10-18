@@ -25,6 +25,9 @@ else:
     fut = s[(s.game_type == "REG") & s.home_score.isna() & (s.kick > now_et)].sort_values("kick")
     season, week = int(fut.season.iloc[0]), int(fut.week.iloc[0])
 print(f"== projecting {season} week {week}")
+if O.yards_source() == "oddsapi" and O.yards_source(week) == "sharpapi":
+    os.environ["YARDS_SOURCE"] = "sharpapi"                           # go-live gate: Odds API yardage from week YARDS_FROM_WEEK on; this week stays on SharpAPI (no yardage credits spent)
+    print(f"yards source: YARDS_SOURCE=oddsapi goes live from week {O.yards_from_week()}; week {week} stays on SharpAPI")
 
 # ---------- availability ----------
 dc = pd.read_parquet(f"{DATA}/dc.parquet"); dc = dc[dc.dt == dc.dt.max()]
@@ -453,7 +456,7 @@ RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_M
                  kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=RU.MAX_PRICE_AGE_MIN, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
-            odds_api=dict(yards_source=YARDS_SOURCE, yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
+            odds_api=dict(yards_source=YARDS_SOURCE, yards_from_week=O.yards_from_week(), yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
                           loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), **ODDS_USAGE),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),

@@ -53,6 +53,24 @@ def test_fetch_markets_follow_the_flag():
     print("  flag default sharpapi; 4 yardage markets under oddsapi")
 
 
+def test_go_live_week_gate():
+    """YARDS_SOURCE=oddsapi with YARDS_FROM_WEEK=7: weeks before 7 price with SharpAPI, week 7 on with the Odds API; no gate when unset."""
+    saved = {k: os.environ.get(k) for k in ("YARDS_SOURCE", "YARDS_FROM_WEEK")}
+    try:
+        os.environ["YARDS_SOURCE"] = "oddsapi"; os.environ["YARDS_FROM_WEEK"] = "7"
+        assert O.yards_from_week() == 7
+        assert O.yards_source(6) == "sharpapi" and O.yards_source(7) == "oddsapi" and O.yards_source(8) == "oddsapi"
+        assert O.yards_source() == "oddsapi", "without a week the flag reads as set (run_week pins the env once the week is known)"
+        os.environ.pop("YARDS_FROM_WEEK"); assert O.yards_source(1) == "oddsapi", "no gate when YARDS_FROM_WEEK is unset"
+        os.environ["YARDS_FROM_WEEK"] = ""; assert O.yards_from_week() == 0
+        os.environ["YARDS_SOURCE"] = "sharpapi"; os.environ["YARDS_FROM_WEEK"] = "7"; assert O.yards_source(9) == "sharpapi"
+    finally:
+        for k, v in saved.items():
+            if v is None: os.environ.pop(k, None)
+            else: os.environ[k] = v
+    print("  gate: week < YARDS_FROM_WEEK stays on SharpAPI")
+
+
 def test_usage_summary_and_guard():
     import datetime as dt
     fd, fn = tempfile.mkstemp(suffix=".jsonl"); os.close(fd)

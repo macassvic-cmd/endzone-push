@@ -71,6 +71,7 @@ env:
   USE_ODDS: ${{ (inputs.use_odds || github.event.client_payload.use_odds) && 'true' || 'false' }}
   MAX_MINUTES: "340"
   YARDS_SOURCE: ${{ (inputs.yards_source != '' && inputs.yards_source != 'default') && inputs.yards_source || github.event.client_payload.yards_source || vars.YARDS_SOURCE || 'sharpapi' }}
+  YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}
   PUBLISH: ${{ (inputs.publish == false) && '0' || '1' }}
   DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
 

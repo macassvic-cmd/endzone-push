@@ -1406,3 +1406,20 @@ Over 19.5 rush +298 DK out, Over 14.5 +235 FD in); the 3 new main-line edges exi
 Fixed set → all verified books: +14 / −2 edges, curves +0.014 on shared rows (max +0.062, Rico Dowdle 29.5 rush), one edge
 priced best at Bovada; the offshore quotes lift the pooled curve and the EV, which is the reason for the fixed set.
 Full row-level diff: session scratchpad `compare_yards.txt`.
+
+### 2026-10-18 — Odds API yardage approved and switched on (fixed book set), live from week 7
+
+User approval of the replay above. Repository variables set: `YARDS_SOURCE=oddsapi`, `YARDS_FROM_WEEK=7`. The fixed book set
+(DraftKings, FanDuel, BetMGM, Caesars, Hard Rock Bet, BetRivers, Fanatics, ESPN BET) is `yard_prices.YARD_BOOKS`; no `YARD_BOOKS`
+override is wired anywhere in CI. Model, blends, rules and board logic are untouched.
+
+- New go-live gate (the only code change): `odds.yards_source(week)` returns `sharpapi` for weeks before `YARDS_FROM_WEEK`;
+  `run_week.py` pins the env to SharpAPI as soon as the week is known, so the remaining week-6 pulls (Sunday 2026-10-18 and
+  Monday) fetch no yardage markets from The Odds API and price exactly as before. From the first week-7 pull on, the Odds API
+  yardage markets are fetched (6 markets per event, region us); until week-7 props are posted the build falls back to SharpAPI
+  ladders ("no Odds API yardage rows") and says so on the board. Every ladder from every book still passes `verify_ladders`.
+- Guards unchanged and active: loop pulls drop The Odds API when NFL month-to-date > 40,000 or account remaining < 20,000;
+  every call is logged to `odds_api_usage.jsonl` tagged `nfl` (`pickem` for the scanner); the site shows source, credits and
+  any tripped guard.
+- Test: `test_yards_source.py::test_go_live_week_gate` (4/4); local DRY_RUN of week 6 under the live flag printed
+  "YARDS_SOURCE=oddsapi goes live from week 7; week 6 stays on SharpAPI" and fetched no yardage markets.

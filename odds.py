@@ -17,9 +17,19 @@ USAGE_FILE, USAGE_TAG = "odds_api_usage.jsonl", os.environ.get("ODDS_API_TAG", "
 NFL_MTD_LIMIT, REMAINING_FLOOR = 40_000, 20_000                                        # budget guard (pull loops only; scheduled runs keep the Odds API)
 
 
-def yards_source():
-    """'sharpapi' (default) or 'oddsapi' (YARDS_SOURCE): which feed's rush/rec yardage ladders price the board."""
-    return "oddsapi" if os.environ.get("YARDS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi"
+def yards_source(week=None):
+    """'sharpapi' (default) or 'oddsapi' (YARDS_SOURCE): which feed's rush/rec yardage ladders price the board. With a week, the
+       go-live gate applies: YARDS_FROM_WEEK (repository variable, e.g. 7) keeps earlier weeks on SharpAPI so a flip made mid-week
+       cannot touch the slate in progress."""
+    src = "oddsapi" if os.environ.get("YARDS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi"
+    if src == "oddsapi" and week is not None and int(week) < yards_from_week(): return "sharpapi"
+    return src
+
+
+def yards_from_week():
+    """First NFL week the Odds API yardage feed may price the board (YARDS_FROM_WEEK, default 0 = no gate)."""
+    try: return int(os.environ.get("YARDS_FROM_WEEK") or 0)
+    except ValueError: return 0
 
 
 def log_usage(path, headers, tag=None):
