@@ -501,6 +501,7 @@ if os.path.exists(slate_fn):
     old = json.load(open(slate_fn))
     live = {g["game_id"] for g in games}
     keep = lambda rows, key="game_id": [r for r in rows if r.get(key) not in live and r.get(key) in set(done)]
+    for _e in old.get("edges", []): _e.setdefault("bet_down_to", RU.bet_down_to(_e.get("blend_p")))   # rows frozen before 2026-10-18 get the field too
     locked_games = keep(old.get("games", []))
     lg = {g["game_id"] for g in locked_games}
     for g in locked_games:

@@ -94,12 +94,16 @@ def closing_summary(season, week, log=None):
     cache = {}
     for key, e in log.items():
         if e.get("void"): continue                                               # voided entries (never placeable) get no close / CLV
-        # find the event for this team in the latest pull to learn kickoff, then the last pull before it
-        latest = pulls(season, week)
-        if not latest:
+        # find the event for this team (newest pull first: a game that has kicked off is no longer in the latest pull) to learn
+        # kickoff, then the last pull before it
+        allp = pulls(season, week)
+        if not allp:
             break
-        events = _load(latest[-1][1], cache)
-        ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
+        ev = None
+        for _st, _fn in reversed(allp):
+            events = _load(_fn, cache)
+            ev = next((x for x in events if e["team"] in (O.TEAM_ABBR.get(x["home_team"]), O.TEAM_ABBR.get(x["away_team"]))), None)
+            if ev: break
         if not ev:
             continue
         if e["market"] in ("yds", "yds_alt"):

@@ -1499,3 +1499,10 @@ User instruction (2026-10-18). Model, blends, edge rules (EV ≥ 5% at the media
 5. Tests: `test_board_rules.py` (BET DOWN TO threshold at every probability, age limit by mode, split_board field, Discord
    formatting and chunking), `test_pull_loop.py::test_early_week_slots_and_cluster_skip` (slots, grace, DST, cluster skip, credit
    count). Replay of this week's pulls (Tue–Sat availability vs kickoff loops, CLV vs close) reported separately.
+- Follow-ups (03:40 UTC): rows frozen in the slate before this change get a BET DOWN TO value when the slate is re-merged;
+  `clv.closing_summary` now finds a kicked-off game in older pulls (it looked only in the latest pull, which drops games that have
+  started, so no edge ever received its close once its game kicked off; Results CLV figures fill in from the next grading run).
+  Week-6 replay (16 saved pulls, as of each pull's own stamp, no age limit): 160 distinct edges so far, 123 first seen in Tue–Sat
+  pulls outside loop windows, 37 first seen in the Thursday window (7 of them only there). Thursday game, true close: 5 edges
+  flagged Tuesday closed +2.0 pts better on average (3 of 5 beat the close; AJ Barner Over 39.5 rec +7.2, George Holani Over 24.5
+  rush +3.7, Emanuel Wilson first TD −1.2); the 2 flagged Thursday closed flat. Sunday/Monday games: interim movement only.
