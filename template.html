@@ -283,10 +283,13 @@ function bookCell(r,pre,p,key){
 function oddsCell(key,p){const v=book[key]??'';let e='';if(v!==''&&!isNaN(+v)&&Math.abs(+v)>=100){const ev=p*(+v>0? +v/100 : 100/-v)-(1-p);e=`<span class="${ev>0?'edge-pos':'edge-neg'}"> ${(ev*100).toFixed(1)}%</span>`}
   return `<input class="odds" id="o-${key.replace(/[^a-z0-9]/gi,'_')}" data-key="${key}" data-p="${p}" value="${v}" placeholder="+odds" inputmode="numeric" aria-label="Book odds">${e}`}
 
-const oddsApiNotice=()=>{const A=D&&D.odds_api; if(!A) return ''; const g=A.guard||{}; const src=A.yards_effective||A.yards_source||'sharpapi';
-  const srcTxt=`Yardage ladders: ${src==='oddsapi'?'The Odds API (rush/rec, region us; books '+(A.yard_books||[]).join(', ')+')':'SharpAPI'}${A.yards_source==='oddsapi'&&src!=='oddsapi'?' <span class="edge-neg">(Odds API yardage unavailable this pull: fallback)</span>':''}`;
+const oddsApiNotice=()=>{const A=D&&D.odds_api; if(!A) return ''; const g=A.guard||{}; const src=A.yards_effective||A.yards_source||'sharpapi'; const primary=A.props_source==='oddsapi';
+  const books=(A.books||A.yard_books||[]).join(', ');
+  const srcTxt=primary?(A.fallback?`<b class="edge-neg">Fallback source: SharpAPI (DraftKings, FanDuel)</b> · ${esc(A.fallback)}`:`Prices: The Odds API (every prop market, region us; books ${books}) + Kalshi`)
+    :`Yardage ladders: ${src==='oddsapi'?'The Odds API (rush/rec, region us; books '+books+')':'SharpAPI'}${A.yards_source==='oddsapi'&&src!=='oddsapi'?' <span class="edge-neg">(Odds API yardage unavailable this pull: fallback)</span>':''}`;
   const bud=A.nfl_mtd!=null?`Odds API credits: ${A.nfl_mtd.toLocaleString()} NFL this month (guard at ${(g.mtd_limit||40000).toLocaleString()}), ${A.remaining!=null?A.remaining.toLocaleString():'?'} remaining (floor ${(g.remaining_floor||20000).toLocaleString()})`:'';
   if(g.tripped) return `<p class="note" style="margin-bottom:8px;border:1px solid var(--hot);border-radius:6px;padding:6px 8px"><b style="color:var(--hot)">Odds API budget guard tripped:</b> ${esc((g.reasons||[]).join('; '))}. ${A.loops_drop_odds?'This board was built without The Odds API (pull loop); ':'Scheduled runs keep pulling; pull loops run without The Odds API. '}${srcTxt}. ${bud}.</p>`;
+  if(primary&&A.fallback) return `<p class="note" style="margin-bottom:8px;border:1px solid var(--hot);border-radius:6px;padding:6px 8px">${srcTxt}. ${bud}.</p>`;
   return `<p class="note" style="margin-bottom:6px;font-size:12px">${srcTxt}${bud?' \u00b7 '+bud:''}</p>`};
 function render(){
   orderGames();

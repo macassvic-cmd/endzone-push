@@ -61,8 +61,8 @@ def publish_board(stamp, push=True):
 
 def run_pull():
     """One build. Budget guard (loops only): NFL credits this UTC month over odds.NFL_MTD_LIMIT, or the account's remaining credits
-       under odds.REMAINING_FLOOR, drop The Odds API from this pull (SharpAPI + Kalshi only; yardage falls back to SharpAPI's
-       verified ladders). The scheduled runs (update.yml) are not guarded. Either way run_week.py puts the state on the site."""
+       under odds.REMAINING_FLOOR, drop The Odds API from this pull (SharpAPI + Kalshi only; with PROPS_SOURCE=oddsapi the board
+       says "fallback source"). The scheduled runs (update.yml) are not guarded. Either way run_week.py puts the state on the site."""
     env = dict(os.environ)
     if env.get("ODDS_API_KEY"):
         sys.path.insert(0, os.getcwd()); import odds as O

@@ -43,6 +43,15 @@ on:
         type: choice
         options: [default, sharpapi, oddsapi]
         default: default
+      props_source:
+        description: "Every prop market from: sharpapi primary (old default) | oddsapi primary, fixed book set, SharpAPI fallback only (default = repo variable PROPS_SOURCE)"
+        type: choice
+        options: [default, sharpapi, oddsapi]
+        default: default
+      keep_both:
+        description: "Research pull: fetch SharpAPI too and keep both feeds' rows for every market and book (source-split replays)"
+        type: boolean
+        default: false
       publish:
         description: "Publish the board to the board branch (off = pull, build and save the odds only)"
         type: boolean
@@ -72,6 +81,9 @@ env:
   MAX_MINUTES: "340"
   YARDS_SOURCE: ${{ (inputs.yards_source != '' && inputs.yards_source != 'default') && inputs.yards_source || github.event.client_payload.yards_source || vars.YARDS_SOURCE || 'sharpapi' }}
   YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}
+  PROPS_SOURCE: ${{ (inputs.props_source != '' && inputs.props_source != 'default') && inputs.props_source || github.event.client_payload.props_source || vars.PROPS_SOURCE || 'sharpapi' }}
+  PROPS_FROM_WEEK: ${{ vars.PROPS_FROM_WEEK || '' }}
+  KEEP_BOTH: ${{ inputs.keep_both && '1' || '' }}
   PUBLISH: ${{ (inputs.publish == false) && '0' || '1' }}
   DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
 
@@ -101,7 +113,7 @@ jobs:
         id: run
         env:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
-          ODDS_API_KEY: ${{ env.USE_ODDS == 'true' && secrets.ODDS_API_KEY || '' }}
+          ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
           PYTHONUNBUFFERED: "1"
         run: python pull_loop.py --mode "$MODE" --start "$START" --end "$END" --step-min "$STEP" --iterations "$ITER" --max-minutes "$MAX_MINUTES"
       - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
@@ -133,7 +145,7 @@ jobs:
       - name: Pull loop (continued)
         env:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
-          ODDS_API_KEY: ${{ env.USE_ODDS == 'true' && secrets.ODDS_API_KEY || '' }}
+          ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
           PYTHONUNBUFFERED: "1"
         run: python pull_loop.py --mode loop --start "${{ needs.loop.outputs.resume_start }}" --end "$END" --step-min "$STEP" --max-minutes "$MAX_MINUTES"
       - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)

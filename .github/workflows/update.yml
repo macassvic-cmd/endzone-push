@@ -65,7 +65,7 @@ jobs:
           python test_pull_loop.py
           python test_yards_source.py
           python refresh.py --data-only
-          python pull_windows.py --write pull_windows.json
+          PROPS_SOURCE="${{ vars.PROPS_SOURCE || 'sharpapi' }}" python pull_windows.py --write pull_windows.json
       - name: Smoke-test grading on the committed slates (fails loudly before any odds are pulled)
         run: |
           python results.py
@@ -77,6 +77,8 @@ jobs:
           SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
           YARDS_SOURCE: ${{ vars.YARDS_SOURCE || 'sharpapi' }}     # repository variable: flip to oddsapi to go live (no commit needed)
           YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}        # repository variable: first week the Odds API yardage feed prices the board
+          PROPS_SOURCE: ${{ vars.PROPS_SOURCE || 'sharpapi' }}      # repository variable: oddsapi = The Odds API primary for every prop market, SharpAPI fallback only
+          PROPS_FROM_WEEK: ${{ vars.PROPS_FROM_WEEK || '' }}
         run: python run_week.py
       - name: Grade (then check the headline, its breakdown and the week table reconcile)
         id: grade

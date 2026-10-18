@@ -1,8 +1,9 @@
 """The Odds API client: live game lines + TD props for every book, with best price and no-vig consensus.
 
 Cost per run (us region): 2 credits for lines + 1 per market per game for props (markets actually returned): 2 TD markets with SharpAPI
-covering anytime/first, plus 4 yardage markets when YARDS_SOURCE=oddsapi (~86 for a 14-game slate). Every paid call is logged to
-odds_api_usage.jsonl (tag from ODDS_API_TAG, default nfl); usage_summary() feeds the budget guard and the site notice.
+covering anytime/first, plus 4 yardage markets when YARDS_SOURCE=oddsapi (~86 for a 14-game slate); with PROPS_SOURCE=oddsapi (The Odds
+API primary for every prop market, fixed book set PRIMARY_BOOKS) 4 TD + 4 yardage markets, ~114 for a 14-game slate. Every paid call is
+logged to odds_api_usage.jsonl (tag from ODDS_API_TAG, default nfl); usage_summary() feeds the budget guard and the site notice.
 Set ODDS_API_KEY in the environment. Without it everything falls back to nflverse lines and no book prices.
 """
 import json, os, re, time, unicodedata, urllib.request, urllib.parse
@@ -30,6 +31,49 @@ def yards_from_week():
     """First NFL week the Odds API yardage feed may price the board (YARDS_FROM_WEEK, default 0 = no gate)."""
     try: return int(os.environ.get("YARDS_FROM_WEEK") or 0)
     except ValueError: return 0
+
+
+PRIMARY_BOOKS = ("DraftKings", "FanDuel", "BetMGM", "Caesars", "Hard Rock Bet", "BetRivers", "Fanatics", "ESPN BET")   # fixed book set when The Odds API is primary (= yard_prices.YARD_BOOKS)
+FETCH = {}   # accounting for the last fetch_all(): events, with_props, props_errors, lines_error -> fallback_reason()
+
+
+def props_source(week=None):
+    """'sharpapi' (default): SharpAPI is primary for DK/FD anytime, first TD and yardage and The Odds API fills the rest (2+ TD, pass TDs).
+       'oddsapi' (PROPS_SOURCE): The Odds API is primary for EVERY prop market (TD + yardage ladders, region us, fixed book set
+       PRIMARY_BOOKS) and SharpAPI is a fallback only (an Odds API call errors or a credit guard trips). With a week, PROPS_FROM_WEEK
+       gates the switch the way YARDS_FROM_WEEK gates the yardage-only flag."""
+    src = "oddsapi" if os.environ.get("PROPS_SOURCE", "sharpapi").strip().lower() == "oddsapi" else "sharpapi"
+    if src == "oddsapi" and week is not None and int(week) < props_from_week(): return "sharpapi"
+    return src
+
+
+def props_from_week():
+    """First NFL week The Odds API is primary for every prop market (PROPS_FROM_WEEK, default 0 = no gate)."""
+    try: return int(os.environ.get("PROPS_FROM_WEEK") or 0)
+    except ValueError: return 0
+
+
+def fallback_reason(events):
+    """PROPS_SOURCE=oddsapi: why this pull falls back to SharpAPI, or None when The Odds API answered cleanly. Triggers: the credit guard
+       tripped (pull_loop blanks the key and sets ODDS_GUARD_TRIPPED), no key, the lines call failed, any per-event props call errored,
+       or games were returned but none with prop prices. An empty slate (no games inside the horizon) is not a failure."""
+    if os.environ.get("ODDS_GUARD_TRIPPED"): return "credit guard tripped"
+    if events is None: return f"Odds API lines call failed: {FETCH['lines_error']}" if FETCH.get("lines_error") else "no Odds API key"
+    if FETCH.get("props_errors"): return f"{FETCH['props_errors']} of {FETCH.get('events', 0)} Odds API props calls errored"
+    if events and not any(e.get("props", {}).get("bookmakers") for e in events): return "Odds API returned no prop prices"
+    return None
+
+
+def only_books(events, titles, keep=("Kalshi",)):
+    """Copy of `events` keeping only the prop bookmakers in `titles` (plus `keep`, Kalshi); game lines (spreads/totals) untouched."""
+    want = {t.lower() for t in titles} | {t.lower() for t in keep}
+    out = []
+    for e in events or []:
+        e2 = dict(e)
+        if "props" in e2:
+            e2["props"] = dict(e2["props"], bookmakers=[b for b in e2["props"].get("bookmakers", []) if (b.get("title") or b.get("key") or "").lower() in want])
+        out.append(e2)
+    return out
 
 
 def log_usage(path, headers, tag=None):
@@ -113,14 +157,19 @@ def _get(url, params, fetch=None):
 
 def fetch_all(api_key=None, fetch=None, markets=None):
     markets = markets or (PROP_MARKETS_TRIMMED if os.environ.get("ODDS_API_PROPS", "trimmed") == "trimmed" and os.environ.get("SHARPAPI_KEY") else PROP_MARKETS)
-    if yards_source() == "oddsapi": markets = list(markets) + [m for m in YARD_MARKETS if m not in markets]   # rush/rec main + alternate ladders, region us
+    if props_source() == "oddsapi": markets = list(PROP_MARKETS)                                           # primary: every TD market from The Odds API
+    if yards_source() == "oddsapi" or props_source() == "oddsapi": markets = list(markets) + [m for m in YARD_MARKETS if m not in markets]   # rush/rec main + alternate ladders, region us
+    FETCH.clear(); FETCH.update(events=0, with_props=0, props_errors=0, markets=list(markets))
     if os.environ.get("ODDS_MOCK"):                     # offline test fixture
         return json.load(open(os.environ["ODDS_MOCK"]))
     api_key = api_key or os.environ.get("ODDS_API_KEY")
     if not api_key and not fetch:
         return None
     base = dict(apiKey=api_key or "x", regions="us", oddsFormat="american")
-    events = _get(f"{BASE}/odds", {**base, "markets": "spreads,totals"}, fetch)
+    try:
+        events = _get(f"{BASE}/odds", {**base, "markets": "spreads,totals"}, fetch)
+    except Exception as e:
+        FETCH["lines_error"] = f"{type(e).__name__}: {e}"[:200]; raise
     # only this week's games that have not kicked off: props cost credits per event, and in-game boards are partial
     import datetime as dt
     now = dt.datetime.now(dt.timezone.utc)
@@ -131,8 +180,9 @@ def fetch_all(api_key=None, fetch=None, markets=None):
         try:
             ev["props"] = _get(f"{BASE}/events/{ev['id']}/odds", {**base, "markets": ",".join(markets)}, fetch)
         except Exception as e:
-            print("props fail", ev.get("id"), e); ev["props"] = {"bookmakers": []}
+            print("props fail", ev.get("id"), e); ev["props"] = {"bookmakers": []}; FETCH["props_errors"] += 1
         time.sleep(0.2)
+    FETCH.update(events=len(events), with_props=sum(1 for ev in events if ev["props"].get("bookmakers")))
     if os.environ.get("ODDS_SAVE"):                    # keep the raw response so reruns can use ODDS_MOCK
         json.dump(events, open(os.environ["ODDS_SAVE"], "w"))
     return events

@@ -25,9 +25,6 @@ else:
     fut = s[(s.game_type == "REG") & s.home_score.isna() & (s.kick > now_et)].sort_values("kick")
     season, week = int(fut.season.iloc[0]), int(fut.week.iloc[0])
 print(f"== projecting {season} week {week}")
-if O.yards_source() == "oddsapi" and O.yards_source(week) == "sharpapi":
-    os.environ["YARDS_SOURCE"] = "sharpapi"                           # go-live gate: Odds API yardage from week YARDS_FROM_WEEK on; this week stays on SharpAPI (no yardage credits spent)
-    print(f"yards source: YARDS_SOURCE=oddsapi goes live from week {O.yards_from_week()}; week {week} stays on SharpAPI")
 
 # ---------- availability ----------
 dc = pd.read_parquet(f"{DATA}/dc.parquet"); dc = dc[dc.dt == dc.dt.max()]
@@ -45,9 +42,10 @@ if sched.empty:
     print(f"nothing to project: every {season} week {week} game has kicked off; keeping the existing files"); sys.exit(0)
 
 # ---------- live lines (Odds API) ----------
-def merge_sources(oa, sa):
+def merge_sources(oa, sa, keep_both=False):
     """Merge Odds API events (oa) with SharpAPI events (sa) game by game. Same book from both sources: keep the
-       fresher quote per market (Odds API market last_update vs SharpAPI row timestamp). Every outcome keeps its source."""
+       fresher quote per market (Odds API market last_update vs SharpAPI row timestamp). Every outcome keeps its source.
+       keep_both (research pulls): keep both feeds' rows for every market so a replay can split them by source."""
     def key(e): return (O.TEAM_ABBR.get(e["away_team"], e["away_team"]), O.TEAM_ABBR.get(e["home_team"], e["home_team"]))
     for e in oa or []:
         for b in e.get("props", {}).get("bookmakers", []):
@@ -67,7 +65,7 @@ def merge_sources(oa, sa):
                 tgt["props"]["bookmakers"].append(b); continue
             tm = {m["key"]: m for m in tb[b["title"]]["markets"]}
             for m in b["markets"]:
-                if m["key"] not in tm or "yds" in m["key"]:
+                if m["key"] not in tm or "yds" in m["key"] or keep_both:
                     tb[b["title"]]["markets"].append(m); continue          # yardage: both feeds' rows stay (outcomes carry source); ladder_board picks one
                 old = tm[m["key"]]; old_ts = max((o.get("ts") or "" for o in old["outcomes"]), default=""); new_ts = max((o.get("ts") or "" for o in m["outcomes"]), default="")
                 if new_ts >= old_ts:
@@ -75,17 +73,45 @@ def merge_sources(oa, sa):
     return list(out.values())
 
 
-YARDS_SOURCE = O.yards_source()                                       # 'sharpapi' (default) | 'oddsapi' (rush/rec ladders from The Odds API, region us)
+# ---- which feed prices the props ----
+# PROPS_SOURCE=oddsapi: The Odds API is primary for every prop market (TD + yardage, region us, fixed book set O.PRIMARY_BOOKS); SharpAPI
+# is fetched only as a fallback (an Odds API call errors, no key, or the credit guard tripped) and the board then says "fallback source".
+# PROPS_SOURCE=sharpapi (default): SharpAPI primary for DK/FD anytime, first TD and yardage, The Odds API for 2+ TD and pass TDs
+# (plus yardage when YARDS_SOURCE=oddsapi). PROPS_FROM_WEEK / YARDS_FROM_WEEK gate a flip so a slate in progress is never touched.
+PROPS_SOURCE = O.props_source()
+if PROPS_SOURCE == "oddsapi" and O.props_source(week) == "sharpapi":
+    os.environ["PROPS_SOURCE"] = PROPS_SOURCE = "sharpapi"
+    print(f"props source: PROPS_SOURCE=oddsapi goes live from week {O.props_from_week()}; week {week} stays on SharpAPI")
+if PROPS_SOURCE == "oddsapi":
+    os.environ["YARDS_SOURCE"] = "oddsapi"                            # primary implies the yardage ladders too
+elif O.yards_source() == "oddsapi" and O.yards_source(week) == "sharpapi":
+    os.environ["YARDS_SOURCE"] = "sharpapi"                           # yardage-only go-live gate
+    print(f"yards source: YARDS_SOURCE=oddsapi goes live from week {O.yards_from_week()}; week {week} stays on SharpAPI")
+YARDS_SOURCE = O.yards_source()                                       # 'sharpapi' | 'oddsapi' (rush/rec ladders from The Odds API, region us)
 DRY_RUN = bool(os.environ.get("DRY_RUN"))                             # DRY_RUN=1: pull and build, never log edges / research / paper parlays
-sharp = None
-if os.environ.get("SHARPAPI_KEY") and not os.environ.get("ODDS_MOCK"):
+KEEP_BOTH = bool(os.environ.get("KEEP_BOTH"))                         # research pull: fetch SharpAPI as well and keep both feeds' rows for every market and every book (source-split replays)
+FALLBACK = None                                                       # PROPS_SOURCE=oddsapi: why SharpAPI is pricing this board (None = The Odds API did)
+have_sharp = bool(os.environ.get("SHARPAPI_KEY")) and not os.environ.get("ODDS_MOCK")
+def fetch_sharp(label):
     try:
-        sharp = SA.fetch_week(); print(f"sharpapi: {len(sharp)} fixtures, {SA.REQS} requests, DK/FD anytime+first+yardage")
+        s = SA.fetch_week(); print(f"sharpapi ({label}): {len(s)} fixtures, {SA.REQS} requests, DK/FD anytime+first+yardage"); return s
     except Exception as e:
-        print("sharpapi failed, falling back to the full Odds API market set:", e); sharp = None
-events = O.fetch_all(markets=None if sharp else O.PROP_MARKETS)
+        print(f"sharpapi ({label}) failed:", e); return None
+sharp = fetch_sharp("primary") if PROPS_SOURCE == "sharpapi" and have_sharp else None
+try:
+    events = O.fetch_all(markets=None if (sharp or PROPS_SOURCE == "oddsapi") else O.PROP_MARKETS)
+except Exception as e:
+    print("odds api failed:", e); events = None
+if PROPS_SOURCE == "oddsapi":
+    FALLBACK = O.fallback_reason(events)
+    if FALLBACK: print("FALLBACK SOURCE: SharpAPI ->", FALLBACK)
+    if (FALLBACK or KEEP_BOTH) and have_sharp:
+        sharp = fetch_sharp("fallback" if FALLBACK else "research")
+    if FALLBACK and not sharp: FALLBACK += " (SharpAPI unavailable too)"
 if sharp:
-    events = merge_sources(events, sharp)
+    events = merge_sources(events, sharp, keep_both=KEEP_BOTH)
+if PROPS_SOURCE == "oddsapi" and events and not KEEP_BOTH:
+    events = O.only_books(events, O.PRIMARY_BOOKS)                    # fixed book set for every prop market (Kalshi attaches below; SharpAPI's DK/FD are in the set)
 odds_asof = None
 if events is None:
     # live odds off: reuse the newest saved pull for games that have not kicked off, and say so on the board
@@ -110,7 +136,9 @@ if events and not os.environ.get("ODDS_MOCK") and not odds_asof:
 def _has_source(evs, src):
     return any((o.get("source") or "oddsapi") == src and "yds" in m["key"] for e in evs or [] for b in e.get("props", {}).get("bookmakers", []) for m in b["markets"] for o in m["outcomes"][:1])
 YARDS_EFFECTIVE = YARDS_SOURCE
-if YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
+if FALLBACK and sharp:
+    YARDS_EFFECTIVE = "sharpapi"; print("yards source: fallback -> SharpAPI ladders (DraftKings, FanDuel)")
+elif YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
     YARDS_EFFECTIVE = "sharpapi"; print("yards source: YARDS_SOURCE=oddsapi but this pull carries no Odds API yardage rows (key missing, budget guard or an old pull): SharpAPI ladders used")
 else:
     print(f"yards source: {YARDS_EFFECTIVE}" + (f" (books {', '.join(YP.YARD_BOOKS)})" if YARDS_EFFECTIVE == "oddsapi" else ""))
@@ -456,7 +484,9 @@ RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_M
                  kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=RU.MAX_PRICE_AGE_MIN, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE)
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held,
-            odds_api=dict(yards_source=YARDS_SOURCE, yards_from_week=O.yards_from_week(), yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
+            odds_api=dict(props_source=PROPS_SOURCE, props_from_week=O.props_from_week(), props_effective="sharpapi" if FALLBACK else PROPS_SOURCE, fallback=FALLBACK,
+                          books=list(O.PRIMARY_BOOKS) if PROPS_SOURCE == "oddsapi" else None,
+                          yards_source=YARDS_SOURCE, yards_from_week=O.yards_from_week(), yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
                           loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), **ODDS_USAGE),
             generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
             players=clean(df.round(4)).to_dict("records"),

@@ -27,7 +27,9 @@ def clusters(kicks, lead_h=LEAD_H, step_min=STEP_MIN):
     return out
 
 
-LINES_CREDITS, MARKETS_PER_EVENT = 2, 6      # Odds API: spreads+totals (2) + per not-yet-kicked-off game: 2 TD markets + 4 yardage markets (region us)
+import os
+LINES_CREDITS = 2                             # Odds API: spreads+totals, once per pull
+MARKETS_PER_EVENT = 8 if os.environ.get("PROPS_SOURCE", "").strip().lower() == "oddsapi" else 6   # per not-yet-kicked-off game: 4 TD + 4 yardage markets when The Odds API is primary, else 2 TD + 4 yardage (region us)
 HORIZON_DAYS = 6                              # odds.fetch_all prices games up to 6 days out
 
 
@@ -53,7 +55,7 @@ def week_windows(sched, season, week, lead_h=LEAD_H, step_min=STEP_MIN):
                          kickoffs=[k.strftime("%Y-%m-%dT%H:%MZ") for k in c["kicks"]],
                          games=[f"{a}@{h}" for a, h in zip(games.away_team, games.home_team)]))
     return dict(season=int(season), week=int(week), lead_h=lead_h, step_min=step_min, max_job_min=MAX_JOB_MIN,
-                odds_api_credits=sum(r["odds_api_credits"] for r in rows), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull (YARDS_SOURCE=oddsapi, region us)",
+                odds_api_credits=sum(r["odds_api_credits"] for r in rows), credits_note=f"{LINES_CREDITS} for lines + {MARKETS_PER_EVENT} markets per game not yet kicked off, per pull ({'PROPS_SOURCE' if MARKETS_PER_EVENT == 8 else 'YARDS_SOURCE'}=oddsapi, region us)",
                 generated=dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), clusters=rows)
 
 
@@ -77,6 +79,6 @@ if __name__ == "__main__":
     print(f"{w['season']} week {w['week']}: {sum(len(c['games']) for c in w['clusters'])} games, {len(w['clusters'])} loop(s), {sum(c['pulls'] for c in w['clusters'])} pulls at {w['step_min']} min")
     for c in w["clusters"]:
         print(f"  {c['start'][:16]}Z -> {c['end'][:16]}Z  {c['minutes'] / 60:.2f} h, {c['pulls']} pulls, {len(c['games'])} games, ~{c['odds_api_credits']} Odds API credits with yardage" + ("  [chained: 2 jobs]" if c["chained"] else "") + " | " + ", ".join(c["games"]))
-    print(f"  week total with YARDS_SOURCE=oddsapi in every loop: ~{w['odds_api_credits']} credits ({w['credits_note']})")
+    print(f"  week total with The Odds API in every loop: ~{w['odds_api_credits']} credits ({w['credits_note']})")
     if g("--write"):
         json.dump(w, open(g("--write"), "w"), indent=1); print("written", g("--write"))
