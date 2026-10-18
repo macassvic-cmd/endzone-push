@@ -20,12 +20,21 @@ NOW_UTC = NOW_UTC.tz_localize("UTC") if NOW_UTC.tzinfo is None else NOW_UTC.tz_c
 now_et = NOW_UTC.tz_convert("America/New_York").tz_localize(None)
 s["kick"] = pd.to_datetime(s.gameday + " " + s.gametime.fillna("13:00"))
 
+if "--live" in sys.argv:                                    # credits rule (2026-10-18): live Odds API calls outside CI only with --live
+    os.environ["ODDS_LIVE"] = "1"; sys.argv.remove("--live")
 if len(sys.argv) >= 3:
     season, week = int(sys.argv[1]), int(sys.argv[2])
 else:
     fut = s[(s.game_type == "REG") & s.home_score.isna() & (s.kick > now_et)].sort_values("kick")
     season, week = int(fut.season.iloc[0]), int(fut.week.iloc[0])
 print(f"== projecting {season} week {week}")
+if not O.live_allowed() and not os.environ.get("ODDS_MOCK"):
+    _np = O.newest_pull(season, week) or O.newest_pull()
+    if _np:
+        os.environ["ODDS_MOCK"] = _np; os.environ.setdefault("KALSHI", "off")
+        print(f"local run: no live Odds API calls outside CI (credits rule); replaying {_np} (pass --live to pull, or set ODDS_MOCK)")
+    else:
+        print("local run: no live Odds API calls outside CI and no saved pull to replay; the board builds without prices (pass --live to pull)")
 
 # ---------- availability ----------
 dc = pd.read_parquet(f"{DATA}/dc.parquet"); dc = dc[dc.dt == dc.dt.max()]
@@ -142,7 +151,7 @@ elif YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
 else:
     print(f"yards source: {YARDS_EFFECTIVE}" + (f" (books {', '.join(YP.YARD_BOOKS)})" if YARDS_EFFECTIVE == "oddsapi" else ""))
 ODDS_USAGE = O.usage_summary()
-# credit budget: projected balance at the billing reset (the 17th) from the planned pipeline burn and the trailing observed burn; stage 1 skips the
+# credit budget: projected balance at the billing reset (the 1st of the month) from the planned pipeline burn and the trailing observed burn; stage 1 skips the
 # us_ex line-shop pulls, stage 2 also halves the kickoff-loop cadence (pull_loop); the site shows the projection on the Edge Board notice
 BUDGET = O.budget_projection(now=NOW_UTC.to_pydatetime())
 print(f"odds api budget: remaining {BUDGET['remaining']}, burn {BUDGET['burn_per_day']}/day (planned {BUDGET['planned_per_day']}, observed {BUDGET['observed_per_day']}), "
@@ -515,6 +524,12 @@ if PU.enabled():
               f"(blend beats the {UD_SUMMARY['ref']} break-even by >= {UD_SUMMARY['flag_margin']:.0%}), {len(UD_SUMMARY['dropped_other_team'])} same-name / other-team drops")
     else: print("underdog: no lines (no cache yet or fetch failed)")
 else: print("underdog: off (PICKEM_SOURCE)")
+# research logs (first-seen, never bets; results.py grades them): Underdog flagged legs and line-shop improvements over the flagging book
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    _rstamp = f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+    _kick_all = {t: kick_utc(teams[t]["gametime"]) for t in teams}
+    if UD_SUMMARY: print("underdog flags newly logged for research:", PU.log_flags(UD_SUMMARY["legs"], season, week, _rstamp, kick=_kick_all, d=C.RESEARCH_DIR))
+    print("line-shop improvements newly logged for research:", LS.log_improvements(_board_edges, season, week, _rstamp, d=C.RESEARCH_DIR))
 # timing rules (rules.py), on the board rows only (hidden / blocked rows go to the research logs whatever the clock says): nothing is
 # actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN is set) on a price older than
 # that; held edges are shown with the reason, never logged for CLV, never graded

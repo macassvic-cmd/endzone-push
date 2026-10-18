@@ -181,13 +181,13 @@ def test_exchange_pull_gating_and_budget_guard():
             f.write(json.dumps(dict(ts=(t0 - dt.timedelta(days=2 - i)).strftime("%Y-%m-%dT%H:%M:%SZ"), tag="nfl", path="/odds", cost=2, used=1, remaining=rem)) + "\n")
     w = dict(clusters=[dict(games=["A@B"] * 14)], odds_api_credits=7300, early=dict(credits=3190))
     b = O.budget_projection(now=t0, fn=fn, windows=w)
-    assert b["observed_per_day"] == 10000 and b["burn_per_day"] == 10000 and b["reset_at"] == "2026-11-17T00:00:00Z" and b["stage"] == 2, b
+    assert b["observed_per_day"] == 10000 and b["burn_per_day"] == 10000 and b["reset_at"] == "2026-11-01T00:00:00Z" and b["stage"] == 2, b
     b1 = O.budget_projection(now=t0, remaining=70000 + 10000 * b["days_to_reset"] + 10000 + 1000, fn=fn, windows=w)   # enough for stage 0
     assert b1["stage"] == 0 and b1["projected_at_reset"] >= 10000, b1
-    b2 = O.budget_projection(now=t0, remaining=int(10000 * b["days_to_reset"]) + 10000 - 500, fn=fn, windows=w)     # under the floor by less than the us_ex share
+    b2 = O.budget_projection(now=t0, remaining=int(10000 * b["days_to_reset"]) + 10000 - 200, fn=fn, windows=w)     # under the floor by less than the us_ex share (60/day x 7 days)
     assert b2["stage"] == 1 and "us_ex" in b2["actions"][0], b2
     assert O.planned_weekly(w)["exchange"] == 6 * 14 * 5 and O.planned_weekly(w)["total"] == 7300 + 3190 + 4 * (2 + 8 * 14) + 7 * 14 + 420
-    assert O.next_reset(dt.datetime(2026, 11, 17, 0, 0, tzinfo=dt.timezone.utc)) == dt.datetime(2026, 12, 17, tzinfo=dt.timezone.utc)
+    assert O.next_reset(dt.datetime(2026, 11, 1, 0, 0, tzinfo=dt.timezone.utc)) == dt.datetime(2026, 12, 1, tzinfo=dt.timezone.utc) and O.next_reset(dt.datetime(2026, 10, 18, tzinfo=dt.timezone.utc)) == dt.datetime(2026, 11, 1, tzinfo=dt.timezone.utc)
     m = AL.guard_message(b); assert "stage 2" in m and "every 20 min" in m and "10,000" in m, m
     st = fn + ".state"
     assert AL.notify_guard(b, webhook="", state=st).startswith("no DISCORD_WEBHOOK_URL") and AL.notify_guard(dict(b, stage=0), state=st) == "guard not tripped"

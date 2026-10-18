@@ -130,10 +130,38 @@ def evaluate(l, blend_higher):
         be[name] = {s: breakeven(struct, (l.get(s) or {}).get("mult", 1.0)) for s in ("higher", "lower") if l.get(s)}
     p = {"higher": blend_higher, "lower": 1 - blend_higher}
     margins = {s: round(p[s] - be[FLAG_REF][s], 4) for s in ("higher", "lower") if l.get(s) and be.get(FLAG_REF, {}).get(s) is not None}
+    by_type = {t: {s: round(p[s] - be[t][s], 4) for s in ("higher", "lower") if l.get(s) and be.get(t, {}).get(s) is not None} for t in pays}   # margin per payout type (research grading)
     best = max(margins, key=margins.get) if margins else None
     flags = {s: bool(m >= FLAG_MARGIN - 1e-9) for s, m in margins.items()}
-    return dict(ud_stat=l["ud_stat"], line=l["line"], blend_higher=round(blend_higher, 4), higher=l.get("higher"), lower=l.get("lower"), breakeven=be, margins=margins,
+    return dict(ud_stat=l["ud_stat"], line=l["line"], blend_higher=round(blend_higher, 4), higher=l.get("higher"), lower=l.get("lower"), breakeven=be, margins=margins, margins_by_type=by_type,
                 side=best, margin=margins.get(best), flag=any(flags.values()), flag_higher=flags.get("higher", False), flag_lower=flags.get("lower", False), ref=FLAG_REF)
+
+
+RESEARCH_DIR = "research"
+
+
+def log_flags(legs, season, week, stamp, kick=None, d=None):
+    """First sighting of every flagged leg (either side) -> research/ud_flags_<season>_w<week>.json keyed pid|stat|line|side with the stat,
+       line, side, our blend for that side, break-even per payout type, margin per payout type, the line's payout multiplier and the flag time.
+       Research only, never a bet; results.py grades it (hit rate vs break-even by payout type). Returns the number newly logged."""
+    d = d or RESEARCH_DIR
+    os.makedirs(d, exist_ok=True)
+    fn = f"{d}/ud_flags_{season}_w{week}.json"
+    log = json.load(open(fn)) if os.path.exists(fn) else {}
+    n = 0
+    for lg in legs:
+        for side in ("higher", "lower"):
+            if not lg.get(f"flag_{side}"): continue
+            key = f"{lg['pid']}|{lg['ud_stat']}|{lg['line']}|{side}"
+            if key in log: continue
+            p = lg["blend_higher"] if side == "higher" else round(1 - lg["blend_higher"], 4)
+            log[key] = dict(pid=lg["pid"], name=lg.get("name"), team=lg.get("team"), bet=f"{lg.get('name')} {lg['ud_stat']} {side} {lg['line']}", market=lg["market"], kind=lg.get("kind"),
+                            stat=lg["ud_stat"], line=lg["line"], side=side, blend=p, breakeven={t: v.get(side) for t, v in lg["breakeven"].items()},
+                            margins={t: v.get(side) for t, v in lg.get("margins_by_type", {}).items()}, margin=lg["margins"].get(side), ref=lg["ref"],
+                            mult=(lg.get(side) or {}).get("mult"), ud_price=(lg.get(side) or {}).get("price"), flagged=stamp, kick_utc=(kick or {}).get(lg.get("team")))
+            n += 1
+    if n: json.dump(log, open(fn, "w"), indent=0)
+    return n
 
 
 def flag(ud, slate, yard_rows, td_blend):

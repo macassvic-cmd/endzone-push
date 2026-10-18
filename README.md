@@ -44,6 +44,15 @@ The idempotence rule above means an external kick and a GitHub cron minutes apar
     pip install -r requirements.txt
     python refresh.py && python results.py
 
+## Credits rule (2026-10-18)
+**No Odds API calls outside CI.** `odds._get` refuses a live call unless the process runs in GitHub Actions or `ODDS_LIVE=1` is set;
+`python run_week.py` on a laptop replays the newest saved pull for the week (`odds_history/`, same as `ODDS_MOCK=<file>`) and says so;
+`python run_week.py --live` is the only way to spend credits by hand. Tests use saved pulls and fixtures. The plan (100K credits) resets
+on the **1st of each month**; `odds.budget_projection` projects the balance at the reset from the planned pipeline burn and the trailing
+3-day observed burn, and under 10,000 projected it skips the us_ex line-shop pulls first, then halves the kickoff-loop cadence, with a
+Discord alert (`DISCORD_WEBHOOK_URL`). Check the balance for free: `GET https://api.the-odds-api.com/v4/sports/?apiKey=...` and read the
+`x-requests-remaining` header.
+
 ## Pick'em scanner (`pickem/`, `pickem.html`)
 Prices every Underdog NFL line (fantasy points, yards, receptions, attempts, completions, TDs) off devigged
 sportsbook props from The Odds API, then searches every 2–6 pick combo of the best legs for the highest-EV entries.
@@ -60,8 +69,11 @@ Runs from `.github/workflows/pickem.yml` Sun 8:40 PT (~105 Odds API credits); ex
 `pull_windows.py` turns the week's kickoff times (nflverse schedule, Eastern -> UTC, DST automatic) into loop windows: one per
 distinct kickoff, 3 h before it to the kickoff; a kickoff whose window starts within one 10-min step of the previous cluster's last
 kickoff joins it (1 pm + 4:05/4:25 = one loop; London 9:30 stays separate). The scheduled runs write `pull_windows.json` a week
-ahead. `pull_dispatch.yml` (every 30 min, 09-23 UTC) starts a `Pull loop` run for each cluster due within 90 min that has no run yet
-(the half-hour cadence is the backup). `pull_loop.yml` waits for its exact start, then every 10 min pulls SharpAPI + Kalshi (Odds API
+ahead. `pull_dispatch.yml` (cron `13,43 * * * *`, off the hour because GitHub delays or drops round-minute schedules under load: on
+2026-10-18 a `*/30` cron fired 5 times in 19 hours) starts a `Pull loop` run for each cluster due within 90 min that has no run yet; it also
+accepts `repository_dispatch` type `pull_dispatch` from an external cron (same cron-job.org recipe as above, body
+`{"event_type":"pull_dispatch"}`, every 30 min), and every finished loop dispatches the next cluster due within 3 h itself, so Sunday's
+loops chain even when the scheduler skips. `pull_loop.yml` waits for its exact start, then every 10 min pulls SharpAPI + Kalshi (Odds API
 only with `use_odds`), builds, and publishes an orphan snapshot to the `board` branch, which GitHub Pages serves; it stops at the
 cluster's last kickoff, hands over to a chained second job past the 6 h cap, and commits to main once per job (first pull of each
 UTC hour + the newest pull, first-seen edge/research/parlay logs merged key-wise against origin/main; every pull is a run artifact),

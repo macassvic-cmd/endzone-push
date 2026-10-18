@@ -8,7 +8,9 @@ name: Pull dispatcher
 
 on:
   schedule:
-    - cron: "*/30 * * * *"    # all day: the early-week slots (8 AM-11 PM PT every 3 h) fall at 00/03/06 UTC too
+    - cron: "13,43 * * * *"   # all day, OFF the hour and half hour: GitHub delays or drops round-minute schedules under load (2026-10-18: "*/30" fired 5 times in 19 h)
+  repository_dispatch:
+    types: [pull_dispatch]    # external kick (cron-job.org, see README): the backup when GitHub's scheduler skips firings
   workflow_dispatch:
     inputs:
       dry_run:

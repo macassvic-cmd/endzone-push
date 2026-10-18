@@ -1528,10 +1528,10 @@ union), so the per-pull-type table comes straight from the log from now on. For 
 | Local replays / probes (this machine) | — | 67 (54 dry pull 02:11Z, 13 us_ex probes) |
 | Outside the pipeline (user probing, Phase 1 us_ex) | — | ~24,900 |
 
-The new key (created 2026-10-17 21:07Z, 100,000 credits, reset on the 17th) stood at 74,399 remaining at 08:10Z on 10/18: 25,601 used, of
+The new key (created 2026-10-17 21:07Z, 100,000 credits; the plan resets on the 1st of each month, corrected from "the 17th" the same day) stood at 74,399 remaining at 08:10Z on 10/18: 25,601 used, of
 which ~700 by the pipeline. The 11.6k/day "burn" was the Phase 1 probing, not the scheduled pulls. Planned pipeline burn with PROPS_SOURCE=oddsapi
-(kickoff loops ~7,310 + early-week ~3,190 + scheduled ~456 + pick'em ~98 + us_ex ~420 ≈ 11,470 per week ≈ 1,640/day) projects ~25,700 remaining at
-the 2026-11-17 reset: above the 10,000 floor, no guard stage. `odds.budget_projection` recomputes this every pull (burn = max(planned from
+(kickoff loops ~7,310 + early-week ~3,190 + scheduled ~456 + pick'em ~98 + us_ex ~420 ≈ 11,470 per week ≈ 1,640/day) projects ~52,000 remaining at
+the 2026-11-01 reset (corrected the same day from a 2026-11-17 reset / ~25,700): above the 10,000 floor, no guard stage. `odds.budget_projection` recomputes this every pull (burn = max(planned from
 pull_windows.json, observed trailing 3-day burn from the `remaining` series, so manual probing shows up too): stage 1 (projected < 10,000) skips
 the us_ex pulls, stage 2 (still under without us_ex) makes the kickoff loops pull every 20 min; `alerts.notify_guard` posts a Discord message once per
 stage per 12 h. us_ex is pulled only for games with ≥ 1 edge on the board, only on scheduled runs (`EXCHANGE_PULL=all` in update.yml) and on a game's
@@ -1566,3 +1566,47 @@ venues incl. same-name players on different teams, break-even table, us_ex gatin
 without the line shop (357 synthetic edges on the saved 03:46Z pull). All other suites still pass (board rules 4, yards source 5, pull loop 4,
 ladders 8, nan safety, reconcile). Workflows: update.yml (PULL_TYPE, EXCHANGE_PULL, UD_FETCH, PICKEM_SOURCE, ud_lines.json committed), pull_loop.yml
 (PULL_TYPE by mode/label, EXCHANGE_PULL final for loops, `exchange` input), pickem.yml (PULL_TYPE).
+
+### 2026-10-18 (afternoon) — Incident: every Sunday pull loop failed on Python 3.11; billing reset is the 1st; credits rule; dispatcher robustness; research grading for the line shop and Underdog flags
+
+**Incident.** The line-shop commit (c82368c) put a `'–'` escape inside an f-string expression in `alerts.guard_message`. Python 3.12
+(this PC) accepts it, CI's Python 3.11 does not: `test_board_rules.py` imports alerts.py, so the "Tests and data" step failed in ~30 s on
+every Pull loop run of the day (12:41Z London + 1 PM ET dispatches, the 16:10Z manual once-run, the 16:15Z re-dispatch). Fixed in e9d8665;
+the once-run at 16:15Z built and published (board as of 16:16Z, 121 edges), and the 1 PM / 4 PM ET loop was started by hand at 16:18Z on the
+fixed commit. Rule from now on: no backslashes inside f-string expressions (CI is 3.11); the scan is a one-liner in the CHANGELOG below.
+
+**Dispatcher.** `pull_dispatch.yml` ran on `*/30 * * * *` and fired 5 times in 19 hours (10/17 21:34Z, 23:41Z; 10/18 08:12Z, 12:41Z, 16:15Z):
+GitHub delays or drops schedules that land on the hour and half hour under load (its own docs call out the start of every hour). Timeline:
+
+| Window | Loop should start | What happened | Board at kickoff |
+|---|---|---|---|
+| London HOU@JAX 13:30Z | 10:30Z | dispatched 12:41Z (131 min late), failed in 30 s (3.11 bug) | 03:47Z snapshot, 9 h 43 min old |
+| 1 PM ET (17:00Z) | 14:00Z | dispatched 12:41Z and 16:15Z, both failed; manual once-run 16:15Z OK, manual loop from 16:18Z | fresh (<= 10 min) from 16:18Z |
+| 4 PM ET (20:05 / 20:25Z) | same loop | covered by the manual loop to 20:25Z | fresh if the loop runs out |
+| SNF DAL@GB 00:20Z | 21:20Z | needs the dispatcher to fire 19:50–21:20Z or a manual `gh workflow run pull_loop.yml -f mode=loop -f start=<now> -f end=2026-10-19T00:20:00Z` | — |
+
+Also: no scheduled `Update projections` run fired today (the 15:37Z / 16:23Z crons were skipped too). Fixes: cron moved to `13,43 * * * *`;
+`repository_dispatch` type `pull_dispatch` accepted (external cron-job.org kick, README); every finished loop runs `pull_dispatch.py
+--lead-min 180` and starts the next cluster due within 3 h itself (`actions: write`), so Sunday's clusters chain without the scheduler.
+
+**Billing fix (user).** The plan resets on the 1st of each month, not the 17th: `odds.RESET_DAY = 1`; the projection at 16:16Z with 74,291
+remaining is ~52,500 at the 2026-11-01 reset at the planned burn (1,639/day with early-week pulls; 58,500 with the stale pull_windows.json
+estimate), guard stage 0. README, the alert text (reads `reset_at`) and the tests updated.
+
+**Credits rule.** No Odds API calls outside CI: `odds._get` raises `LiveCallsOff` unless GitHub Actions or `ODDS_LIVE=1`; `run_week.py`
+without `--live` replays the newest saved pull for the week (and keeps Kalshi off) and says so; tests use fixtures. README "Credits rule".
+
+**Research grading (not in the headline).** `pickem_ud.log_flags` writes every flagged Underdog leg (either side) to `research/ud_flags_*.json`
+(stat, line, side, our blend, break-even and margin per payout type, payout multiplier, flag time); `lineshop.log_improvements` writes every
+edge whose best place differed from the flagging book to `research/lineshop_*.json` (book + price, venue + after-fee price, improvement in
+cents on the continuous American scale, stake). `results.py` grades both once the week is complete: Underdog hit rate vs break-even by payout
+type (a leg counts for a type when its margin cleared that type's break-even by 3+ pts; whole-number ties void), line shop = units the
+venue would have added on winners (`results.json: research_ud, research_lineshop, research_pending`); two Results-tab cards. First graded
+numbers arrive with the week-6 grading runs (Mon 04:07Z / 14:13Z, Tue 14:13Z).
+
+**Fee and payout sources.** `venues.VENUES[...]["confirmed"]`: Kalshi (fee schedule July 2026 + series API) and Polymarket (official docs)
+confirmed; ProphetX and Novig secondary only, so their prices carry an "unconfirmed fee" tag on the Edge Board and in the venue table;
+Underdog's payout table is marked unconfirmed on the Yards tab and the research card. Liquid Kalshi quotes ($100+ at the ask) are exempt
+from the outlier filter (it exists for size-unknown feeds); 13 of the 16:16Z build's "outliers" were Kalshi longshots with real size.
+
+3.11 scan used: `rg "f\"[^\"]*\{[^}]*\\[^}]*\}" *.py` (any backslash inside an f-string expression).

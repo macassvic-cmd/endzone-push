@@ -247,6 +247,64 @@ def main():
     research_pass = research_summary(research_rows("research/pass_yds_*_w*.json"))       # hidden passing-yard rungs, graded silently
     research_ratio = research_summary(research_rows("research/ratio_block_*_w*.json"))   # Rotational edges over 2.5x the market
 
+    # ---- research (2026-10-18, never in the headline): Underdog pick'em flags graded on actual yards / TD outcomes, hit rate vs break-even by
+    #      payout type; line-shop improvements graded as the units the best venue would have added over the flagging book ----
+    import pickem_ud as PU, lineshop as LS
+    ud_rows = []
+    for fn in sorted(glob.glob("research/ud_flags_*_w*.json")):
+        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
+        if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+        for c in json.load(open(fn)).values():
+            if c.get("market") == "yds":
+                y = ymap.get((wk, c["pid"], c["kind"]))
+                if y is None or y == float(c["line"]): continue                      # no touches = void; a whole-number tie voids the leg
+                hit = y > float(c["line"]) if c["side"] == "higher" else y < float(c["line"])
+            else:
+                h = tdhit.get((wk, c["pid"]))
+                if h is None: continue
+                scored = h[1] if c.get("market") == "first" else h[0]
+                hit = scored if c["side"] == "higher" else not scored
+            ud_rows.append(dict(week=wk, pid=c["pid"], bet=c.get("bet"), market=c.get("market"), kind=c.get("kind"), stat=c.get("stat"), line=c.get("line"), side=c["side"],
+                                blend=c.get("blend"), breakeven=c.get("breakeven") or {}, margins=c.get("margins") or {}, mult=c.get("mult"), hit=bool(hit)))
+    def ud_agg(g):
+        return dict(n=len(g), hits=int(sum(r["hit"] for r in g)), hit_rate=round(sum(r["hit"] for r in g) / len(g), 4), mean_blend=round(sum(r["blend"] for r in g) / len(g), 4)) if g else None
+    research_ud = None
+    if ud_rows:
+        by_type = {}
+        for t in PU.payouts():
+            g = [r for r in ud_rows if r["margins"].get(t) is not None and r["margins"][t] >= PU.FLAG_MARGIN - 1e-9]
+            if g: by_type[t] = dict(ud_agg(g), mean_breakeven=round(sum(r["breakeven"].get(t) for r in g) / len(g), 4), beats_breakeven=bool(sum(r["hit"] for r in g) / len(g) > sum(r["breakeven"].get(t) for r in g) / len(g)))
+        research_ud = dict(all=ud_agg(ud_rows), by_type=by_type, by_market={k: ud_agg([r for r in ud_rows if r["market"] == k]) for k in sorted({r["market"] for r in ud_rows})},
+                           by_week={int(k): ud_agg([r for r in ud_rows if r["week"] == k]) for k in sorted({r["week"] for r in ud_rows})}, flag_margin=PU.FLAG_MARGIN, ref=PU.FLAG_REF,
+                           payouts=PU.payouts(), payouts_confirmed=False, rows=ud_rows)
+    ls_rows = []
+    for fn in sorted(glob.glob("research/lineshop_*_w*.json")):
+        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", fn)[0])
+        if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+        for c in json.load(open(fn)).values():
+            if c.get("market") in ("yds", "yds_alt"):
+                y = ymap.get((wk, c["pid"], c["kind"]))
+                if y is None: continue
+                won = y >= float(c["line"])
+            else:
+                h = tdhit.get((wk, c["pid"]))
+                if h is None: continue
+                won = {"any": h[0], "first": h[1], "two": h[2]}.get(c.get("market"), h[0])
+            dec = lambda a: 1 + (a / 100 if a > 0 else 100 / -a)
+            stake = float(c.get("stake") or 1.0)
+            ls_rows.append(dict(week=wk, pid=c["pid"], bet=c.get("bet"), market=c.get("market"), venue=c.get("venue"), book=c.get("book"), best=c.get("best"), venue_net=c.get("venue_net"),
+                                cents=c.get("cents"), stake=stake, won=bool(won), units_added=round(stake * (dec(c["venue_net"]) - dec(c["best"])) if won else 0.0, 3),
+                                fee_confirmed=c.get("fee_confirmed", True)))
+    def ls_agg(g):
+        return dict(n=len(g), won=int(sum(r["won"] for r in g)), mean_cents=round(sum(r["cents"] for r in g) / len(g), 1), units_added=round(sum(r["units_added"] for r in g), 3)) if g else None
+    research_lineshop = None
+    if ls_rows:
+        research_lineshop = dict(all=ls_agg(ls_rows), by_venue={k: ls_agg([r for r in ls_rows if r["venue"] == k]) for k in sorted({r["venue"] for r in ls_rows})},
+                                 by_week={int(k): ls_agg([r for r in ls_rows if r["week"] == k]) for k in sorted({r["week"] for r in ls_rows})}, rows=ls_rows)
+    # ungraded counts (this week's logs before grading), so the report can say how many legs are waiting
+    pending = dict(ud_flags=sum(len(json.load(open(f))) for f in glob.glob("research/ud_flags_*_w*.json")) - len(ud_rows),
+                   lineshop=sum(len(json.load(open(f))) for f in glob.glob("research/lineshop_*_w*.json")) - len(ls_rows))
+
     # ---- freeze the bet record: once a week is fully graded its bets are stored in bets_frozen.json under the rule in force
     #      then and never recomputed; "under current rules" is a separate re-score of every week with today's rule and blend ----
     FROZEN = "bets_frozen.json"
@@ -560,7 +618,7 @@ def main():
                rescore_current=rescore_current, frozen_rules={k: dict(rule=v["rule"], frozen_at=v["frozen_at"], n=len(v["bets"])) for k, v in frozen.items()},
                slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules,
                record=record, record_current_rules=record_current_rules, bench_gate=bench_gate, longshot_gate=longshot_gate, clv_by_week=clv_by_week,
-               research_pass=research_pass, research_ratio=research_ratio,
+               research_pass=research_pass, research_ratio=research_ratio, research_ud=research_ud, research_lineshop=research_lineshop, research_pending=pending,
                board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
                                 min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE))
     out["voided"] = voided

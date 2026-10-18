@@ -170,8 +170,8 @@ def fetch_exchange(events, event_ids, api_key=None, fetch=None):
     return out
 
 
-# ---------------- credit budget: projected balance at the billing reset (the 17th), staged guard ----------------
-RESET_DAY, PROJECTED_FLOOR = 17, 10_000            # plan resets on the 17th; below 10,000 projected at the reset: stage 1 skips us_ex, stage 2 halves the kickoff-loop cadence
+# ---------------- credit budget: projected balance at the billing reset (the 1st of the month), staged guard ----------------
+RESET_DAY, PROJECTED_FLOOR = 1, 10_000             # the plan resets on the 1st of each month (user, 2026-10-18); below 10,000 projected at the reset: stage 1 skips us_ex, stage 2 halves the kickoff-loop cadence
 SCHEDULED_PULLS_PER_WEEK, PICKEM_CREDITS_PER_GAME = 4, 7
 MARKETS_PER_GAME = 8                               # PROPS_SOURCE=oddsapi: 4 TD + 4 yardage markets per not-yet-kicked-off game, region us
 
@@ -284,9 +284,27 @@ def decimal(price):
     return 1 + (price / 100 if price > 0 else 100 / -price)
 
 
+class LiveCallsOff(RuntimeError):
+    """Raised for a live Odds API call outside CI without ODDS_LIVE=1 (credits rule, 2026-10-18): local runs replay a saved pull."""
+
+
+def live_allowed():
+    return bool(os.environ.get("GITHUB_ACTIONS") or os.environ.get("ODDS_LIVE"))
+
+
+def newest_pull(season=None, week=None, d="odds_history"):
+    """Newest saved pull (for the week when given) to replay locally instead of spending credits."""
+    import glob
+    pat = f"{d}/{season}_w{week}_*.json" if season and week else f"{d}/*_w*_*.json"
+    fs = sorted(f for f in glob.glob(pat) if re.search(r"_\d{8}T\d{4}Z\.json$", f))
+    return fs[-1] if fs else None
+
+
 def _get(url, params, fetch=None):
     if fetch:                       # injectable for tests
         return fetch(url, params)
+    if not live_allowed():
+        raise LiveCallsOff("live Odds API calls are off outside CI: run with --live (ODDS_LIVE=1) or set ODDS_MOCK to a saved pull")
     q = urllib.parse.urlencode(params)
     with urllib.request.urlopen(f"{url}?{q}", timeout=30) as r:
         left = r.headers.get("x-requests-remaining")

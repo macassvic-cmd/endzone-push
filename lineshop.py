@@ -58,7 +58,7 @@ def exchange_boards(ex_events, rejected=None):
 
 
 def _row(venue, price, ts, size=None, liquid=True, verified=True, regular=False):
-    return dict(venue=venue, kind=V.kind(venue), price=int(price), net=V.net_american(venue, int(price)), fee=V.fee_note(venue),
+    return dict(venue=venue, kind=V.kind(venue), price=int(price), net=V.net_american(venue, int(price)), fee=V.fee_note(venue), fee_confirmed=V.fee_confirmed(venue),
                 size=size, size_label=V.size_label(venue, size), captured=ts, liquid=bool(liquid), verified=bool(verified), outlier=False,
                 regular=bool(regular), eligible=False, best=False)
 
@@ -86,11 +86,42 @@ def venues_for(e, board, yard_board, kidx, ex_td, ex_yards, ex_rejected):
     reg = [r["price"] for r in rows if r["regular"]]
     for r in rows:
         if r["venue"] == K.BOOK: r["net"] = r["price"]; r["price"] = r.get("raw", r["price"])    # the board's Kalshi price is already fee-adjusted
-        if V.is_exchange(r["venue"]) and V.is_outlier(r["price"], reg): r["outlier"] = True
+        if V.is_exchange(r["venue"]) and not (r["venue"] == K.BOOK and r["liquid"]) and V.is_outlier(r["price"], reg): r["outlier"] = True   # size-unknown feeds only; a Kalshi quote with $100+ at the ask is real
         r["eligible"] = r["verified"] and not r["outlier"] and (r["liquid"] or r["venue"] != K.BOOK)
     rows.sort(key=lambda r: (not r["eligible"], -O.decimal(r["net"])))
     if rows and rows[0]["eligible"]: rows[0]["best"] = True
     return rows
+
+
+def american_points(a):
+    """American price on one continuous scale (-100 and +100 meet): +240 -> 240, -150 -> 50, so 'cents' = the difference between two prices."""
+    a = int(a); return a if a > 0 else a + 200
+
+
+def cents(better, worse):
+    return american_points(better) - american_points(worse)
+
+
+def log_improvements(edges, season, week, stamp, d="research"):
+    """First sighting of every edge whose best place to bet (after fees) is not the flagging book -> research/lineshop_<season>_w<week>.json keyed
+       pid|market|kind|line: book + price, venue + after-fee price, improvement in cents, stake, flag time. results.py grades it: units the venue
+       would have added = stake x (venue decimal - book decimal) on winners, 0 on losers. Returns the number newly logged."""
+    import json, os
+    os.makedirs(d, exist_ok=True)
+    fn = f"{d}/lineshop_{season}_w{week}.json"
+    log = json.load(open(fn)) if os.path.exists(fn) else {}
+    n = 0
+    for e in edges:
+        bv = e.get("best_venue")
+        if not bv or bv["venue"] == e.get("book"): continue
+        key = f"{e['pid']}|{e['market']}|{e.get('kind')}|{e.get('line')}"
+        if key in log: continue
+        log[key] = dict(pid=e["pid"], bet=e["bet"], market=e["market"], kind=e.get("kind"), line=e.get("line"), team=e.get("team"), role=e.get("role"), stake=e.get("stake", 1.0),
+                        book=e.get("book"), best=e.get("best"), bet_down_to=e.get("bet_down_to"), venue=bv["venue"], venue_price=bv["price"], venue_net=bv["net"],
+                        cents=cents(bv["net"], e["best"]), size_label=bv.get("size_label"), fee_confirmed=bv.get("fee_confirmed", True), ev=e.get("ev"), flagged=stamp, kick_utc=e.get("kick_utc"))
+        n += 1
+    if n: json.dump(log, open(fn, "w"), indent=0)
+    return n
 
 
 def attach(edges, events, board, yard_board, ex_events=None, names=None):
@@ -104,8 +135,8 @@ def attach(edges, events, board, yard_board, ex_events=None, names=None):
         rows = venues_for(e, board, yard_board, kidx, ex_td, ex_yards, rej)
         e["venues"] = rows
         best = next((r for r in rows if r["best"]), None)
-        e["best_venue"] = dict(venue=best["venue"], price=best["price"], net=best["net"], size_label=best["size_label"], captured=best["captured"], fee=best["fee"]) if best else None
+        e["best_venue"] = dict(venue=best["venue"], price=best["price"], net=best["net"], size_label=best["size_label"], captured=best["captured"], fee=best["fee"], fee_confirmed=best["fee_confirmed"]) if best else None
     venues_live = sorted({r["venue"] for e in edges for r in e.get("venues", []) if V.is_exchange(r["venue"])})
-    return dict(exchange_events=len(ex), venues=venues_live, ladders_rejected=len(rej), outliers=sum(1 for e in edges for r in e["venues"] if r["outlier"]),
+    return dict(exchange_events=len(ex), venues=venues_live, ladders_rejected=len(rej), outliers=sum(1 for e in edges for r in e["venues"] if r["outlier"]), fee_sources=V.fee_sources(),
                 edges_with_exchange_quote=sum(1 for e in edges if any(V.is_exchange(r["venue"]) and r["venue"] != K.BOOK for r in e["venues"])),
                 best_off_book=sum(1 for e in edges if e.get("best_venue") and e["best_venue"]["venue"] != e.get("book")))

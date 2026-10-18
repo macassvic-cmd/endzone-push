@@ -73,6 +73,7 @@ on:
 
 permissions:
   contents: write
+  actions: write            # a finished loop dispatches the next cluster due within 3 h (pull_dispatch.py --lead-min 180): Sunday loops chain even when the cron is skipped
 
 # Own group per cluster (keyed on the cluster's last kickoff): never the scheduled runs' `update` group, and never cancelled.
 concurrency:
@@ -132,6 +133,11 @@ jobs:
       - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
         if: always()
         run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Chain the next kickoff cluster (dispatch it now if it starts within 3 h and has no run yet)
+        if: always() && env.MODE == 'loop'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git fetch -q origin main && git show origin/main:pull_windows.json > pull_windows.json && python pull_dispatch.py --lead-min 180 || true
       - name: Keep every pull of this job (download to rerun locally with ODDS_MOCK)
         if: always()
         uses: actions/upload-artifact@v4
@@ -165,6 +171,11 @@ jobs:
       - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
         if: always()
         run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Chain the next kickoff cluster (dispatch it now if it starts within 3 h and has no run yet)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git fetch -q origin main && git show origin/main:pull_windows.json > pull_windows.json && python pull_dispatch.py --lead-min 180 || true
       - name: Keep every pull of this job
         if: always()
         uses: actions/upload-artifact@v4

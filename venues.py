@@ -21,17 +21,33 @@ SIZE_UNKNOWN = "size unknown, confirm in app"
 OUTLIER_REL = 0.15          # an exchange price more than 15% better (relative implied probability) than the regular-book median is greyed out
 PLACEHOLDER_IMPLIED = 0.98  # an exchange side priced at -4900 or shorter is "no offer" (Polymarket / Kalshi -9900 placeholders), not a quote
 
+# confirmed = the fee rule was read from the venue's own documentation (ODDS_SOURCES.md "Venue fees"); False = secondary sources only, and the page
+# shows "unconfirmed fee" on that venue's prices until it is verified in the app
 VENUES = {
-    "Kalshi":     dict(kind=PREDICTION, fee="taker 0.07·P·(1−P) per contract",           model="kalshi_quadratic", rate=0.07, size="dollars at the ask"),
-    "Polymarket": dict(kind=PREDICTION, fee="taker 0.05·P·(1−P) per share (sports)",      model="quadratic",        rate=0.05, size=None),
-    "ProphetX":   dict(kind=EXCHANGE,   fee="2% of net winnings",                          model="commission",       rate=0.02, size=None),
-    "Novig":      dict(kind=EXCHANGE,   fee="none on pregame straight trades",             model="none",             rate=0.0,  size=None),
+    "Kalshi":     dict(kind=PREDICTION, fee="taker 0.07·P·(1−P) per contract",           model="kalshi_quadratic", rate=0.07, size="dollars at the ask", confirmed=True,
+                       source="Kalshi fee schedule (July 2026) + series API fee_type/fee_multiplier"),
+    "Polymarket": dict(kind=PREDICTION, fee="taker 0.05·P·(1−P) per share (sports)",      model="quadratic",        rate=0.05, size=None, confirmed=True,
+                       source="docs.polymarket.com/polymarket-learn/trading/fees"),
+    "ProphetX":   dict(kind=EXCHANGE,   fee="2% of net winnings",                          model="commission",       rate=0.02, size=None, confirmed=False,
+                       source="secondary (nextpredict.io, oddsassist.com, kairos.trade); no official fee page reachable 2026-10-18"),
+    "Novig":      dict(kind=EXCHANGE,   fee="none on pregame straight trades",             model="none",             rate=0.0,  size=None, confirmed=False,
+                       source="secondary (bettorsinsider.com, oddsassist.com); novig.com/fees is a JavaScript app"),
 }
+UD_PAYOUTS_CONFIRMED = False      # Underdog's payout table (pickem_ud.DEFAULT_PAYOUTS) comes from secondary sources; the rules page is a JavaScript app
+
+
+def fee_confirmed(venue):
+    return bool(info(venue).get("confirmed", True))      # sportsbooks: no fee rule to confirm
+
+
+def fee_sources():
+    """[{venue, fee, confirmed, source}] for the site and the report."""
+    return [dict(venue=v, fee=d["fee"], confirmed=d.get("confirmed", False), source=d.get("source", "")) for v, d in VENUES.items()]
 EXCHANGE_KEYS = {"novig": "Novig", "prophetx": "ProphetX", "polymarket": "Polymarket", "kalshi": "Kalshi"}   # Odds API us_ex bookmaker keys
 
 
 def info(venue):
-    return VENUES.get(venue) or dict(kind=SPORTSBOOK, fee="none (vig in the price)", model="none", rate=0.0, size=None)
+    return VENUES.get(venue) or dict(kind=SPORTSBOOK, fee="none (vig in the price)", model="none", rate=0.0, size=None, confirmed=True, source="")
 
 
 def kind(venue):
