@@ -27169,5 +27169,41 @@
 "price"
 ],
 "flagged": "20261018T2330Z"
+},
+"00-0031408|rec|149.5": {
+"bet": "Mike Evans Over 149.5 rec yds (alt)",
+"pid": "00-0031408",
+"market": "yds_alt",
+"kind": "rec",
+"line": 149.5,
+"team": "SF",
+"model_p": 0.0521,
+"mkt_p": 0.0621,
+"blend_p": 0.0571,
+"best": 1960,
+"book": "DraftKings",
+"ev": 0.1763,
+"med": 1960,
+"ev_med": 0.1763,
+"nbooks": 2,
+"curve_rungs": 19,
+"games": 13,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.0459,
+"captured": "2026-10-19T19:53:36.582796188Z",
+"kick_utc": "2026-10-20T00:15Z",
+"reasons": [
+"price"
+],
+"flagged": "20261019T1954Z"
 }
 }
