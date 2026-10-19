@@ -27099,5 +27099,75 @@
 "price"
 ],
 "flagged": "20261018T2228Z"
+},
+"00-0038098|rush|79.5": {
+"bet": "Pierre Strong Jr. Over 79.5 rush yds (alt)",
+"pid": "00-0038098",
+"market": "yds_alt",
+"kind": "rush",
+"line": 79.5,
+"team": "GB",
+"model_p": 0.0182,
+"mkt_p": 0.038,
+"blend_p": 0.0281,
+"best": 3700,
+"book": "DraftKings",
+"ev": 0.0684,
+"med": 3700,
+"ev_med": 0.0684,
+"nbooks": 4,
+"curve_rungs": 17,
+"games": 1,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0249,
+"captured": "2026-10-18T23:28:44Z",
+"kick_utc": "2026-10-19T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T2330Z"
+},
+"00-0033858|rec|59.5": {
+"bet": "Jonnu Smith Over 59.5 rec yds (alt)",
+"pid": "00-0033858",
+"market": "yds_alt",
+"kind": "rec",
+"line": 59.5,
+"team": "GB",
+"model_p": 0.0251,
+"mkt_p": 0.0396,
+"blend_p": 0.0323,
+"best": 3700,
+"book": "DraftKings",
+"ev": 0.229,
+"med": 3700,
+"ev_med": 0.229,
+"nbooks": 3,
+"curve_rungs": 14,
+"games": 20,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0249,
+"captured": "2026-10-18T23:28:44Z",
+"kick_utc": "2026-10-19T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261018T2330Z"
 }
 }
