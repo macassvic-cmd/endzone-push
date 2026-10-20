@@ -5550,5 +5550,110 @@
 "ratio"
 ],
 "flagged": "20261020T1830Z"
+},
+"00-0036442|pass|389.5": {
+"bet": "Joe Burrow Over 389.5 pass yds (alt)",
+"pid": "00-0036442",
+"market": "yds_alt",
+"kind": "pass",
+"line": 389.5,
+"team": "CIN",
+"model_p": 0.0537,
+"mkt_p": 0.043,
+"blend_p": 0.0484,
+"best": 2100,
+"book": "DraftKings",
+"ev": 0.0642,
+"med": 2100,
+"ev_med": 0.0642,
+"nbooks": 1,
+"curve_rungs": 25,
+"games": 10,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.043,
+"captured": "2026-10-20T20:34:05.48339167Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261020T2035Z"
+},
+"00-0036442|pass|399.5": {
+"bet": "Joe Burrow Over 399.5 pass yds (alt)",
+"pid": "00-0036442",
+"market": "yds_alt",
+"kind": "pass",
+"line": 399.5,
+"team": "CIN",
+"model_p": 0.0439,
+"mkt_p": 0.0338,
+"blend_p": 0.0388,
+"best": 2700,
+"book": "DraftKings",
+"ev": 0.0878,
+"med": 2700,
+"ev_med": 0.0878,
+"nbooks": 1,
+"curve_rungs": 25,
+"games": 10,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0338,
+"captured": "2026-10-20T20:34:05.48339167Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261020T2035Z"
+},
+"00-0036442|pass|409.5": {
+"bet": "Joe Burrow Over 409.5 pass yds (alt)",
+"pid": "00-0036442",
+"market": "yds_alt",
+"kind": "pass",
+"line": 409.5,
+"team": "CIN",
+"model_p": 0.0365,
+"mkt_p": 0.0278,
+"blend_p": 0.0322,
+"best": 3300,
+"book": "DraftKings",
+"ev": 0.0931,
+"med": 3300,
+"ev_med": 0.0931,
+"nbooks": 1,
+"curve_rungs": 25,
+"games": 10,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0278,
+"captured": "2026-10-20T20:34:05.48339167Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261020T2035Z"
 }
 }

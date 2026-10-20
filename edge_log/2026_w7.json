@@ -875,5 +875,48 @@
 "ok": true
 }
 ]
+},
+"00-0039919|yds|rec|69.5": {
+"pid": "00-0039919",
+"bet": "Rome Odunze Over 69.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CHI",
+"role": "Starter",
+"kind": "rec",
+"line": 69.5,
+"flagged": "20261020T2035Z",
+"best": 264,
+"book": "DraftKings",
+"med": 264,
+"mkt_p": 0.2722,
+"blend_p": 0.2887,
+"model_p": 0.3051,
+"ev": 0.0507,
+"ev_med": 0.0507,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.12,
+"bet_down_to": 264,
+"best_venue": {
+"venue": "DraftKings",
+"price": 264,
+"net": 264,
+"size_label": "",
+"captured": "2026-10-20T20:33:36.675766885Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 264,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+}
+]
 }
 }
