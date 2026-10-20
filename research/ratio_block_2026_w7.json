@@ -1,0 +1,31 @@
+{
+"00-0040170|two|None|None": {
+"bet": "Elic Ayomanor 2+ TD",
+"pid": "00-0040170",
+"market": "two",
+"team": "TEN",
+"model_p": 0.023366666666666668,
+"mkt_p": 0.009,
+"blend_p": 0.0162,
+"best": 7500,
+"book": "Caesars",
+"ev": 0.2309,
+"med": 6600,
+"ev_med": 0.0851,
+"nbooks": 3,
+"games": 22,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"captured": "2026-10-20T15:01:43Z",
+"kick_utc": "2026-10-25T17:00Z",
+"stake": 1.0,
+"ratio": 2.6,
+"bet_down_to": 6382,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261020T1502Z"
+}
+}
