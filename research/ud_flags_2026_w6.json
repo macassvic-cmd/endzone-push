@@ -1258,5 +1258,33 @@
 "ud_price": -124.0,
 "flagged": "20261019T0010Z",
 "kick_utc": "2026-10-19T00:20Z"
+},
+"00-0031236|Receiving Yards|24.5|lower": {
+"pid": "00-0031236",
+"name": "Brandin Cooks",
+"team": "SF",
+"bet": "Brandin Cooks Receiving Yards lower 24.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 24.5,
+"side": "lower",
+"blend": 0.607,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0296,
+"3-pick": 0.0567,
+"5-pick flex": 0.079
+},
+"margin": 0.0567,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -103.0,
+"flagged": "20261019T2305Z",
+"kick_utc": "2026-10-20T00:15Z"
 }
 }

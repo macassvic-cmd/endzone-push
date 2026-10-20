@@ -5899,5 +5899,53 @@
 "ok": true
 }
 ]
+},
+"00-0033699|yds|rush|20.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 20.5 rush yds",
+"market": "yds",
+"team": "WAS",
+"role": "Bench",
+"kind": "rush",
+"line": 20.5,
+"flagged": "20261019T2145Z",
+"best": -111,
+"book": "BetMGM",
+"med": -113,
+"mkt_p": 0.5,
+"blend_p": 0.561,
+"model_p": 0.6221,
+"ev": 0.0665,
+"ev_med": 0.0575,
+"rule": "main line",
+"stake": 0.25,
+"ratio": 1.24,
+"bet_down_to": -114,
+"best_venue": {
+"venue": "BetMGM",
+"price": -111,
+"net": -111,
+"size_label": "",
+"captured": "2026-10-19T21:44:06Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": -111,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -113,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
 }
 }
