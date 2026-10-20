@@ -746,5 +746,134 @@
 "ok": true
 }
 ]
+},
+"00-0040648|any": {
+"pid": "00-0040648",
+"bet": "Tory Horton Anytime TD",
+"market": "any",
+"team": "SEA",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261020T1831Z",
+"best": 800,
+"book": "DraftKings",
+"med": 775,
+"mkt_p": 0.096,
+"blend_p": 0.1328,
+"model_p": 0.16958333333333334,
+"ev": 0.195,
+"ev_med": 0.1618,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.77,
+"bet_down_to": 691,
+"best_venue": {
+"venue": "DraftKings",
+"price": 800,
+"net": 800,
+"size_label": "",
+"captured": "2026-10-20T18:30:06.000771682Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 800,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 750,
+"ok": true
+}
+]
+},
+"00-0040078|any": {
+"pid": "00-0040078",
+"bet": "Brashard Smith Anytime TD",
+"market": "any",
+"team": "KC",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261020T1831Z",
+"best": 1800,
+"book": "DraftKings",
+"med": 1700,
+"mkt_p": 0.0468,
+"blend_p": 0.0786,
+"model_p": 0.1104,
+"ev": 0.4934,
+"ev_med": 0.4148,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.36,
+"bet_down_to": 1236,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1800,
+"net": 1800,
+"size_label": "",
+"captured": "2026-10-20T18:30:06.000771682Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1800,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1600,
+"ok": true
+}
+]
+},
+"00-0040734|yds|rush|25.5": {
+"pid": "00-0040734",
+"bet": "TreVeyon Henderson Over 25.5 rush yds",
+"market": "yds",
+"team": "NE",
+"role": "Bench",
+"kind": "rush",
+"line": 25.5,
+"flagged": "20261020T1831Z",
+"best": -114,
+"book": "FanDuel",
+"med": -115,
+"mkt_p": 0.5042,
+"blend_p": 0.5695,
+"model_p": 0.6349,
+"ev": 0.0692,
+"ev_med": 0.0648,
+"rule": "main line",
+"stake": 0.25,
+"ratio": 1.26,
+"bet_down_to": -118,
+"best_venue": {
+"venue": "FanDuel",
+"price": -114,
+"net": -114,
+"size_label": "",
+"captured": "2026-10-20T18:29:05.693020502Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -116,
+"ok": true
+}
+]
 }
 }
