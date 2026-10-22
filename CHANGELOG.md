@@ -1623,3 +1623,16 @@ pyyaml. `py -3.11 prepush_check.py --compile` is the seconds-long compile-only v
 Known failure carried, not caused by the gate: `pickem/test_scan.py::test_scan_end_to_end` (KeyError "Ladd McConkey Fantasy Points over")
 has failed on CI since the 2026-10-11 Pick'em scanner run (after commit 54602bf skipped imputed-only stats as legs), so the weekly scanner job
 has been red since then; the gate deselects it (`prepush_check.KNOWN_FAILURES`) until it is fixed, and runs the rest of the pickem suite.
+
+### 2026-10-22 — Edge Board stat filter (display-only)
+
+`template.html` / `index.html` only: no change to flagging, thresholds, EV, stakes, timing rules or which edges are computed; the filter
+shows, hides or regroups rows that are already on the board, from the same row data. Buckets come from each row's market type (`market` +
+`kind`), never from the player name: Anytime TD (`any`), First TD (`first`), 2+ TD (`two`), Rush / Rec / Pass Yds (`yds` main lines and
+`yds_alt` rungs by `kind`; Pass Yds fills in when the passing flag returns). One filter row above the board applies to the Priced edges, Yard
+edges and Bench / longshot sections (and the held table): chips All / Anytime TD / First TD / 2+ TD / Rush Yds / Rec Yds / Pass Yds with the
+live row count of each bucket across the on-board sections, plus a "Group by stat" toggle that renders each section as stat sub-sections in
+that order, each with a count sub-header, keeping the current sort (EV@med descending by default, or the clicked column) inside every group.
+With a chip active, section headers read "showing X of Y". State lives in `st` (memory): it survives every re-render within the page (sort,
+search, game, row expansion) and resets on a full page load; it is not written to localStorage. Price-age and staleness behaviour unchanged.
+Preview on the 2026-10-22 22:17Z build: All 91, Anytime TD 21, First TD 8, 2+ TD 13, Rush Yds 25, Rec Yds 24, Pass Yds 0.
