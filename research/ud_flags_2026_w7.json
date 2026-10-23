@@ -3946,5 +3946,145 @@
 "ud_price": -108.0,
 "flagged": "20261023T0006Z",
 "kick_utc": "2026-10-26T00:20Z"
+},
+"00-0031236|Receiving Yards|24.5|lower": {
+"pid": "00-0031236",
+"name": "Brandin Cooks",
+"team": "SF",
+"bet": "Brandin Cooks Receiving Yards lower 24.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 24.5,
+"side": "lower",
+"blend": 0.5921,
+"breakeven": {
+"2-pick": 0.5455,
+"3-pick": 0.5299,
+"5-pick flex": 0.511
+},
+"margins": {
+"2-pick": 0.0466,
+"3-pick": 0.0622,
+"5-pick flex": 0.0811
+},
+"margin": 0.0622,
+"ref": "3-pick",
+"mult": 1.12,
+"ud_price": 118.0,
+"flagged": "20261023T1503Z",
+"kick_utc": "2026-10-25T17:00Z"
+},
+"00-0032392|Receiving Yards|4.5|lower": {
+"pid": "00-0032392",
+"name": "Austin Hooper",
+"team": "ATL",
+"bet": "Austin Hooper Receiving Yards lower 4.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 4.5,
+"side": "lower",
+"blend": 0.6295,
+"breakeven": {
+"2-pick": 0.6052,
+"3-pick": 0.5679,
+"5-pick flex": 0.5425
+},
+"margins": {
+"2-pick": 0.0243,
+"3-pick": 0.0616,
+"5-pick flex": 0.087
+},
+"margin": 0.0616,
+"ref": "3-pick",
+"mult": 0.91,
+"ud_price": -127.0,
+"flagged": "20261023T1503Z",
+"kick_utc": "2026-10-25T17:00Z"
+},
+"00-0038129|Receiving Yards|39.5|lower": {
+"pid": "00-0038129",
+"name": "Cade Otton",
+"team": "TB",
+"bet": "Cade Otton Receiving Yards lower 39.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 39.5,
+"side": "lower",
+"blend": 0.5895,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0121,
+"3-pick": 0.0392,
+"5-pick flex": 0.0615
+},
+"margin": 0.0392,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": 100.0,
+"flagged": "20261023T1503Z",
+"kick_utc": "2026-10-25T17:00Z"
+},
+"00-0036309|Receiving Yards|9.5|higher": {
+"pid": "00-0036309",
+"name": "Darnell Mooney",
+"team": "NYG",
+"bet": "Darnell Mooney Receiving Yards higher 9.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 9.5,
+"side": "higher",
+"blend": 0.6242,
+"breakeven": {
+"2-pick": 0.619,
+"3-pick": 0.5765,
+"5-pick flex": 0.5495
+},
+"margins": {
+"2-pick": 0.0052,
+"3-pick": 0.0477,
+"5-pick flex": 0.0747
+},
+"margin": 0.0477,
+"ref": "3-pick",
+"mult": 0.87,
+"ud_price": -137.0,
+"flagged": "20261023T1503Z",
+"kick_utc": "2026-10-25T17:00Z"
+},
+"00-0039894|Receiving Yards|49.5|lower": {
+"pid": "00-0039894",
+"name": "Xavier Worthy",
+"team": "KC",
+"bet": "Xavier Worthy Receiving Yards lower 49.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 49.5,
+"side": "lower",
+"blend": 0.5971,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0197,
+"3-pick": 0.0468,
+"5-pick flex": 0.0691
+},
+"margin": 0.0468,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261023T1503Z",
+"kick_utc": "2026-10-26T00:20Z"
 }
 }
