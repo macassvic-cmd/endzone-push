@@ -23683,5 +23683,111 @@
 "price"
 ],
 "flagged": "20261022T2343Z"
+},
+"00-0036970|rec|119.5": {
+"bet": "Kyle Pitts Sr. Over 119.5 rec yds (alt)",
+"pid": "00-0036970",
+"market": "yds_alt",
+"kind": "rec",
+"line": 119.5,
+"team": "ATL",
+"model_p": 0.0176,
+"mkt_p": 0.0338,
+"blend_p": 0.0257,
+"best": 4000,
+"book": "DraftKings",
+"ev": 0.053,
+"med": 4000,
+"ev_med": 0.053,
+"nbooks": 4,
+"curve_rungs": 19,
+"games": 23,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-10-23T00:05:06Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261023T0006Z"
+},
+"00-0039163|rush|59.5": {
+"bet": "C.J. Stroud Over 59.5 rush yds (alt)",
+"pid": "00-0039163",
+"market": "yds_alt",
+"kind": "rush",
+"line": 59.5,
+"team": "HOU",
+"model_p": 0.0256,
+"mkt_p": 0.0408,
+"blend_p": 0.0332,
+"best": 3100,
+"book": "DraftKings",
+"ev": 0.0632,
+"med": 3100,
+"ev_med": 0.0632,
+"nbooks": 4,
+"curve_rungs": 13,
+"games": 19,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0296,
+"captured": "2026-10-23T00:05:08Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261023T0006Z"
+},
+"00-0036613|rec|124.5": {
+"bet": "Jaylen Waddle Over 124.5 rec yds (alt)",
+"pid": "00-0036613",
+"market": "yds_alt",
+"kind": "rec",
+"line": 124.5,
+"team": "DEN",
+"model_p": 0.0832,
+"mkt_p": 0.07,
+"blend_p": 0.0766,
+"best": 1280,
+"book": "FanDuel",
+"ev": 0.0572,
+"med": 1280,
+"ev_med": 0.0572,
+"nbooks": 5,
+"curve_rungs": 20,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"BetMGM",
+"FanDuel"
+],
+"listed_p": 0.068,
+"captured": "2026-10-23T00:05:36Z",
+"kick_utc": "2026-10-25T20:05Z",
+"reasons": [
+"price"
+],
+"flagged": "20261023T0006Z"
 }
 }

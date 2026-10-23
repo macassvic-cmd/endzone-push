@@ -5787,5 +5787,73 @@
 "ok": true
 }
 ]
+},
+"00-0040644|any": {
+"pid": "00-0040644",
+"bet": "Trevor Etienne Anytime TD",
+"market": "any",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261023T0006Z",
+"best": 1700,
+"book": "DraftKings",
+"med": 1650,
+"mkt_p": 0.0457,
+"blend_p": 0.0614,
+"model_p": 0.07703333333333333,
+"ev": 0.1045,
+"ev_med": 0.0739,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.69,
+"bet_down_to": 1611,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1700,
+"net": 1700,
+"size_label": "",
+"captured": "2026-10-23T00:05:33Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1700,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1700,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1700,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1600,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1400,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 950,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": false
+}
+]
 }
 }

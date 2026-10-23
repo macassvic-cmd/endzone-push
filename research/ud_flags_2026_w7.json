@@ -3890,5 +3890,61 @@
 "ud_price": 107.0,
 "flagged": "20261022T2243Z",
 "kick_utc": "2026-10-27T00:15Z"
+},
+"00-0039075|Anytime TD|0.5|lower": {
+"pid": "00-0039075",
+"name": "Puka Nacua",
+"team": "LA",
+"bet": "Puka Nacua Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.5623,
+"breakeven": {
+"2-pick": 0.5384,
+"3-pick": 0.5253,
+"5-pick flex": 0.5071
+},
+"margins": {
+"2-pick": 0.0239,
+"3-pick": 0.037,
+"5-pick flex": 0.0552
+},
+"margin": 0.037,
+"ref": "3-pick",
+"mult": 1.15,
+"ud_price": 129.0,
+"flagged": "20261023T0006Z",
+"kick_utc": "2026-10-25T20:25Z"
+},
+"00-0033873|Rush Yards|14.5|lower": {
+"pid": "00-0033873",
+"name": "Patrick Mahomes",
+"team": "KC",
+"bet": "Patrick Mahomes Rush Yards lower 14.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.5819,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0045,
+"3-pick": 0.0316,
+"5-pick flex": 0.0539
+},
+"margin": 0.0316,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -108.0,
+"flagged": "20261023T0006Z",
+"kick_utc": "2026-10-26T00:20Z"
 }
 }
