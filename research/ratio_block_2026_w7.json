@@ -201,5 +201,34 @@
 "rotational > 2.5x market"
 ],
 "flagged": "20261022T2133Z"
+},
+"00-0031236|two|None|None": {
+"bet": "Brandin Cooks 2+ TD",
+"pid": "00-0031236",
+"market": "two",
+"team": "SF",
+"model_p": 0.06208333333333333,
+"mkt_p": 0.0174,
+"blend_p": 0.0398,
+"best": 5000,
+"book": "DraftKings",
+"ev": 1.0281,
+"med": 4250,
+"ev_med": 0.7298,
+"nbooks": 6,
+"games": 16,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": 4893,
+"kalshi_liquid": false,
+"captured": "2026-10-24T18:20:07Z",
+"kick_utc": "2026-10-25T17:00Z",
+"stake": 1.0,
+"ratio": 3.57,
+"bet_down_to": 2539,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261024T1821Z"
 }
 }
