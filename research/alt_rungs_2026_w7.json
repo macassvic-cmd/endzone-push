@@ -31412,5 +31412,41 @@
 "price"
 ],
 "flagged": "20261024T1854Z"
+},
+"00-0039032|rec|39.5": {
+"bet": "Tyjae Spears Over 39.5 rec yds (alt)",
+"pid": "00-0039032",
+"market": "yds_alt",
+"kind": "rec",
+"line": 39.5,
+"team": "TEN",
+"model_p": 0.0935,
+"mkt_p": 0.0946,
+"blend_p": 0.094,
+"best": 1020,
+"book": "DraftKings",
+"ev": 0.0531,
+"med": 1020,
+"ev_med": 0.0531,
+"nbooks": 2,
+"curve_rungs": 10,
+"games": 19,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.0845,
+"captured": "2026-10-24T19:07:40.447164116Z",
+"kick_utc": "2026-10-25T17:00Z",
+"reasons": [
+"price"
+],
+"flagged": "20261024T1909Z"
 }
 }

@@ -8872,5 +8872,139 @@
 "ok": true
 }
 ]
+},
+"00-0034829|first": {
+"pid": "00-0034829",
+"bet": "Mike Gesicki First TD",
+"market": "first",
+"team": "CIN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261024T1909Z",
+"best": 2000,
+"book": "DraftKings",
+"med": 1946,
+"mkt_p": 0.0431,
+"blend_p": 0.0524,
+"model_p": 0.061566666666666665,
+"ev": 0.0995,
+"ev_med": 0.0712,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.43,
+"bet_down_to": 1904,
+"best_venue": {
+"venue": "DraftKings",
+"price": 2000,
+"net": 2000,
+"size_label": "",
+"captured": "2026-10-24T19:07:30.697603534Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 2000,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1893,
+"ok": true
+}
+]
+},
+"00-0040782|any": {
+"pid": "00-0040782",
+"bet": "Isaiah Bond Anytime TD",
+"market": "any",
+"team": "CLE",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261024T1909Z",
+"best": 1500,
+"book": "DraftKings",
+"med": 1400,
+"mkt_p": 0.0566,
+"blend_p": 0.0714,
+"model_p": 0.08625,
+"ev": 0.1428,
+"ev_med": 0.0714,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.52,
+"bet_down_to": 1371,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1500,
+"net": 1500,
+"size_label": "",
+"captured": "2026-10-24T19:07:40.447164116Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1500,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1300,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": false
+}
+]
+},
+"00-0036630|any": {
+"pid": "00-0036630",
+"bet": "Tylan Wallace Anytime TD",
+"market": "any",
+"team": "CLE",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261024T1909Z",
+"best": 6000,
+"book": "FanDuel",
+"med": 5000,
+"mkt_p": 0.0173,
+"blend_p": 0.0208,
+"model_p": 0.024316666666666667,
+"ev": 0.2689,
+"ev_med": 0.0609,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.41,
+"bet_down_to": 4949,
+"best_venue": {
+"venue": "FanDuel",
+"price": 6000,
+"net": 6000,
+"size_label": "",
+"captured": "2026-10-24T19:07:40.447056733Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 6000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 4000,
+"ok": true
+}
+]
 }
 }
