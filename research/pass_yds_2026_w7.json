@@ -151,5 +151,82 @@
 "pass-yds hidden"
 ],
 "flagged": "20261022T2217Z"
+},
+"00-0039923|yds_alt|pass|249.5": {
+"bet": "J.J. McCarthy Over 249.5 pass yds (alt)",
+"pid": "00-0039923",
+"market": "yds_alt",
+"kind": "pass",
+"line": 249.5,
+"team": "NYG",
+"model_p": 0.405,
+"mkt_p": 0.2628,
+"blend_p": 0.3339,
+"best": 281,
+"book": "DraftKings",
+"ev": 0.2721,
+"med": 281,
+"ev_med": 0.2721,
+"nbooks": 2,
+"curve_rungs": 29,
+"games": 11,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.2484,
+"captured": "2026-10-24T18:53:24.591892895Z",
+"kick_utc": "2026-10-25T17:00Z",
+"stake": 1.0,
+"ratio": 1.54,
+"bet_down_to": 215,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261024T1854Z"
+},
+"00-0035710|yds_alt|pass|229.5": {
+"bet": "Daniel Jones Over 229.5 pass yds (alt)",
+"pid": "00-0035710",
+"market": "yds_alt",
+"kind": "pass",
+"line": 229.5,
+"team": "IND",
+"model_p": 0.3637,
+"mkt_p": 0.2614,
+"blend_p": 0.3126,
+"best": 262,
+"book": "DraftKings",
+"ev": 0.1315,
+"med": 262,
+"ev_med": 0.1315,
+"nbooks": 2,
+"curve_rungs": 25,
+"games": 18,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.2614,
+"captured": "2026-10-24T18:53:15.915083386Z",
+"kick_utc": "2026-10-25T17:00Z",
+"stake": 1.0,
+"ratio": 1.39,
+"bet_down_to": 236,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261024T1854Z"
 }
 }
