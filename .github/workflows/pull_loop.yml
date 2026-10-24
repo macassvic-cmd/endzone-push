@@ -1,0 +1,186 @@
+name: Pull loop
+
+# One run per kickoff cluster (see pull_windows.py / pull_windows.json): wait until `start`, then every `step_min` minutes pull
+# SharpAPI (+ Kalshi; The Odds API only with use_odds), build the board and publish it as an orphan snapshot to the `board`
+# branch, which GitHub Pages serves. Stops at `end` (the cluster's last kickoff). Pulls and first-seen edge/research/parlay logs
+# are committed to main ONCE per job, in a step that runs even if the loop failed (if: always()), merged key-wise against
+# origin/main so a crash never loses logged edges. A cluster longer than the job cap hands over to the chained second job.
+# Started by pull_dispatch.yml (>= 30 min ahead, every 30 min as backup), by hand (mode once = one pull + publish; dry_run = a
+# few short iterations), or by repository_dispatch type pull_loop with client_payload {mode, start, end, step_min}.
+
+run-name: "pull loop ${{ inputs.label || github.event.client_payload.label || '' }} ${{ inputs.mode || github.event.client_payload.mode || 'loop' }} ${{ inputs.start || github.event.client_payload.start || 'now' }} -> ${{ inputs.end || github.event.client_payload.end || 'open' }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "loop = until end | once = one pull + publish (refresh the board now) | dry_run = iterations x step_min"
+        type: choice
+        options: [once, loop, dry_run]
+        default: once
+      start:
+        description: "ISO UTC; the job waits until then (empty = now)"
+        type: string
+        default: ""
+      end:
+        description: "ISO UTC; loop mode stops here (the cluster's last kickoff)"
+        type: string
+        default: ""
+      step_min:
+        description: "minutes between pulls"
+        type: string
+        default: "10"
+      iterations:
+        description: "dry_run only: number of pulls"
+        type: string
+        default: "2"
+      use_odds:
+        description: "Also pull The Odds API (spends credits)"
+        type: boolean
+        default: false
+      yards_source:
+        description: "Yardage ladders from: sharpapi (live default) | oddsapi (rush/rec main + alternates, region us; needs use_odds)"
+        type: choice
+        options: [default, sharpapi, oddsapi]
+        default: default
+      props_source:
+        description: "Every prop market from: sharpapi primary (old default) | oddsapi primary, fixed book set, SharpAPI fallback only (default = repo variable PROPS_SOURCE)"
+        type: choice
+        options: [default, sharpapi, oddsapi]
+        default: default
+      keep_both:
+        description: "Research pull: fetch SharpAPI too and keep both feeds' rows for every market and book (source-split replays)"
+        type: boolean
+        default: false
+      label:
+        description: "Tag for the run title (the dispatcher uses 'early <slot>' to keep early-week pulls idempotent)"
+        type: string
+        default: ""
+      publish:
+        description: "Publish the board to the board branch (off = pull, build and save the odds only)"
+        type: boolean
+        default: true
+      exchange:
+        description: "us_ex line shop (Novig, ProphetX, Polymarket) on this once-run for every game with an edge (<= 6 credits per game); loops do it on the final pre-kickoff pull only"
+        type: boolean
+        default: false
+      dry_run:
+        description: "DRY_RUN: never log edges / research / paper parlays (the pull is still saved and committed)"
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [pull_loop]
+
+permissions:
+  contents: write
+  actions: write            # a finished loop dispatches the next cluster due within 3 h (pull_dispatch.py --lead-min 180): Sunday loops chain even when the cron is skipped
+
+# Own group per cluster (keyed on the cluster's last kickoff): never the scheduled runs' `update` group, and never cancelled.
+concurrency:
+  group: pull-loop-${{ inputs.end || github.event.client_payload.end || github.run_id }}
+  cancel-in-progress: false
+
+env:
+  MODE: ${{ inputs.mode || github.event.client_payload.mode || 'loop' }}
+  START: ${{ inputs.start || github.event.client_payload.start || '' }}
+  END: ${{ inputs.end || github.event.client_payload.end || '' }}
+  STEP: ${{ inputs.step_min || github.event.client_payload.step_min || '10' }}
+  ITER: ${{ inputs.iterations || github.event.client_payload.iterations || '2' }}
+  USE_ODDS: ${{ (inputs.use_odds || github.event.client_payload.use_odds) && 'true' || 'false' }}
+  MAX_MINUTES: "340"
+  YARDS_SOURCE: ${{ (inputs.yards_source != '' && inputs.yards_source != 'default') && inputs.yards_source || github.event.client_payload.yards_source || vars.YARDS_SOURCE || 'sharpapi' }}
+  YARDS_FROM_WEEK: ${{ vars.YARDS_FROM_WEEK || '' }}
+  PROPS_SOURCE: ${{ (inputs.props_source != '' && inputs.props_source != 'default') && inputs.props_source || github.event.client_payload.props_source || vars.PROPS_SOURCE || 'sharpapi' }}
+  PROPS_FROM_WEEK: ${{ vars.PROPS_FROM_WEEK || '' }}
+  KEEP_BOTH: ${{ inputs.keep_both && '1' || '' }}
+  PUBLISH: ${{ (inputs.publish == false) && '0' || '1' }}
+  DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+  PULL_TYPE: ${{ ((inputs.mode || github.event.client_payload.mode || 'loop') == 'loop') && 'loop' || (startsWith(inputs.label, 'early') && 'early' || 'manual') }}   # credits per pull type in odds_api_usage.jsonl
+  EXCHANGE_PULL: ${{ vars.EXCHANGE_PULL == 'off' && 'off' || (inputs.exchange && 'all' || (((inputs.mode || github.event.client_payload.mode || 'loop') == 'loop') && 'final' || 'off')) }}   # loops: final pre-kickoff pull only; once-runs: only when asked
+  PICKEM_SOURCE: ${{ vars.PICKEM_SOURCE || 'underdog' }}
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    outputs:
+      remaining: ${{ steps.run.outputs.remaining }}
+      resume_start: ${{ steps.run.outputs.resume_start }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # pinned: CI is 3.11 (this PC runs 3.12); prepush_check.py compiles and tests with 3.11 before every push
+      - run: pip install -r requirements.txt
+      - name: Tests and data
+        run: |
+          python test_nan_safety.py
+          python test_ladder_integrity.py
+          python test_pull_loop.py
+          python test_yards_source.py
+          python test_board_rules.py
+          python refresh.py --data-only
+      - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
+        run: python results.py
+      - name: Pull loop
+        id: run
+        env:
+          SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
+          PYTHONUNBUFFERED: "1"
+        run: python pull_loop.py --mode "$MODE" --start "$START" --end "$END" --step-min "$STEP" --iterations "$ITER" --max-minutes "$MAX_MINUTES"
+      - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
+        if: always()
+        run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Chain the next kickoff cluster (dispatch it now if it starts within 3 h and has no run yet)
+        if: always() && env.MODE == 'loop'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git fetch -q origin main && git show origin/main:pull_windows.json > pull_windows.json && python pull_dispatch.py --lead-min 180 || true
+      - name: Keep every pull of this job (download to rerun locally with ODDS_MOCK)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulls-${{ github.run_id }}-1
+          path: pulls_out/
+          if-no-files-found: ignore
+          retention-days: 30
+
+  loop2:
+    # second leg of a cluster longer than the job cap (Sunday 1 pm + 4 pm blocks)
+    needs: loop
+    if: always() && needs.loop.outputs.remaining == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # pinned: CI is 3.11 (this PC runs 3.12); prepush_check.py compiles and tests with 3.11 before every push
+      - run: pip install -r requirements.txt
+      - run: python refresh.py --data-only
+      - run: python results.py
+      - name: Pull loop (continued)
+        env:
+          SHARPAPI_KEY: ${{ secrets.SHARPAPI_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ODDS_API_KEY: ${{ (env.USE_ODDS == 'true' || env.PROPS_SOURCE == 'oddsapi' || env.YARDS_SOURCE == 'oddsapi') && secrets.ODDS_API_KEY || '' }}   # loops pull The Odds API whenever it is a primary source
+          PYTHONUNBUFFERED: "1"
+        run: python pull_loop.py --mode loop --start "${{ needs.loop.outputs.resume_start }}" --end "$END" --step-min "$STEP" --max-minutes "$MAX_MINUTES"
+      - name: Commit kept pulls and first-seen logs to main (runs even if the loop failed)
+        if: always()
+        run: python pull_loop.py --finalize --step-min "$STEP"
+      - name: Chain the next kickoff cluster (dispatch it now if it starts within 3 h and has no run yet)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: git fetch -q origin main && git show origin/main:pull_windows.json > pull_windows.json && python pull_dispatch.py --lead-min 180 || true
+      - name: Keep every pull of this job
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulls-${{ github.run_id }}-2
+          path: pulls_out/
+          if-no-files-found: ignore
+          retention-days: 30

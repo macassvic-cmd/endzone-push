@@ -1,0 +1,348 @@
+{
+"likely": {
+"flagged": "20261020T1502Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_07_GB_DET",
+"prob": 0.2762,
+"model_p": 0.2762,
+"mkt_p": 0.2749,
+"price": 165,
+"book": "FanDuel",
+"dec": 2.65,
+"ev": -0.2681,
+"fair": 262
+},
+{
+"pid": "00-0032764",
+"name": "Derrick Henry",
+"team": "BAL",
+"game_id": "2026_07_CIN_BAL",
+"prob": 0.2267,
+"model_p": 0.2267,
+"mkt_p": 0.1728,
+"price": 265,
+"book": "Fanatics",
+"dec": 3.65,
+"ev": -0.1725,
+"fair": 341
+}
+],
+"n": 2,
+"prob": 0.06261,
+"fair": 1497,
+"offered": 867,
+"dec": 9.67,
+"ev": -0.3944,
+"stake": 0.0,
+"hits_every": 16,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_07_GB_DET",
+"prob": 0.2762,
+"model_p": 0.2762,
+"mkt_p": 0.2749,
+"price": 165,
+"book": "FanDuel",
+"dec": 2.65,
+"ev": -0.2681,
+"fair": 262
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_07_SF_ATL",
+"prob": 0.2086,
+"model_p": 0.2086,
+"mkt_p": 0.1684,
+"price": 215,
+"book": "Fanatics",
+"dec": 3.15,
+"ev": -0.3429,
+"fair": 379
+}
+],
+"n": 2,
+"prob": 0.05762,
+"fair": 1636,
+"offered": 735,
+"dec": 8.35,
+"ev": -0.5191,
+"stake": 0.0,
+"hits_every": 17,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_07_GB_DET",
+"prob": 0.2762,
+"model_p": 0.2762,
+"mkt_p": 0.2749,
+"price": 165,
+"book": "FanDuel",
+"dec": 2.65,
+"ev": -0.2681,
+"fair": 262
+},
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_07_LA_LV",
+"prob": 0.1884,
+"model_p": 0.1884,
+"mkt_p": 0.1591,
+"price": 280,
+"book": "BetMGM",
+"dec": 3.8,
+"ev": -0.2841,
+"fair": 431
+}
+],
+"n": 2,
+"prob": 0.05204,
+"fair": 1822,
+"offered": 907,
+"dec": 10.07,
+"ev": -0.476,
+"stake": 0.0,
+"hits_every": 19,
+"paper": true
+}
+]
+},
+"value": {
+"flagged": "20261020T1502Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_07_CIN_BAL",
+"prob": 0.0372,
+"model_p": 0.0481,
+"mkt_p": 0.0263,
+"price": 4000,
+"book": "BetMGM",
+"dec": 41.0,
+"ev": 0.5252,
+"fair": 2588
+},
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_07_NE_CHI",
+"prob": 0.0214,
+"model_p": 0.029,
+"mkt_p": 0.0138,
+"price": 6000,
+"book": "FanDuel",
+"dec": 61.0,
+"ev": 0.3054,
+"fair": 4573
+},
+{
+"pid": "00-0038840",
+"name": "Brycen Tremayne",
+"team": "CAR",
+"game_id": "2026_07_TB_CAR",
+"prob": 0.0064,
+"model_p": 0.0086,
+"mkt_p": 0.0042,
+"price": 20000,
+"book": "Fanatics",
+"dec": 201.0,
+"ev": 0.2864,
+"fair": 15525
+},
+{
+"pid": "00-0026498",
+"name": "Matthew Stafford",
+"team": "LA",
+"game_id": "2026_07_LA_LV",
+"prob": 0.0051,
+"model_p": 0.006,
+"mkt_p": 0.0041,
+"price": 25000,
+"book": "Fanatics",
+"dec": 251.0,
+"ev": 0.2801,
+"fair": 19508
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 3848514484,
+"offered": 12617795000,
+"dec": 126177951.0,
+"ev": 2.2786,
+"stake": 0.0,
+"hits_every": 38485146,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_07_CIN_BAL",
+"prob": 0.0372,
+"model_p": 0.0481,
+"mkt_p": 0.0263,
+"price": 4000,
+"book": "BetMGM",
+"dec": 41.0,
+"ev": 0.5252,
+"fair": 2588
+},
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_07_NE_CHI",
+"prob": 0.0214,
+"model_p": 0.029,
+"mkt_p": 0.0138,
+"price": 6000,
+"book": "FanDuel",
+"dec": 61.0,
+"ev": 0.3054,
+"fair": 4573
+},
+{
+"pid": "00-0038840",
+"name": "Brycen Tremayne",
+"team": "CAR",
+"game_id": "2026_07_TB_CAR",
+"prob": 0.0064,
+"model_p": 0.0086,
+"mkt_p": 0.0042,
+"price": 20000,
+"book": "Fanatics",
+"dec": 201.0,
+"ev": 0.2864,
+"fair": 15525
+},
+{
+"pid": "00-0036244",
+"name": "Colby Parkinson",
+"team": "LA",
+"game_id": "2026_07_LA_LV",
+"prob": 0.0425,
+"model_p": 0.0549,
+"mkt_p": 0.0301,
+"price": 2800,
+"book": "BetMGM",
+"dec": 29.0,
+"ev": 0.2325,
+"fair": 2253
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 461821650,
+"offered": 1457832800,
+"dec": 14578329.0,
+"ev": 2.1567,
+"stake": 0.0,
+"hits_every": 4618218,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_07_CIN_BAL",
+"prob": 0.0372,
+"model_p": 0.0481,
+"mkt_p": 0.0263,
+"price": 4000,
+"book": "BetMGM",
+"dec": 41.0,
+"ev": 0.5252,
+"fair": 2588
+},
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_07_NE_CHI",
+"prob": 0.0214,
+"model_p": 0.029,
+"mkt_p": 0.0138,
+"price": 6000,
+"book": "FanDuel",
+"dec": 61.0,
+"ev": 0.3054,
+"fair": 4573
+},
+{
+"pid": "00-0026498",
+"name": "Matthew Stafford",
+"team": "LA",
+"game_id": "2026_07_LA_LV",
+"prob": 0.0051,
+"model_p": 0.006,
+"mkt_p": 0.0041,
+"price": 25000,
+"book": "Fanatics",
+"dec": 251.0,
+"ev": 0.2801,
+"fair": 19508
+},
+{
+"pid": "00-0040129",
+"name": "Emeka Egbuka",
+"team": "TB",
+"game_id": "2026_07_TB_CAR",
+"prob": 0.0563,
+"model_p": 0.0685,
+"mkt_p": 0.0442,
+"price": 2000,
+"book": "BetMGM",
+"dec": 21.0,
+"ev": 0.1823,
+"fair": 1676
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 437486460,
+"offered": 1318277000,
+"dec": 13182771.0,
+"ev": 2.0133,
+"stake": 0.0,
+"hits_every": 4374866,
+"paper": true
+}
+]
+}
+}
