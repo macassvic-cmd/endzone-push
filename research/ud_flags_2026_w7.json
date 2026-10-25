@@ -5178,5 +5178,33 @@
 "ud_price": -113.0,
 "flagged": "20261025T1502Z",
 "kick_utc": "2026-10-25T17:00Z"
+},
+"00-0040878|Rush Yards|19.5|lower": {
+"pid": "00-0040878",
+"name": "Mike Washington Jr.",
+"team": "LV",
+"bet": "Mike Washington Jr. Rush Yards lower 19.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 19.5,
+"side": "lower",
+"blend": 0.6591,
+"breakeven": {
+"2-pick": 0.553,
+"3-pick": 0.5347,
+"5-pick flex": 0.515
+},
+"margins": {
+"2-pick": 0.1061,
+"3-pick": 0.1244,
+"5-pick flex": 0.1441
+},
+"margin": 0.1244,
+"ref": "3-pick",
+"mult": 1.09,
+"ud_price": 112.0,
+"flagged": "20261025T1922Z",
+"kick_utc": "2026-10-25T20:25Z"
 }
 }
