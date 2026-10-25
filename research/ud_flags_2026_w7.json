@@ -4590,5 +4590,61 @@
 "ud_price": 110.0,
 "flagged": "20261024T1821Z",
 "kick_utc": "2026-10-27T00:15Z"
+},
+"00-0034753|Receiving Yards|39.5|lower": {
+"pid": "00-0034753",
+"name": "Mark Andrews",
+"team": "BAL",
+"bet": "Mark Andrews Receiving Yards lower 39.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 39.5,
+"side": "lower",
+"blend": 0.6691,
+"breakeven": {
+"2-pick": 0.6337,
+"3-pick": 0.5856,
+"5-pick flex": 0.557
+},
+"margins": {
+"2-pick": 0.0354,
+"3-pick": 0.0835,
+"5-pick flex": 0.1121
+},
+"margin": 0.0835,
+"ref": "3-pick",
+"mult": 0.83,
+"ud_price": -157.0,
+"flagged": "20261025T0020Z",
+"kick_utc": "2026-10-25T17:00Z"
+},
+"00-0034844|Receiving Yards|14.5|lower": {
+"pid": "00-0034844",
+"name": "Saquon Barkley",
+"team": "PHI",
+"bet": "Saquon Barkley Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.607,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0296,
+"3-pick": 0.0567,
+"5-pick flex": 0.079
+},
+"margin": 0.0567,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -115.0,
+"flagged": "20261025T0020Z",
+"kick_utc": "2026-10-27T00:15Z"
 }
 }
