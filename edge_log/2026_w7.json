@@ -12256,5 +12256,48 @@
 "ok": true
 }
 ]
+},
+"00-0039299|yds|rush|14.5": {
+"pid": "00-0039299",
+"bet": "George Holani Over 14.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SEA",
+"role": "Bench",
+"kind": "rush",
+"line": 14.5,
+"flagged": "20261025T2237Z",
+"best": 172,
+"book": "DraftKings",
+"med": 172,
+"mkt_p": 0.3595,
+"blend_p": 0.4223,
+"model_p": 0.4851,
+"ev": 0.1487,
+"ev_med": 0.1487,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.35,
+"bet_down_to": 149,
+"best_venue": {
+"venue": "DraftKings",
+"price": 172,
+"net": 172,
+"size_label": "",
+"captured": "2026-10-25T22:36:55.03259919Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 172,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 154,
+"ok": true
+}
+]
 }
 }
