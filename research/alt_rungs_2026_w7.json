@@ -36790,5 +36790,110 @@
 "price"
 ],
 "flagged": "20261025T1740Z"
+},
+"00-0034869|pass|389.5": {
+"bet": "Sam Darnold Over 389.5 pass yds (alt)",
+"pid": "00-0034869",
+"market": "yds_alt",
+"kind": "pass",
+"line": 389.5,
+"team": "SEA",
+"model_p": 0.0402,
+"mkt_p": 0.0249,
+"blend_p": 0.0325,
+"best": 3700,
+"book": "DraftKings",
+"ev": 0.2366,
+"med": 3700,
+"ev_med": 0.2366,
+"nbooks": 2,
+"curve_rungs": 31,
+"games": 14,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0249,
+"captured": "2026-10-25T19:07:48.768429259Z",
+"kick_utc": "2026-10-26T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261025T1908Z"
+},
+"00-0038400|pass|319.5": {
+"bet": "Tanner McKee Over 319.5 pass yds (alt)",
+"pid": "00-0038400",
+"market": "yds_alt",
+"kind": "pass",
+"line": 319.5,
+"team": "PHI",
+"model_p": 0.0553,
+"mkt_p": 0.0628,
+"blend_p": 0.059,
+"best": 1680,
+"book": "DraftKings",
+"ev": 0.0509,
+"med": 1680,
+"ev_med": 0.0509,
+"nbooks": 2,
+"curve_rungs": 30,
+"games": 3,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0532,
+"captured": "2026-10-25T19:08:10.492730933Z",
+"kick_utc": "2026-10-27T00:15Z",
+"reasons": [
+"price"
+],
+"flagged": "20261025T1908Z"
+},
+"00-0033077|pass|429.5": {
+"bet": "Dak Prescott Over 429.5 pass yds (alt)",
+"pid": "00-0033077",
+"market": "yds_alt",
+"kind": "pass",
+"line": 429.5,
+"team": "DAL",
+"model_p": 0.0311,
+"mkt_p": 0.0237,
+"blend_p": 0.0274,
+"best": 3900,
+"book": "DraftKings",
+"ev": 0.0967,
+"med": 3900,
+"ev_med": 0.0967,
+"nbooks": 2,
+"curve_rungs": 32,
+"games": 19,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0237,
+"captured": "2026-10-25T19:08:10.492730933Z",
+"kick_utc": "2026-10-27T00:15Z",
+"reasons": [
+"price"
+],
+"flagged": "20261025T1908Z"
 }
 }

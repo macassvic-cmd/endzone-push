@@ -11983,5 +11983,144 @@
 "ok": true
 }
 ]
+},
+"00-0033119|any": {
+"pid": "00-0033119",
+"bet": "Jacoby Brissett Anytime TD",
+"market": "any",
+"team": "ARI",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261025T1908Z",
+"best": 894,
+"book": "Kalshi",
+"med": 850,
+"mkt_p": 0.0972,
+"blend_p": 0.1121,
+"model_p": 0.12711666666666666,
+"ev": 0.1147,
+"ev_med": 0.0654,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.31,
+"bet_down_to": 837,
+"best_venue": {
+"venue": "Kalshi",
+"price": 894,
+"net": 894,
+"size_label": "$4,658 at the ask",
+"captured": "2026-10-25T19:08:24Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 894,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 850,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 800,
+"ok": true
+}
+]
+},
+"00-0029604|any": {
+"pid": "00-0029604",
+"bet": "Kirk Cousins Anytime TD",
+"market": "any",
+"team": "LV",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261025T1908Z",
+"best": 2393,
+"book": "Kalshi",
+"med": 2200,
+"mkt_p": 0.0401,
+"blend_p": 0.0458,
+"model_p": 0.051416666666666666,
+"ev": 0.1409,
+"ev_med": 0.0526,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.28,
+"bet_down_to": 2193,
+"best_venue": {
+"venue": "Kalshi",
+"price": 2393,
+"net": 2393,
+"size_label": "$525 at the ask",
+"captured": "2026-10-25T19:08:24Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 2393,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 2200,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 2000,
+"ok": true
+}
+]
+},
+"00-0036849|yds|rec|14.5": {
+"pid": "00-0036849",
+"bet": "Tutu Atwell Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261025T1908Z",
+"best": 148,
+"book": "FanDuel",
+"med": 148,
+"mkt_p": 0.3967,
+"blend_p": 0.4316,
+"model_p": 0.4666,
+"ev": 0.0704,
+"ev_med": 0.0704,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.18,
+"bet_down_to": 144,
+"best_venue": {
+"venue": "FanDuel",
+"price": 148,
+"net": 148,
+"size_label": "",
+"captured": "2026-10-25T19:07:50.582148189Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 148,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 129,
+"ok": true
+}
+]
 }
 }
