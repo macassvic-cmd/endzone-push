@@ -11024,5 +11024,250 @@
 "ok": true
 }
 ]
+},
+"00-0037291|any": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Anytime TD",
+"market": "any",
+"team": "LV",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261025T1832Z",
+"best": 700,
+"book": "Fanatics",
+"med": 650,
+"mkt_p": 0.1223,
+"blend_p": 0.1475,
+"model_p": 0.17273333333333332,
+"ev": 0.18,
+"ev_med": 0.1063,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.41,
+"bet_down_to": 612,
+"best_venue": {
+"venue": "Fanatics",
+"price": 700,
+"net": 700,
+"size_label": "",
+"captured": "2026-10-25T18:32:31Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 700,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 663,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 650,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 650,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 600,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 540,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 450,
+"ok": true
+}
+]
+},
+"00-0033881|yds|rec|29.5": {
+"pid": "00-0033881",
+"bet": "Evan Engram Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "DEN",
+"role": "Starter",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261025T1832Z",
+"best": 170,
+"book": "DraftKings",
+"med": 170,
+"mkt_p": 0.3951,
+"blend_p": 0.3984,
+"model_p": 0.4018,
+"ev": 0.0758,
+"ev_med": 0.0758,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.02,
+"bet_down_to": 164,
+"best_venue": {
+"venue": "DraftKings",
+"price": 170,
+"net": 170,
+"size_label": "",
+"captured": "2026-10-25T18:32:29Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 170,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 134,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 116,
+"ok": true
+}
+]
+},
+"00-0036264|yds|rush|14.5": {
+"pid": "00-0036264",
+"bet": "Jordan Love Over 14.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "GB",
+"role": "Starter",
+"kind": "rush",
+"line": 14.5,
+"flagged": "20261025T1832Z",
+"best": 270,
+"book": "FanDuel",
+"med": 270,
+"mkt_p": 0.2691,
+"blend_p": 0.2962,
+"model_p": 0.3232,
+"ev": 0.0958,
+"ev_med": 0.0958,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.2,
+"bet_down_to": 255,
+"best_venue": {
+"venue": "FanDuel",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-10-25T18:32:18Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 234,
+"ok": true
+}
+]
+},
+"00-0036849|yds|rec|19.5": {
+"pid": "00-0036849",
+"bet": "Tutu Atwell Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Bench",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261025T1832Z",
+"best": 225,
+"book": "FanDuel",
+"med": 225,
+"mkt_p": 0.3146,
+"blend_p": 0.3499,
+"model_p": 0.3852,
+"ev": 0.1372,
+"ev_med": 0.1372,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.22,
+"bet_down_to": 201,
+"best_venue": {
+"venue": "FanDuel",
+"price": 225,
+"net": 225,
+"size_label": "",
+"captured": "2026-10-25T18:32:26Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 179,
+"ok": true
+}
+]
+},
+"00-0039299|yds|rush|19.5": {
+"pid": "00-0039299",
+"bet": "George Holani Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SEA",
+"role": "Bench",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261025T1832Z",
+"best": 280,
+"book": "DraftKings",
+"med": 280,
+"mkt_p": 0.2673,
+"blend_p": 0.3272,
+"model_p": 0.3871,
+"ev": 0.2434,
+"ev_med": 0.2434,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.45,
+"bet_down_to": 221,
+"best_venue": {
+"venue": "DraftKings",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-10-25T18:32:32Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 280,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+}
+]
 }
 }

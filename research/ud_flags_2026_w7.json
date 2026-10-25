@@ -4870,5 +4870,201 @@
 "ud_price": -115.0,
 "flagged": "20261025T1130Z",
 "kick_utc": "2026-10-25T17:00Z"
+},
+"00-0038640|Receiving Yards|14.5|lower": {
+"pid": "00-0038640",
+"name": "Jalen Brooks",
+"team": "ARI",
+"bet": "Jalen Brooks Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.5737,
+"breakeven": {
+"2-pick": 0.5634,
+"3-pick": 0.5414,
+"5-pick flex": 0.5206
+},
+"margins": {
+"2-pick": 0.0103,
+"3-pick": 0.0323,
+"5-pick flex": 0.0531
+},
+"margin": 0.0323,
+"ref": "3-pick",
+"mult": 1.05,
+"ud_price": 102.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-25T20:05Z"
+},
+"00-0038124|Receiving Yards|79.5|lower": {
+"pid": "00-0038124",
+"name": "Christian Watson",
+"team": "GB",
+"bet": "Christian Watson Receiving Yards lower 79.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 79.5,
+"side": "lower",
+"blend": 0.6213,
+"breakeven": {
+"2-pick": 0.612,
+"3-pick": 0.5721,
+"5-pick flex": 0.546
+},
+"margins": {
+"2-pick": 0.0093,
+"3-pick": 0.0492,
+"5-pick flex": 0.0753
+},
+"margin": 0.0492,
+"ref": "3-pick",
+"mult": 0.89,
+"ud_price": -132.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-25T20:25Z"
+},
+"00-0038098|Receiving Yards|9.5|lower": {
+"pid": "00-0038098",
+"name": "Pierre Strong Jr.",
+"team": "GB",
+"bet": "Pierre Strong Jr. Receiving Yards lower 9.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 9.5,
+"side": "lower",
+"blend": 0.624,
+"breakeven": {
+"2-pick": 0.6455,
+"3-pick": 0.5928,
+"5-pick flex": 0.5629
+},
+"margins": {
+"2-pick": -0.0215,
+"3-pick": 0.0312,
+"5-pick flex": 0.0611
+},
+"margin": 0.0312,
+"ref": "3-pick",
+"mult": 0.8,
+"ud_price": -170.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-25T20:25Z"
+},
+"00-0039751|Receiving Yards|9.5|lower": {
+"pid": "00-0039751",
+"name": "Jordan Whittington",
+"team": "LA",
+"bet": "Jordan Whittington Receiving Yards lower 9.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 9.5,
+"side": "lower",
+"blend": 0.6131,
+"breakeven": {
+"2-pick": 0.612,
+"3-pick": 0.5721,
+"5-pick flex": 0.546
+},
+"margins": {
+"2-pick": 0.0011,
+"3-pick": 0.041,
+"5-pick flex": 0.0671
+},
+"margin": 0.041,
+"ref": "3-pick",
+"mult": 0.89,
+"ud_price": -134.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-25T20:25Z"
+},
+"00-0034351|Receiving Yards|49.5|lower": {
+"pid": "00-0034351",
+"name": "Dallas Goedert",
+"team": "PHI",
+"bet": "Dallas Goedert Receiving Yards lower 49.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 49.5,
+"side": "lower",
+"blend": 0.5948,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0174,
+"3-pick": 0.0445,
+"5-pick flex": 0.0668
+},
+"margin": 0.0445,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-27T00:15Z"
+},
+"00-0040024|Receiving Yards|39.5|lower": {
+"pid": "00-0040024",
+"name": "Darius Cooper",
+"team": "PHI",
+"bet": "Darius Cooper Receiving Yards lower 39.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 39.5,
+"side": "lower",
+"blend": 0.6724,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.095,
+"3-pick": 0.1221,
+"5-pick flex": 0.1444
+},
+"margin": 0.1221,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-27T00:15Z"
+},
+"00-0040867|Receiving Yards|39.5|lower": {
+"pid": "00-0040867",
+"name": "Makai Lemon",
+"team": "PHI",
+"bet": "Makai Lemon Receiving Yards lower 39.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 39.5,
+"side": "lower",
+"blend": 0.6609,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0835,
+"3-pick": 0.1106,
+"5-pick flex": 0.1329
+},
+"margin": 0.1106,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -122.0,
+"flagged": "20261025T1832Z",
+"kick_utc": "2026-10-27T00:15Z"
 }
 }
