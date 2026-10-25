@@ -12122,5 +12122,139 @@
 "ok": true
 }
 ]
+},
+"00-0039868|yds|rec|24.5": {
+"pid": "00-0039868",
+"bet": "Troy Franklin Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "DEN",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261025T1921Z",
+"best": 210,
+"book": "FanDuel",
+"med": 210,
+"mkt_p": 0.3396,
+"blend_p": 0.3512,
+"model_p": 0.3627,
+"ev": 0.0886,
+"ev_med": 0.0886,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.07,
+"bet_down_to": 199,
+"best_venue": {
+"venue": "FanDuel",
+"price": 210,
+"net": 210,
+"size_label": "",
+"captured": "2026-10-25T19:21:22Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 210,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 184,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 145,
+"ok": true
+}
+]
+},
+"00-0037291|yds|rec|29.5": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Rotational",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261025T1921Z",
+"best": 270,
+"book": "FanDuel",
+"med": 270,
+"mkt_p": 0.2547,
+"blend_p": 0.3324,
+"model_p": 0.4101,
+"ev": 0.2299,
+"ev_med": 0.2299,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.61,
+"bet_down_to": 216,
+"best_venue": {
+"venue": "FanDuel",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-10-25T19:20:47Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+}
+]
+},
+"00-0035891|yds|rec|24.5": {
+"pid": "00-0035891",
+"bet": "Cody White Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261025T1941Z",
+"best": 280,
+"book": "FanDuel",
+"med": 280,
+"mkt_p": 0.2742,
+"blend_p": 0.3046,
+"model_p": 0.335,
+"ev": 0.1575,
+"ev_med": 0.1575,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.22,
+"bet_down_to": 245,
+"best_venue": {
+"venue": "FanDuel",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-10-25T19:40:45Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 280,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 230,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 225,
+"ok": true
+}
+]
 }
 }
