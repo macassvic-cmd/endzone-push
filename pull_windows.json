@@ -22,7 +22,7 @@
   "note": "us_ex (Novig, ProphetX, Polymarket, Kalshi): games with an edge, 4 scheduled pulls + 1 final pre-kickoff pull per game; <= 6 credits per game per pull"
  },
  "credits_note": "2 for lines + 8 markets per game not yet kicked off, per pull (PROPS_SOURCE=oddsapi, region us)",
- "generated": "2026-10-25T22:36:18Z",
+ "generated": "2026-10-26T10:00:28Z",
  "clusters": [
   {
    "start": "2026-10-22T21:15:00Z",
