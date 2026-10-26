@@ -37604,5 +37604,77 @@
 "price"
 ],
 "flagged": "20261025T2237Z"
+},
+"00-0041013|rec|24.5": {
+"bet": "Emmett Johnson Over 24.5 rec yds (alt)",
+"pid": "00-0041013",
+"market": "yds_alt",
+"kind": "rec",
+"line": 24.5,
+"team": "KC",
+"model_p": 0.1416,
+"mkt_p": 0.1518,
+"blend_p": 0.1467,
+"best": 630,
+"book": "FanDuel",
+"ev": 0.071,
+"med": 630,
+"ev_med": 0.071,
+"nbooks": 2,
+"curve_rungs": 11,
+"games": 4,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.1288,
+"captured": "2026-10-25T23:39:24Z",
+"kick_utc": "2026-10-26T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261025T2340Z"
+},
+"00-0038797|rec|14.5": {
+"bet": "Emanuel Wilson Over 14.5 rec yds (alt)",
+"pid": "00-0038797",
+"market": "yds_alt",
+"kind": "rec",
+"line": 14.5,
+"team": "SEA",
+"model_p": 0.3857,
+"mkt_p": 0.2463,
+"blend_p": 0.316,
+"best": 303,
+"book": "DraftKings",
+"ev": 0.2736,
+"med": 303,
+"ev_med": 0.2736,
+"nbooks": 3,
+"curve_rungs": 13,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.2349,
+"captured": "2026-10-25T23:59:25Z",
+"kick_utc": "2026-10-26T00:20Z",
+"reasons": [
+"price"
+],
+"flagged": "20261026T0000Z"
 }
 }
