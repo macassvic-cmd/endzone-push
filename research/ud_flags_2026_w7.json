@@ -5206,5 +5206,61 @@
 "ud_price": 112.0,
 "flagged": "20261025T1922Z",
 "kick_utc": "2026-10-25T20:25Z"
+},
+"00-0037120|Rush Yards|9.5|lower": {
+"pid": "00-0037120",
+"name": "Tyler Goodson",
+"team": "DAL",
+"bet": "Tyler Goodson Rush Yards lower 9.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 9.5,
+"side": "lower",
+"blend": 0.6044,
+"breakeven": {
+"2-pick": 0.5431,
+"3-pick": 0.5284,
+"5-pick flex": 0.5097
+},
+"margins": {
+"2-pick": 0.0613,
+"3-pick": 0.076,
+"5-pick flex": 0.0947
+},
+"margin": 0.076,
+"ref": "3-pick",
+"mult": 1.13,
+"ud_price": 126.0,
+"flagged": "20261026T2115Z",
+"kick_utc": "2026-10-27T00:15Z"
+},
+"00-0035662|Receiving Yards|9.5|higher": {
+"pid": "00-0035662",
+"name": "Hollywood Brown",
+"team": "PHI",
+"bet": "Hollywood Brown Receiving Yards higher 9.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 9.5,
+"side": "higher",
+"blend": 0.6833,
+"breakeven": {
+"2-pick": 0.5955,
+"3-pick": 0.5618,
+"5-pick flex": 0.5375
+},
+"margins": {
+"2-pick": 0.0878,
+"3-pick": 0.1215,
+"5-pick flex": 0.1458
+},
+"margin": 0.1215,
+"ref": "3-pick",
+"mult": 0.94,
+"ud_price": -124.0,
+"flagged": "20261026T2235Z",
+"kick_utc": "2026-10-27T00:15Z"
 }
 }

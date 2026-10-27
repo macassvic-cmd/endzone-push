@@ -12299,5 +12299,144 @@
 "ok": true
 }
 ]
+},
+"00-0037258|yds|rush|29.5": {
+"pid": "00-0037258",
+"bet": "Dameon Pierce Over 29.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "PHI",
+"role": "Starter",
+"kind": "rush",
+"line": 29.5,
+"flagged": "20261026T2115Z",
+"best": 220,
+"book": "DraftKings",
+"med": 220,
+"mkt_p": 0.307,
+"blend_p": 0.3584,
+"model_p": 0.4097,
+"ev": 0.1467,
+"ev_med": 0.1467,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.33,
+"bet_down_to": 193,
+"best_venue": {
+"venue": "DraftKings",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-10-26T21:14:38Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 220,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 220,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 182,
+"ok": true
+}
+]
+},
+"00-0038041|yds|rec|19.5": {
+"pid": "00-0038041",
+"bet": "Jake Ferguson Over 19.5 rec yds",
+"market": "yds",
+"team": "DAL",
+"role": "Starter",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261026T2115Z",
+"best": 108,
+"book": "FanDuel",
+"med": 101,
+"mkt_p": 0.467,
+"blend_p": 0.5271,
+"model_p": 0.5871,
+"ev": 0.0963,
+"ev_med": 0.0594,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.26,
+"bet_down_to": -100,
+"best_venue": {
+"venue": "FanDuel",
+"price": 108,
+"net": 108,
+"size_label": "",
+"captured": "2026-10-26T21:14:43Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 108,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 102,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 100,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -109,
+"ok": true
+}
+]
+},
+"00-0036980|yds|rec|19.5": {
+"pid": "00-0036980",
+"bet": "Elijah Moore Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "PHI",
+"role": "Bench",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261026T2215Z",
+"best": 230,
+"book": "DraftKings",
+"med": 230,
+"mkt_p": 0.2868,
+"blend_p": 0.4031,
+"model_p": 0.5194,
+"ev": 0.3302,
+"ev_med": 0.3302,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.81,
+"bet_down_to": 161,
+"best_venue": {
+"venue": "DraftKings",
+"price": 230,
+"net": 230,
+"size_label": "",
+"captured": "2026-10-26T22:14:44Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 230,
+"ok": true
+}
+]
 }
 }
