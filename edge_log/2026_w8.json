@@ -1,0 +1,703 @@
+{
+"00-0038840|any": {
+"pid": "00-0038840",
+"bet": "Brycen Tremayne Anytime TD",
+"market": "any",
+"team": "CAR",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 1300,
+"book": "BetMGM",
+"med": 1100,
+"mkt_p": 0.0618,
+"blend_p": 0.1081,
+"model_p": 0.15448333333333333,
+"ev": 0.5141,
+"ev_med": 0.2978,
+"rule": null,
+"stake": 1.0,
+"ratio": 2.5,
+"bet_down_to": 872,
+"best_venue": {
+"venue": "BetMGM",
+"price": 1300,
+"net": 1300,
+"size_label": "",
+"captured": "2026-10-28T00:02:09Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 1300,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1200,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1100,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1100,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1100,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1100,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1144,
+"ok": false
+}
+]
+},
+"00-0037742|any": {
+"pid": "00-0037742",
+"bet": "Treylon Burks Anytime TD",
+"market": "any",
+"team": "WAS",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 425,
+"book": "BetMGM",
+"med": 420,
+"mkt_p": 0.148,
+"blend_p": 0.2099,
+"model_p": 0.2718,
+"ev": 0.102,
+"ev_med": 0.0915,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.84,
+"bet_down_to": 401,
+"best_venue": {
+"venue": "BetMGM",
+"price": 425,
+"net": 425,
+"size_label": "",
+"captured": "2026-10-28T00:02:09Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 425,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 420,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 400,
+"ok": true
+}
+]
+},
+"00-0037742|two": {
+"pid": "00-0037742",
+"bet": "Treylon Burks 2+ TD",
+"market": "two",
+"team": "WAS",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 4000,
+"book": "Caesars",
+"med": 4000,
+"mkt_p": 0.0159,
+"blend_p": 0.0301,
+"model_p": 0.04423333333333333,
+"ev": 0.233,
+"ev_med": 0.233,
+"rule": null,
+"stake": 1.0,
+"ratio": 2.78,
+"bet_down_to": 3389,
+"best_venue": {
+"venue": "Caesars",
+"price": 4000,
+"net": 4000,
+"size_label": "",
+"captured": "2026-10-28T00:01:04Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Caesars",
+"net": 4000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 4000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 3000,
+"ok": true
+}
+]
+},
+"00-0035676|yds|rec|79.5": {
+"pid": "00-0035676",
+"bet": "A.J. Brown Over 79.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Starter",
+"kind": "rec",
+"line": 79.5,
+"flagged": "20261028T0003Z",
+"best": 278,
+"book": "DraftKings",
+"med": 278,
+"mkt_p": 0.2504,
+"blend_p": 0.2887,
+"model_p": 0.327,
+"ev": 0.0912,
+"ev_med": 0.0912,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 1.0,
+"ratio": 1.31,
+"bet_down_to": 264,
+"best_venue": {
+"venue": "DraftKings",
+"price": 278,
+"net": 278,
+"size_label": "",
+"captured": "2026-10-28T00:02:10Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 278,
+"ok": true
+}
+]
+},
+"00-0038098|any": {
+"pid": "00-0038098",
+"bet": "Pierre Strong Jr. Anytime TD",
+"market": "any",
+"team": "GB",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 1400,
+"book": "DraftKings",
+"med": 1200,
+"mkt_p": 0.0583,
+"blend_p": 0.1203,
+"model_p": 0.18223333333333333,
+"ev": 0.8039,
+"ev_med": 0.5633,
+"rule": null,
+"stake": 0.25,
+"ratio": 3.13,
+"bet_down_to": 773,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1400,
+"net": 1400,
+"size_label": "",
+"captured": "2026-10-28T00:01:28Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1400,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1300,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 1200,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1200,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1100,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1100,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1144,
+"ok": false
+}
+]
+},
+"00-0038098|first": {
+"pid": "00-0038098",
+"bet": "Pierre Strong Jr. First TD",
+"market": "first",
+"team": "GB",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 6000,
+"book": "FanDuel",
+"med": 5500,
+"mkt_p": 0.0105,
+"blend_p": 0.0243,
+"model_p": 0.038016666666666664,
+"ev": 0.48,
+"ev_med": 0.3587,
+"rule": null,
+"stake": 0.25,
+"ratio": 3.62,
+"bet_down_to": 4221,
+"best_venue": {
+"venue": "FanDuel",
+"price": 6000,
+"net": 6000,
+"size_label": "",
+"captured": "2026-10-28T00:02:15Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 6000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 5500,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 5500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 5500,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 5500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 4500,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
+},
+"00-0038098|two": {
+"pid": "00-0038098",
+"bet": "Pierre Strong Jr. 2+ TD",
+"market": "two",
+"team": "GB",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 17500,
+"book": "Caesars",
+"med": 14000,
+"mkt_p": 0.0042,
+"blend_p": 0.0122,
+"model_p": 0.020183333333333334,
+"ev": 1.1492,
+"ev_med": 0.7218,
+"rule": null,
+"stake": 0.25,
+"ratio": 4.81,
+"bet_down_to": 8507,
+"best_venue": {
+"venue": "Caesars",
+"price": 17500,
+"net": 17500,
+"size_label": "",
+"captured": "2026-10-28T00:01:28Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Caesars",
+"net": 17500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 15000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 14000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 10000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 10000,
+"ok": true
+}
+]
+},
+"00-0037614|any": {
+"pid": "00-0037614",
+"bet": "John Metchie III Anytime TD",
+"market": "any",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 1005,
+"book": "Kalshi",
+"med": 900,
+"mkt_p": 0.0784,
+"blend_p": 0.1325,
+"model_p": 0.1865,
+"ev": 0.4638,
+"ev_med": 0.3247,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.38,
+"bet_down_to": 693,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1005,
+"net": 1005,
+"size_label": "$1,398 at the ask",
+"captured": "2026-10-28T00:02:34Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1005,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 900,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 900,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 900,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 850,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 800,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 650,
+"ok": true
+}
+]
+},
+"00-0037614|first": {
+"pid": "00-0037614",
+"bet": "John Metchie III First TD",
+"market": "first",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 4500,
+"book": "DraftKings",
+"med": 4500,
+"mkt_p": 0.0128,
+"blend_p": 0.0256,
+"model_p": 0.03845,
+"ev": 0.1786,
+"ev_med": 0.1786,
+"rule": null,
+"stake": 0.25,
+"ratio": 3.0,
+"bet_down_to": 4002,
+"best_venue": {
+"venue": "DraftKings",
+"price": 4500,
+"net": 4500,
+"size_label": "",
+"captured": "2026-10-28T00:01:28Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 4500,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 4500,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 4500,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 4500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 4000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 3300,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
+},
+"00-0037614|two": {
+"pid": "00-0037614",
+"bet": "John Metchie III 2+ TD",
+"market": "two",
+"team": "CAR",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 15000,
+"book": "FanDuel",
+"med": 10000,
+"mkt_p": 0.0059,
+"blend_p": 0.0143,
+"model_p": 0.02263333333333333,
+"ev": 1.1557,
+"ev_med": 0.4419,
+"rule": null,
+"stake": 0.25,
+"ratio": 3.84,
+"bet_down_to": 7243,
+"best_venue": {
+"venue": "FanDuel",
+"price": 15000,
+"net": 15000,
+"size_label": "",
+"captured": "2026-10-28T00:02:15Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 15000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 12500,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 10000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 10000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 7000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 6600,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 9893,
+"ok": false
+}
+]
+},
+"00-0038783|any": {
+"pid": "00-0038783",
+"bet": "Nate Adkins Anytime TD",
+"market": "any",
+"team": "DEN",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 1500,
+"book": "Fanatics",
+"med": 1425,
+"mkt_p": 0.0516,
+"blend_p": 0.0712,
+"model_p": 0.09075,
+"ev": 0.1391,
+"ev_med": 0.0857,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.76,
+"bet_down_to": 1375,
+"best_venue": {
+"venue": "Fanatics",
+"price": 1500,
+"net": 1500,
+"size_label": "",
+"captured": "2026-10-28T00:02:00Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 1500,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 1450,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1400,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1400,
+"ok": true
+}
+]
+},
+"00-0038519|any": {
+"pid": "00-0038519",
+"bet": "Nikko Remigio Anytime TD",
+"market": "any",
+"team": "KC",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261028T0003Z",
+"best": 3500,
+"book": "Fanatics",
+"med": 3000,
+"mkt_p": 0.0257,
+"blend_p": 0.0685,
+"model_p": 0.1112,
+"ev": 1.4645,
+"ev_med": 1.1222,
+"rule": null,
+"stake": 0.25,
+"ratio": 4.33,
+"bet_down_to": 1433,
+"best_venue": {
+"venue": "Fanatics",
+"price": 3500,
+"net": 3500,
+"size_label": "",
+"captured": "2026-10-28T00:02:00Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 3500,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 3000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2500,
+"ok": true
+}
+]
+}
+}

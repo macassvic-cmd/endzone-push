@@ -1,0 +1,86 @@
+{
+"00-0033873|Rush Yards|14.5|lower": {
+"pid": "00-0033873",
+"name": "Patrick Mahomes",
+"team": "KC",
+"bet": "Patrick Mahomes Rush Yards lower 14.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.5931,
+"breakeven": {
+"2-pick": 0.5455,
+"3-pick": 0.5299,
+"5-pick flex": 0.511
+},
+"margins": {
+"2-pick": 0.0476,
+"3-pick": 0.0632,
+"5-pick flex": 0.0821
+},
+"margin": 0.0632,
+"ref": "3-pick",
+"mult": 1.12,
+"ud_price": 118.0,
+"flagged": "20261028T0003Z",
+"kick_utc": "2026-11-01T21:25Z"
+},
+"00-0034844|Anytime TD|0.5|lower": {
+"pid": "00-0034844",
+"name": "Saquon Barkley",
+"team": "PHI",
+"bet": "Saquon Barkley Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.7053,
+"breakeven": {
+"2-pick": 0.6226,
+"3-pick": 0.5787,
+"5-pick flex": 0.5514
+},
+"margins": {
+"2-pick": 0.0827,
+"3-pick": 0.1266,
+"5-pick flex": 0.1539
+},
+"margin": 0.1266,
+"ref": "3-pick",
+"mult": 0.86,
+"ud_price": -143.0,
+"flagged": "20261028T0003Z",
+"kick_utc": "2026-11-02T01:20Z"
+},
+"00-0036997|Anytime TD|0.5|higher": {
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"bet": "Javonte Williams Anytime TD higher 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "higher",
+"blend": 0.6142,
+"breakeven": {
+"2-pick": 0.6262,
+"3-pick": 0.581,
+"5-pick flex": 0.5532
+},
+"margins": {
+"2-pick": -0.012,
+"3-pick": 0.0332,
+"5-pick flex": 0.061
+},
+"margin": 0.0332,
+"ref": "3-pick",
+"mult": 0.85,
+"ud_price": -148.0,
+"flagged": "20261028T0003Z",
+"kick_utc": "2026-11-01T18:00Z"
+}
+}

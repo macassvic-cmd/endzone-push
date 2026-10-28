@@ -1,0 +1,60 @@
+{
+"00-0038840|first|None|None": {
+"bet": "Brycen Tremayne First TD",
+"pid": "00-0038840",
+"market": "first",
+"team": "CAR",
+"model_p": 0.0332,
+"mkt_p": 0.0105,
+"blend_p": 0.0219,
+"best": 6000,
+"book": "Caesars",
+"ev": 0.3331,
+"med": 5500,
+"ev_med": 0.2238,
+"nbooks": 6,
+"games": 11,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": 9893,
+"kalshi_liquid": false,
+"captured": "2026-10-28T00:01:28Z",
+"kick_utc": "2026-10-30T00:15Z",
+"stake": 1.0,
+"ratio": 3.16,
+"bet_down_to": 4695,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261028T0003Z"
+},
+"00-0038840|two|None|None": {
+"bet": "Brycen Tremayne 2+ TD",
+"pid": "00-0038840",
+"market": "two",
+"team": "CAR",
+"model_p": 0.016216666666666667,
+"mkt_p": 0.0043,
+"blend_p": 0.0103,
+"best": 17500,
+"book": "Caesars",
+"ev": 0.8059,
+"med": 13000,
+"ev_med": 0.3442,
+"nbooks": 5,
+"games": 11,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"captured": "2026-10-28T00:01:28Z",
+"kick_utc": "2026-10-30T00:15Z",
+"stake": 1.0,
+"ratio": 3.77,
+"bet_down_to": 10095,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261028T0003Z"
+}
+}
