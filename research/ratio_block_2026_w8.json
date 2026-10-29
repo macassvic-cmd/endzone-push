@@ -56,5 +56,34 @@
 "rotational > 2.5x market"
 ],
 "flagged": "20261028T0003Z"
+},
+"00-0035891|two|None|None": {
+"bet": "Cody White 2+ TD",
+"pid": "00-0035891",
+"market": "two",
+"team": "LV",
+"model_p": 0.023466666666666667,
+"mkt_p": 0.0077,
+"blend_p": 0.0156,
+"best": 11000,
+"book": "DraftKings",
+"ev": 0.7321,
+"med": 9000,
+"ev_med": 0.42,
+"nbooks": 5,
+"games": 10,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": 4893,
+"kalshi_liquid": false,
+"captured": "2026-10-29T15:32:09Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 1.0,
+"ratio": 3.05,
+"bet_down_to": 6631,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261029T1533Z"
 }
 }
