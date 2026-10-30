@@ -6149,5 +6149,126 @@
 "ok": false
 }
 ]
+},
+"00-0038519|two": {
+"pid": "00-0038519",
+"bet": "Nikko Remigio 2+ TD",
+"market": "two",
+"team": "KC",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261030T0007Z",
+"best": 25000,
+"book": "DraftKings",
+"med": 20500,
+"mkt_p": 0.0034,
+"blend_p": 0.0061,
+"model_p": 0.008666666666666666,
+"ev": 0.5192,
+"ev_med": 0.2468,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.55,
+"bet_down_to": 17114,
+"best_venue": {
+"venue": "DraftKings",
+"price": 25000,
+"net": 25000,
+"size_label": "",
+"captured": "2026-10-30T00:06:59Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 25000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 25000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 16000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 15000,
+"ok": true
+}
+]
+},
+"00-0036628|first": {
+"pid": "00-0036628",
+"bet": "John Bates First TD",
+"market": "first",
+"team": "WAS",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261030T0007Z",
+"best": 7500,
+"book": "DraftKings",
+"med": 6250,
+"mkt_p": 0.0116,
+"blend_p": 0.0167,
+"model_p": 0.02178333333333333,
+"ev": 0.2679,
+"ev_med": 0.0594,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.88,
+"bet_down_to": 6188,
+"best_venue": {
+"venue": "DraftKings",
+"price": 7500,
+"net": 7500,
+"size_label": "",
+"captured": "2026-10-30T00:06:53Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 7500,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 7000,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 6500,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 6000,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 5000,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 4500,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 4893,
+"ok": false
+}
+]
 }
 }
