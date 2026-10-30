@@ -85,5 +85,34 @@
 "rotational > 2.5x market"
 ],
 "flagged": "20261029T1533Z"
+},
+"00-0038840|any|None|None": {
+"bet": "Brycen Tremayne Anytime TD",
+"pid": "00-0038840",
+"market": "any",
+"team": "CAR",
+"model_p": 0.15278333333333333,
+"mkt_p": 0.0594,
+"blend_p": 0.1061,
+"best": 1322,
+"book": "Kalshi",
+"ev": 0.5086,
+"med": 1200,
+"ev_med": 0.3792,
+"nbooks": 7,
+"games": 11,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": 1322,
+"kalshi_liquid": true,
+"captured": "2026-10-29T21:15:08Z",
+"kick_utc": "2026-10-30T00:15Z",
+"stake": 1.0,
+"ratio": 2.57,
+"bet_down_to": 890,
+"reasons": [
+"rotational > 2.5x market"
+],
+"flagged": "20261029T2115Z"
 }
 }

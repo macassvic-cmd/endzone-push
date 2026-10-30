@@ -1,0 +1,24 @@
+{
+"00-0037005|yds_alt|rec|24.5": {
+"pid": "00-0037005",
+"bet": "Tommy Tremble Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"kind": "rec",
+"line": 24.5,
+"team": "CAR",
+"role": "Starter",
+"stake": 1.0,
+"book": "FanDuel",
+"best": 205,
+"bet_down_to": 171,
+"venue": "Novig",
+"venue_price": 208,
+"venue_net": 208,
+"cents": 3,
+"size_label": "size unknown, confirm in app",
+"fee_confirmed": false,
+"ev": 0.1828,
+"flagged": "20261029T2335Z",
+"kick_utc": "2026-10-30T00:15Z"
+}
+}

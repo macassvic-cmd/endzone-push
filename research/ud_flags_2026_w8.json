@@ -166,5 +166,33 @@
 "ud_price": 126.0,
 "flagged": "20261029T1533Z",
 "kick_utc": "2026-11-01T18:00Z"
+},
+"00-0038543|Anytime TD|0.5|lower": {
+"pid": "00-0038543",
+"name": "Jaxon Smith-Njigba",
+"team": "SEA",
+"bet": "Jaxon Smith-Njigba Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.6136,
+"breakeven": {
+"2-pick": 0.6262,
+"3-pick": 0.581,
+"5-pick flex": 0.5532
+},
+"margins": {
+"2-pick": -0.0126,
+"3-pick": 0.0326,
+"5-pick flex": 0.0604
+},
+"margin": 0.0326,
+"ref": "3-pick",
+"mult": 0.85,
+"ud_price": -148.0,
+"flagged": "20261029T2115Z",
+"kick_utc": "2026-11-03T01:15Z"
 }
 }
