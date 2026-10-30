@@ -9,19 +9,22 @@ Checks, for the live and since-current-rules scopes:
   4. the same for the shorter-than-+1000 split
   5. record_current_rules.cum == sum of its own week rows
   6. longshot_gate (anytime TD at +1000 or longer, live weeks) == recount of `bets` overall / main / bench, and == its own week rows
-Fails loudly (exit 1) with the numbers that disagree. Units compare to 0.01u, expected to 0.01u.
+Fails loudly (exit 1) with the numbers that disagree. Units and expected compare to 0.01u plus 0.005u per additional rounded part summed
+(each stored part is rounded to 0.01, so a sum of k parts can sit up to 0.005 x k from the rounded total: 2026-10-26..29 every scheduled
+run failed on 62.78 vs 62.8 over five markets).
 """
 import json, sys
 
 TOL = 0.011
 
 
-def close(a, b):
-    return abs(float(a) - float(b)) <= TOL
+def close(a, b, tol=TOL):
+    return abs(float(a) - float(b)) <= tol
 
 
 def same(label, a, b, keys=("n", "won", "units", "expected")):
-    bad = [(k, a.get(k), b.get(k)) for k in keys if not close(a.get(k) or 0, b.get(k) or 0)]
+    tol = TOL + 0.005 * max(0, int(b.get("_parts", 1)) - 1, int(a.get("_parts", 1)) - 1)
+    bad = [(k, a.get(k), b.get(k)) for k in keys if not close(a.get(k) or 0, b.get(k) or 0, tol)]
     if bad:
         raise AssertionError(f"{label}: {bad}")
 
@@ -29,6 +32,7 @@ def same(label, a, b, keys=("n", "won", "units", "expected")):
 def add(acc, v):
     for k in ("n", "won", "units", "expected", "staked", "var"):
         acc[k] = acc.get(k, 0) + (v.get(k) or 0)
+    acc["_parts"] = acc.get("_parts", 0) + 1
     return acc
 
 

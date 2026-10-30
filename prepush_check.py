@@ -13,7 +13,7 @@ REQUIRED = (3, 11)
 # pre-existing failures that predate the gate (fix them, then remove from this list): the pick'em scanner's end-to-end test has failed on CI since
 # 2026-10-11 (KeyError 'Ladd McConkey Fantasy Points over' after commit 54602bf skipped imputed-only stats as legs); unrelated to the Python version
 KNOWN_FAILURES = ["pickem/test_scan.py::test_scan_end_to_end"]
-TESTS = ["test_nan_safety.py", "test_ladder_integrity.py", "test_pull_loop.py", "test_yards_source.py", "test_board_rules.py", "test_lineshop.py", "test_reconcile.py"]
+TESTS = ["test_nan_safety.py", "test_ladder_integrity.py", "test_pull_loop.py", "test_yards_source.py", "test_board_rules.py", "test_card_rules.py", "test_lineshop.py", "test_reconcile.py"]
 
 
 def fail(msg):

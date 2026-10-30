@@ -15,7 +15,8 @@ worktree (upstream wins on shared keys, our new keys are added), pushed with ret
 import os, sys, json, glob, time, shutil, tempfile, subprocess, datetime as dt
 
 GENERATED = ["latest.json", "results.json", "draws.bin", "pickem_latest.json", "pull_windows.json"]
-LOG_DIRS = ["edge_log", "research", "parlay_log", "odds_api_usage.jsonl"]
+LOG_DIRS = ["edge_log", "research", "parlay_log", "decision_log", "odds_api_usage.jsonl"]
+DEC_RANK = {"pending": 0, "decided": 2, "missed": 1}
 PULLS_OUT = "pulls_out"
 BOT = dict(GIT_AUTHOR_NAME="endzone-bot", GIT_AUTHOR_EMAIL="actions@users.noreply.github.com",
            GIT_COMMITTER_NAME="endzone-bot", GIT_COMMITTER_EMAIL="actions@users.noreply.github.com")
@@ -121,6 +122,15 @@ def merge_first_seen(theirs, ours):
     return m
 
 
+def merge_decision(theirs, ours):
+    """decision_log/*.json: per game the more advanced record wins (decided > missed > pending); among pending records the later snapshot (as_of)."""
+    m = dict(theirs or {})
+    for k, v in (ours or {}).items():
+        t = m.get(k)
+        if t is None or (DEC_RANK.get(v.get("status"), 0), v.get("as_of") or "") > (DEC_RANK.get(t.get("status"), 0), t.get("as_of") or ""): m[k] = v
+    return m
+
+
 def merge_jsonl(theirs, ours):
     """Union of two JSON-lines logs (exact-line dedupe), sorted by the record's ts; keeps every call's credit record from every job."""
     rows = {ln.strip() for ln in (theirs or "").splitlines() if ln.strip()} | {ln.strip() for ln in (ours or "").splitlines() if ln.strip()}
@@ -164,7 +174,7 @@ def finalize(step_min, push):
             for p in logs:
                 r = subprocess.run(["git", "show", f"origin/main:{p}"], capture_output=True, text=True)
                 theirs = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else {}
-                merged = merge_first_seen(theirs, json.load(open(p)))
+                merged = (merge_decision if p.startswith("decision_log/") else merge_first_seen)(theirs, json.load(open(p)))
                 os.makedirs(os.path.join(wt, os.path.dirname(p)), exist_ok=True)
                 json.dump(merged, open(os.path.join(wt, p), "w"), indent=0)
                 print(f"   {p}: upstream {len(theirs)} keys + {len(merged) - len(theirs)} new")

@@ -20,6 +20,13 @@ MARKETS = [("any_", "Anytime TD", "p_any"), ("first_", "First TD", "p_first"), (
 #   - Passing-yard rungs (main line and alt) are hidden from the board and the record and logged to
 #     research/pass_yds_<season>_w<week>.json until the passing model beats the books on Brier over 3+ graded weeks.
 BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS = 6, 0.25, 2.5, ("pass",)
+# Consolidated build (CEO rulings 2026-10-29, live from week 8): alt rungs are CREATED at ALT_STAKE for every role; a first-TD edge priced
+# LONGSHOT_FIRST_PRICE or longer whose model P is more than LONGSHOT_FIRST_RATIO x the no-vig market routes to the Bench / longshot section at
+# BENCH_STAKE whatever the role (group "bench", role unchanged); the actionable card is capped at CARD_CAP bets per kickoff window, ranked by EV
+# at the median book, with one alt rung per player-stat per window (apply_card_cap); the rest display greyed "over card cap", are logged as
+# research and never enter the primary record. The flag rule itself (MIN_EV at the median and best book, MIN_BOOKS) is unchanged.
+ALT_STAKE, LONGSHOT_FIRST_PRICE, LONGSHOT_FIRST_RATIO, CARD_CAP = 0.25, 2000, 2.0, 25
+DECISION_PT = (9, 23)      # ruling 7: Sunday early / late games are graded at the first pull at or after 9:23 AM Pacific; other games at the last pre-cutoff pull
 # Timing rules (2026-10-15): an edge is actionable only while its game is more than KICKOFF_CUTOFF_MIN minutes from kickoff
 # and, once MAX_PRICE_AGE_MIN is set, only while the price it was flagged at is younger than that. Edges that fail are held
 # off the board (shown with the reason, never logged, never graded). MAX_PRICE_AGE_MIN = None shows the price age on every
@@ -34,8 +41,30 @@ BET_DOWN_TO_RULE = "bet only if your book's price is at or better than BET DOWN 
 LISTED_RULE = "actionable alt rungs are listed at the named book at the named price; unlisted or unverified rungs are research-only"
 
 
-def stake_for(role):
-    return BENCH_STAKE if role == "Bench" else 1.0
+def stake_for(role, market=None):
+    """Stake by role and market: Bench plays BENCH_STAKE, alt rungs ALT_STAKE for every role (ruling 5), else 1u."""
+    return BENCH_STAKE if role == "Bench" else ALT_STAKE if market == "yds_alt" else 1.0
+
+
+def first_td_longshot(e):
+    """Ruling 6: a first-TD edge priced LONGSHOT_FIRST_PRICE or longer with model P more than LONGSHOT_FIRST_RATIO x the market P."""
+    try:
+        return (e.get("market") == "first" and e.get("best") is not None and int(e["best"]) >= LONGSHOT_FIRST_PRICE
+                and e.get("model_p") is not None and e.get("mkt_p") is not None and float(e["mkt_p"]) > 0 and float(e["model_p"]) > LONGSHOT_FIRST_RATIO * float(e["mkt_p"]))
+    except (TypeError, ValueError):
+        return False
+
+
+def group_of(e):
+    """Board section: "bench" for Bench players and routed first-TD longshots, else "main"."""
+    role = e.get("role") if isinstance(e.get("role"), str) else "Unknown"
+    return "bench" if role == "Bench" or first_td_longshot(e) else "main"
+
+
+def stake_of(e):
+    """The stake an edge is created at: BENCH_STAKE in the bench section (Bench role or a routed first-TD longshot), ALT_STAKE for alt rungs, else 1u."""
+    role = e.get("role") if isinstance(e.get("role"), str) else "Unknown"
+    return BENCH_STAKE if group_of(e) == "bench" else stake_for(role, e.get("market"))
 
 
 def bet_down_to(blend_p, min_ev=MIN_EV):
@@ -119,16 +148,70 @@ def split_board(edges):
     out = dict(main=[], bench=[], blocked=[], hidden=[])
     for e in edges:
         role = e.get("role") if isinstance(e.get("role"), str) else "Unknown"
-        e["stake"] = stake_for(role); e["ratio"] = ratio_of(e.get("model_p"), e.get("mkt_p")); e["bet_down_to"] = bet_down_to(e.get("blend_p"))
+        e["group"] = group_of(e); e["routed"] = "first-TD longshot" if e["group"] == "bench" and role != "Bench" else None
+        e["stake"] = stake_of(e); e["ratio"] = ratio_of(e.get("model_p"), e.get("mkt_p")); e["bet_down_to"] = bet_down_to(e.get("blend_p"))
         if e.get("kind") in HIDDEN_KINDS:
             out["hidden"].append(dict(e, reasons=["pass-yds hidden"]))
         elif ratio_blocked(role, e.get("model_p"), e.get("mkt_p")):
             out["blocked"].append(dict(e, reasons=[f"rotational > {MAX_RATIO_ROT}x market"]))
-        elif role == "Bench":
+        elif e["group"] == "bench":
             out["bench"].append(e)
         else:
             out["main"].append(e)
     return out
+
+
+def window_key(e, clusters=None):
+    """The kickoff window an edge belongs to: the pull_windows.json cluster whose [start, end] holds its kickoff, else the kickoff itself."""
+    k = e.get("kick_utc")
+    if not k: return "unknown"
+    try:
+        kt = pd.to_datetime(k, utc=True)
+        for c in clusters or []:
+            if c.get("start") and c.get("end") and pd.to_datetime(c["start"], utc=True) <= kt <= pd.to_datetime(c["end"], utc=True):
+                return f"{c['start']}..{c['end']}"
+    except (TypeError, ValueError):
+        pass
+    return k
+
+
+def apply_card_cap(edges, clusters=None, cap=CARD_CAP):
+    """Rulings 10-11: actionable edges -> (card, dropped). Per kickoff window: one alt rung per player-stat (the highest EV at the median book;
+       ties by EV at the best book, then the longer line), then the top `cap` bets by EV at the median book. Card rows carry cap_rank and
+       window; dropped rows carry reasons (research only, greyed on the board, never in the primary record)."""
+    card, dropped, by_w = [], [], {}
+    for e in edges:
+        by_w.setdefault(window_key(e, clusters), []).append(e)
+    for w, rows in by_w.items():
+        rows = sorted(rows, key=lambda e: (-(e.get("ev_med") or 0), -(e.get("ev") or 0), -(e.get("line") or 0), e.get("bet") or ""))
+        seen, kept = {}, []
+        for e in rows:
+            e["window"] = w
+            if e.get("market") == "yds_alt":
+                k = (e.get("pid"), e.get("kind"))
+                if k in seen:
+                    dropped.append(dict(e, cap="alt", cap_rank=None, reasons=[f"alt-rung cap: one rung per player-stat per window (Over {seen[k]:g} kept)"])); continue
+                seen[k] = float(e.get("line") or 0)
+            kept.append(e)
+        for i, e in enumerate(kept, 1):
+            e["cap_rank"] = i
+            if i <= cap: card.append(e)
+            else: dropped.append(dict(e, cap="card", reasons=[f"over card cap (rank {i} of {len(kept)}, cap {cap})"]))
+    return card, dropped
+
+
+def decision_rule(kick_utc):
+    """Ruling 7. ('sunday_0923', <UTC ISO of 9:23 AM Pacific that day>) for a Sunday early / late game (kickoff 12:00-17:59 Eastern on a Sunday);
+       ('final', None) for everything else (TNF, SNF, MNF, London, Saturday): the last pull before the kickoff cutoff. DST-aware through the zones."""
+    if not kick_utc: return ("final", None)
+    try:
+        et = pd.to_datetime(kick_utc, utc=True).tz_convert("America/New_York")
+    except (TypeError, ValueError):
+        return ("final", None)
+    if et.weekday() == 6 and 12 <= et.hour < 18:
+        pt = et.tz_convert("America/Los_Angeles").replace(hour=DECISION_PT[0], minute=DECISION_PT[1], second=0, microsecond=0)
+        return ("sunday_0923", pt.tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ"))
+    return ("final", None)
 
 
 def td_edges(df, min_books=MIN_BOOKS, min_ev=MIN_EV):
@@ -146,7 +229,8 @@ def td_edges(df, min_books=MIN_BOOKS, min_ev=MIN_EV):
                 edges.append(dict(bet=f"{r['name']} {lbl}", pid=r["pid"], market=m[:-1], team=r["team"], model_p=val(r, pcol), mkt_p=val(r, m + "mkt_p"),
                                   blend_p=val(r, m + "blend_p"), best=int(r[m + "best"]), book=val(r, m + "book"), ev=ev, med=int(r[m + "med"]), ev_med=ev_med,
                                   nbooks=int(num(r, m + "nbooks", 0)), games=int(num(r, "games", 0)), w=val(r, m + "w", 0.5), role=val(r, "role", "Unknown"),
-                                  kalshi=None if kal is None else int(kal), kalshi_liquid=flag(r, m + "kalshi_liquid"), captured=val(r, m + "captured")))
+                                  kalshi=None if kal is None else int(kal), kalshi_liquid=flag(r, m + "kalshi_liquid"), captured=val(r, m + "captured"),
+                                  stake=stake_for(val(r, "role", "Unknown"), m[:-1])))      # created at its stake (split_board re-derives it with the routing rule)
     return edges
 
 

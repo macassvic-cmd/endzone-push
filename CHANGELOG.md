@@ -1636,3 +1636,113 @@ that order, each with a count sub-header, keeping the current sort (EV@med desce
 With a chip active, section headers read "showing X of Y". State lives in `st` (memory): it survives every re-render within the page (sort,
 search, game, row expansion) and resets on a full page load; it is not written to localStorage. Price-age and staleness behaviour unchanged.
 Preview on the 2026-10-22 22:17Z build: All 91, Anytime TD 21, First TD 8, 2+ TD 13, Rush Yds 25, Rec Yds 24, Pass Yds 0.
+
+## 2026-10-29 — Consolidated build: rulings, decision-pull record, one-ruler remainder, card cap (model frozen)
+
+CEO consolidated assignment, built 2026-10-29 for the Sunday 2026-11-01 decision pull. The model is unchanged; the flag rule (EV ≥ 5% at the
+median and best book, 2+ books) is unchanged. Everything below is accounting, staking, routing and display, verified flag- and EV-invariant
+(`test_card_rules.py`, `test_lineshop.py::test_flag_set_identical_with_and_without_line_shop`).
+
+### Ratified (no code change)
+1. **Stat filter** (6f4cfb6, 2026-10-22): ratified, display-only, CEO-requested.
+2. **Line shop** (c82368c / e54d297 / e9d8665, 2026-10-18): ratified; flag-invariant (it changes where to bet, never whether a bet is flagged).
+3. **Fitted TD blends pinned to 50/50 for every TD market** (`blend.APPROVED` empty since 2026-10-17): confirmed as the 2026-10-20 one-ruler
+   decision; never un-pin for any market. First TD on the board is longshots only, as the 50/50 ruler produces (and as the drop list below shows).
+4. **Freeze amendment:** display, accounting and staking changes are allowed during the freeze when verified flag- and EV-invariant; model and
+   flag-rule changes still need the CEO's explicit approval.
+
+### Executed
+5. **Alt rungs 0.25u at the source** (`rules.ALT_STAKE`; `rules.stake_for(role, market)`): every alt-rung edge is created with `stake=0.25` in
+   `run_week.py` (not re-labelled later) for every role; `split_board` derives the same through `rules.stake_of`.
+6. **First-TD longshots route to the bench** (`rules.first_td_longshot`, `rules.group_of`): a first-TD edge priced +2000 or longer with model P
+   more than 2× the no-vig market gets `group = "bench"` at 0.25u, every role (`routed = "first-TD longshot"`, role unchanged). The page shows the
+   bench section by `group`, with a tag; Discord lines say "(first-TD longshot → bench)". Thursday's replay routed 3 (MarShawn Lloyd +2393 at 3.15×,
+   Brian Thomas Jr. +3000 at 2.34×, Elic Ayomanor +4000 at 2.05×).
+7. **Decision-pull primary record** (`decision.py`, `decision_log/<season>_w<week>.json`, committed by every run and merged by the loops with the
+   newer state winning). Per game: rule `sunday_0923` (Sunday kickoffs 12:00–17:59 ET) = the first build at or after 9:23 AM Pacific that day
+   (`rules.decision_rule`, DST-aware: 17:23Z from 2026-11-01); because 9:23 PT is only 37 min before a 1 PM ET kickoff and a 10-min loop can land
+   inside the 30-min cutoff, the last actionable build before 9:23 stands in that case (`late_min` negative, reason recorded). Rule `final` (TNF,
+   SNF, MNF, London, Saturday) = the last build before the kickoff cutoff. Each record freezes the capped card for that game AT THAT PULL'S PRICES
+   (`decision.snapshot`), status pending → decided | missed (a missed game has no primary-record bets). `results.py` builds the record of every
+   graded week that has a decision log from `decision.grade` (slate-snapshot re-scoring is no longer the primary record for those weeks; weeks 3–7
+   stay frozen as they were). The first-seen edge log (`clv.log_edges`) remains the secondary research record, graded as logged into
+   `results.json: research_first_seen` (Results tab, "How this is graded"). Week 8's Thursday game (CAR@GB) kicked off before this shipped and has no
+   decision record.
+8. **October 20 assignment items:**
+   - **One blend function** — `blend.blend(pm, pk, coef=None)` is the only place model and market are averaged (50/50 unless a market is approved
+     and gated; `predict` is a thin alias kept for the fit code). `run_week.attach`, the yard rungs and curve blends, `results.rescore_edges`, the
+     market-Brier and yards head-to-head blends and the fit's own 50/50 comparison all call it; the page's first-TD best-price column keeps its
+     client-side 50/50 display (same arithmetic).
+   - **CI blend-bounds test** — `test_card_rules.py::test_blend_is_between_model_and_market_everywhere`: the function on random inputs plus every
+     stored blend on disk from week 7 on (latest.json, slates, players, yard rungs and curve blends, edge logs, decision logs) must lie in
+     [min(model, market), max(model, market)] ± 1e-6; it also asserts the TD blends are pinned. Weeks 4–6 keep fitted-era blends in their frozen
+     slates (214 and 242 rows outside the interval in weeks 5 and 6, 31 and 22 edge-log entries): frozen history, reported, never rewritten.
+   - **Saturday slate-freeze cause** — two mechanisms, both scheduled-run failures that left the board on an older build. (a) Saturday 2026-10-17:
+     both scheduled runs failed at "Run model" when the first gated-in yards blend fit inverted every ladder (fixed the same day: `blend.monotone`,
+     CHANGELOG 2026-10-17). (b) Since Monday 2026-10-26 every scheduled Update run (10-26 09:59Z and 19:53Z, 10-27 19:25Z and 21:16Z, 10-29 23:12Z)
+     has failed at the pre-model grading smoke test: `test_reconcile` compared the singles' expected units (62.8, rounded) with the sum of five
+     per-market expected values (62.78, each rounded to 0.01) under a 0.011 tolerance, so no scheduled run has rebuilt the board since 10-25; only
+     the kickoff loops and early-week pulls did. Fixed: `test_reconcile` scales its tolerance by the number of rounded parts summed (0.011 + 0.005
+     per extra part). Also found: GitHub fired the weekend crons 2.2–2.9 h late on 10-24 / 10-25 (the "9:23 PT" run landed at 12:06 PT, after the
+     1 PM ET kickoffs), which is why the decision pull is anchored to the kickoff loops and the viewer clock, not to the cron; and the crons were
+     written in PDT, so from 2026-11-01 they would have run an hour early in local time — all `update.yml` slots are shifted to PST (UTC−8) with
+     the decide-step mapping updated.
+   - **placed_bets.jsonl** (`placed_bets.py add "Name Anytime TD" --book FanDuel --price +650 --stake 1 [--week 8] [--note ...]`; `list`): your own
+     placed bets, resolved to a player id against the week's slate, graded by `results.py` once the week is complete (`results.json: my_bets`).
+   - **"My bets" card** on the Results tab: record, units, ROI and the bet list; its own card, never mixed into the model record.
+   - **Actual − expected in sigmas**: a σ column (units − expected over √Σ stake²(d − 1)) in both halves of the weekly table, the backfill table and
+     the role table, next to the existing Luck card.
+9. **One-ruler W3–W6 regrade view** (`results.json: one_ruler`, Results tab beside the frozen record): every frozen TD bet re-judged from its own
+   stored fields with the 50/50 blend under the same flag rule at the frozen price and stake (the median price is recovered from the stored
+   EV@median and blend, so a slate rewritten later can never fake a drop); yard bets carry over unchanged; "added" = players the fitted blend
+   left unflagged that the one ruler flags at the same slate prices. Frozen W3–6: 277 bets, 65 won, +105.48u (exp +56.22u) → one ruler 243 bets,
+   58 won, +77.61u (exp +50.77u). W3 unchanged (37 bets, 50/50 era). W4: 49 → 38 bets, +15.81u → +2.62u, 11 first-TD bets dropped (the fitted
+   first-TD blend had put Jeanty, Jones, Gibbs, McCaffrey, Walker, Henry at +311…+663 on the board with blends 0.17–0.30 against model and
+   market both near 0.12–0.20; under 50/50 their EV is −5% to −21%). W5: 63 → 40 bets, +28.13u → +13.45u, 23 first-TD and 1 anytime (Colby
+   Parkinson, EV@median −0.7% under 50/50) dropped, 1 added (Darius Cooper First TD +3000, lost). W6 unchanged (50/50 era; the one earlier
+   apparent drop was a 0.1-pt rounding artefact of the recovered median, now guarded). First TD alone: W4 14 bets +10.19u → 3 bets −3.00u;
+   W5 26 bets +11.68u → 4 bets −4.00u. The W4/W5 drop list, bet by bet, is on the Results tab (35 rows: 34 first TD, 1 anytime; 7 of the 35 won,
+   including Monangai +1005, Watson +1322, Garrett Wilson +894, Croskey-Merritt +803, Emanuel Wilson +803).
+
+### Card cap
+10. **One alt rung per player-stat per kickoff window** (`rules.apply_card_cap`): the highest EV-at-median rung stays; the rest are research
+    (`cap = "alt"`), greyed on the board with the kept line named.
+11. **25 actionable bets per kickoff window** (`rules.CARD_CAP`), ranked by EV at the median book (ties: EV at best, longer line, name). A window
+    is the `pull_windows.json` cluster holding the game's kickoff (Sunday early + late games are one window; TNF, SNF, MNF each their own). Rank
+    26+ displays greyed as "over card cap · #rank", is logged to `research/card_cap_<season>_w<week>.json` (first seen) and never reaches the
+    edge log, the decision record or Discord. Thursday's replay (15:33Z pull as of 15:40Z): 64 actionable edges → 38 on the card over 4 windows
+    (Sunday window 51 → 25), 26 over the cap. Rows on the card carry `cap_rank` and `window` (`latest.json`), and the notice line states the cap.
+12. **Discord alerts show only the capped card**: `clv.log_edges` and `alerts.notify_new_edges` only ever see the card; lines carry "card #rank".
+
+### Research 13 — yardage tail calibration, weeks 4–6 (`tail_calibration.py` → `research/tail_calibration_2026_w4-6.json`, 4,122 priced rungs)
+Every priced rung (two-sided book price, else the pooled DK+FD curve), flagged or not, by (line − our median) / model SD × kind:
+
+| kind | SDs above median | n | mean model P(over) | mean market P(over) | actual hit rate | model − actual | market − actual |
+|---|---|---|---|---|---|---|---|
+| rush | ≤ 0 (at/below median) | 446 | 0.736 | 0.684 | 0.769 | −0.033 | −0.085 |
+| rush | < 0.5 | 271 | 0.403 | 0.454 | 0.406 | −0.003 | +0.048 |
+| rush | 0.5–1 | 194 | 0.251 | 0.321 | 0.263 | −0.011 | +0.058 |
+| rush | 1–1.5 | 135 | 0.145 | 0.201 | 0.163 | −0.018 | +0.038 |
+| rush | 1.5–2 | 108 | 0.083 | 0.138 | 0.074 | +0.009 | +0.063 |
+| rush | > 2 | 152 | 0.030 | 0.115 | 0.105 | −0.075 | +0.010 |
+| rec | ≤ 0 (at/below median) | 847 | 0.665 | 0.696 | 0.727 | −0.062 | −0.031 |
+| rec | < 0.5 | 645 | 0.407 | 0.456 | 0.512 | −0.104 | −0.056 |
+| rec | 0.5–1 | 449 | 0.253 | 0.294 | 0.336 | −0.084 | −0.043 |
+| rec | 1–1.5 | 348 | 0.150 | 0.179 | 0.201 | −0.051 | −0.023 |
+| rec | 1.5–2 | 260 | 0.087 | 0.122 | 0.131 | −0.044 | −0.009 |
+| rec | > 2 | 267 | 0.040 | 0.095 | 0.090 | −0.050 | +0.005 |
+
+Answer: no. The model does not overstate P(over) further above the median; it understates it. Rushing is calibrated within ±2 pts out to 2 SDs
+and understates the far tail (> 2 SDs: model 3.0% vs 10.5% actual); receiving understates P(over) in every bucket by 4–10 pts, most of all just
+above the median. The books sit closer to the hit rate in the tails (receiving > 2 SDs: market 9.5% vs 9.0% actual). Rungs of one player are
+correlated and three weeks is a small sample, but the direction is consistent across every bucket. Research only: nothing changes on the board.
+
+### CI (fail on any violation; `test_card_rules.py` in update.yml, pull_loop.yml and the pre-push hook)
+alt-rung stake 0.25u at creation (code + every on-disk build under the rule) · first-TD +2000 with model > 2× market routes to the bench at 0.25u ·
+card cap ≤ 25 per window and never two rungs of one player-stat (synthetic 74-edge board + the live board file) · stored blends inside
+[min(model, market), max(model, market)] from week 7 on · decision rule and log transitions · every suite under Python 3.11 in the pre-push hook.
+
+Files: `rules.py`, `blend.py`, `decision.py` (new), `placed_bets.py` (new), `tail_calibration.py` (new), `test_card_rules.py` (new),
+`run_week.py`, `results.py`, `alerts.py`, `pull_loop.py`, `test_reconcile.py`, `prepush_check.py`, `.github/workflows/update.yml` (PST crons,
+tests, decision_log), `.github/workflows/pull_loop.yml` (tests), `template.html` / `index.html`, `research/tail_calibration_2026_w4-6.json`,
+README.md, this file.

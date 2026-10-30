@@ -40,11 +40,21 @@ def fit(pm, pk, y, iters=50):
     return [round(float(v), 5) for v in w]
 
 
-def predict(coef, pm, pk):
+def blend(pm, pk, coef=None):
+    """THE blend (one ruler, 2026-10-20 / ratified 2026-10-29): P(hit) from the model probability pm and the no-vig market probability pk.
+       coef None (every market today: APPROVED is empty) = 50/50 in probability space, which always lies between its two inputs. A fitted
+       logistic blend is used only through coef_for() (approval + gates). Every EV on the board, in grading and in the research scripts
+       goes through this function; nothing else may average model and market."""
+    pm, pk = np.asarray(pm, float), np.asarray(pk, float)
     if coef is None:
-        return 0.5 * np.asarray(pm, float) + 0.5 * np.asarray(pk, float)
+        return 0.5 * pm + 0.5 * pk
     a, b, c = coef
     return sigmoid(a + b * logit(pm) + c * logit(pk))
+
+
+def predict(coef, pm, pk):
+    """Kept for the fit / gate code: predict(coef, pm, pk) == blend(pm, pk, coef)."""
+    return blend(pm, pk, coef)
 
 
 def brier(p, y):
@@ -62,7 +72,7 @@ def fit_market(df, mk):
     pm, pk, y = d[pcol].values, d[kcol].values, d[ycol].astype(float).values
     coef = fit(pm, pk, y)
     rec = dict(coef=coef, n=int(len(d)), weeks=sorted(int(w) for w in d.week.unique()),
-               brier=dict(model=round(brier(pm, y), 5), market=round(brier(pk, y), 5), half=round(brier(0.5 * pm + 0.5 * pk, y), 5),
+               brier=dict(model=round(brier(pm, y), 5), market=round(brier(pk, y), 5), half=round(brier(blend(pm, pk), y), 5),
                           fitted=round(brier(predict(coef, pm, pk), y), 5)))
     # leave-one-week-out: fit on the other weeks, score the held-out week; pooled Brier of the held-out predictions
     oos, oos_half, oos_mkt, oos_mod = [], [], [], []
@@ -73,7 +83,7 @@ def fit_market(df, mk):
         if len(tr) < MIN_ROWS // 2 or len(te) == 0: continue
         c = fit(tr[pcol].values, tr[kcol].values, tr[ycol].astype(float).values)
         oos += list((predict(c, te[pcol].values, te[kcol].values) - te[ycol].astype(float).values) ** 2)
-        oos_half += list((0.5 * te[pcol].values + 0.5 * te[kcol].values - te[ycol].astype(float).values) ** 2)
+        oos_half += list((blend(te[pcol].values, te[kcol].values) - te[ycol].astype(float).values) ** 2)
         oos_mkt += list((te[kcol].values - te[ycol].astype(float).values) ** 2); oos_mod += list((te[pcol].values - te[ycol].astype(float).values) ** 2)
     if oos:
         rec["loo"] = dict(fitted=round(float(np.mean(oos)), 5), half=round(float(np.mean(oos_half)), 5),

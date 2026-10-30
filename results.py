@@ -1,6 +1,6 @@
 """Grade every saved slate against what actually happened. Writes results.json."""
 import glob, json, os, re, numpy as np, pandas as pd
-import clv as C, parlay as PL, blend as BL, rules as RU, yards as Y
+import clv as C, parlay as PL, blend as BL, rules as RU, yards as Y, decision as DEC, placed_bets as PB
 from nansafe import val, flag, text, num, isnan
 
 CAL_EDGES = [i / 100 for i in range(0, 75, 5)] + [1.0]     # 0–5, 5–10, …, 65–70, 70+
@@ -66,7 +66,7 @@ def rescore_edges(allp, models, rules_from=RU.BOARD_RULES_WEEK):
         d = allp[allp[kcol].notna() & allp[pre + "best"].notna() & allp[pcol].notna()].copy()
         if d.empty: continue
         coef = BL.coef_for(models, mk)
-        d["blend"] = BL.predict(coef, d[pcol].values, d[kcol].values)
+        d["blend"] = BL.blend(d[pcol].values, d[kcol].values, coef)
         for _, r in d.iterrows():
             if text(r, "weak_spot") or num(r, pre + "nbooks", 0) < MIN_BOOKS or isnan(val(r, pre + "med")):
                 continue
@@ -207,6 +207,47 @@ def main():
     # research logs (never bets): alt-rung candidates that failed the price / ratio filters, hidden passing-yard rungs, ratio-blocked
     # Rotational edges. Yard rows grade on actual yards, TD rows on the graded slate rows.
     tdhit = {(int(r.week), r.pid): (bool(r.hit), bool(r.first_hit), bool(r.two_hit)) for r in allp.itertuples()} if len(allp) else {}
+    # ---- primary record (ruling 7, 2026-10-29): for every graded week with a decision log, the bets are the capped card at each game's decision
+    #      pull at that pull's prices (decision.grade); slate re-scoring and the first-seen edge log no longer feed the record for those weeks ----
+    dec_weeks = {}
+    for fn in sorted(glob.glob(f"{DEC.DIR}/*_w*.json")):
+        sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", os.path.basename(fn))[0])
+        if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+        log = json.load(open(fn))
+        dec_weeks[(sn, wk)] = dict(bets=DEC.grade(log, sn, wk, tdhit, ymap, final_games=final), summary=DEC.summary(log))
+    if dec_weeks:
+        bets = [b_ for b_ in bets if (int(b_["season"]), int(b_["week"])) not in dec_weeks] + [b_ for v in dec_weeks.values() for b_ in v["bets"]]
+        print("  decision-pull record:", ", ".join(f"{sn} w{wk}: {len(v['bets'])} bets from {v['summary']['decided']} decided game(s), {v['summary']['missed']} missed" for (sn, wk), v in sorted(dec_weeks.items())))
+    decision_out = dict(rule="primary record = the capped card at each game's decision pull (Sunday early / late: first pull at or after 9:23 AM PT; other games: last pull before the kickoff cutoff), at that pull's prices",
+                        weeks={f"{sn}-{wk}": v["summary"] for (sn, wk), v in dec_weeks.items()})
+    # ---- secondary research record: every first-seen edge-log entry graded as logged (first flag, flag-time price, logged stake); never the headline ----
+    def first_seen_rows():
+        rows = []
+        for fn in sorted(glob.glob(f"{C.EDGE_DIR}/*_w*.json")):
+            sn, wk = (int(x) for x in re.findall(r"(\d+)_w(\d+)", os.path.basename(fn))[0])
+            if not any(w["season"] == sn and w["week"] == wk for w in weeks): continue
+            for e in json.load(open(fn)).values():
+                if e.get("void") or e.get("best") is None: continue
+                if e.get("market") in ("yds", "yds_alt"):
+                    y = ymap.get((wk, e["pid"], e.get("kind")))
+                    if y is None: continue
+                    won = y >= float(e["line"])
+                else:
+                    h = tdhit.get((wk, e["pid"]))
+                    if h is None: continue
+                    won = {"any": h[0], "first": h[1], "two": h[2]}.get(e.get("market"), h[0])
+                price = int(e["best"]); dec = 1 + (price / 100 if price > 0 else 100 / -price); stake = float(e.get("stake") or 1.0)
+                rows.append(dict(season=sn, week=wk, bet=e.get("bet"), pid=e["pid"], market=e.get("market"), kind=e.get("kind"), role=e.get("role"), price=price, book=e.get("book"),
+                                 ev=float(e.get("ev") or 0), stake=stake, won=bool(won), profit=round(stake * (dec - 1) if won else -stake, 3), flagged=e.get("flagged")))
+        return rows
+    def fs_tally(g):
+        stk = sum(r["stake"] for r in g)
+        return dict(n=len(g), won=sum(1 for r in g if r["won"]), units=round(sum(r["profit"] for r in g), 2), expected=round(sum(r["stake"] * r["ev"] for r in g), 2), staked=round(stk, 2),
+                    roi=round(sum(r["profit"] for r in g) / stk, 4) if stk else None)
+    _fs = first_seen_rows()
+    research_first_seen = dict(all=fs_tally(_fs), by_week={int(k): fs_tally([r for r in _fs if r["week"] == k]) for k in sorted({r["week"] for r in _fs})},
+                               by_market={k: fs_tally([r for r in _fs if r["market"] == k]) for k in sorted({r["market"] for r in _fs if r["market"]})},
+                               rule="every first-seen edge-log entry at its flag-time price and logged stake (secondary research record, never the headline)") if _fs else None
     def research_rows(pattern):
         rows = []
         for fn in sorted(glob.glob(pattern)):
@@ -317,13 +358,16 @@ def main():
         for k, v in json.load(open(fn)).items():
             if v.get("void"): voided.append(dict(season=sn, week=wk, key=k, bet=v.get("bet"), market=v.get("market"), book=v.get("book"), best=v.get("best"), flagged=v.get("flagged"), reason=v["void"].get("reason"), at=v["void"].get("at")))
     void_keys = {(v["season"], v["week"], v["bet"]) for v in voided}
+    backfill_weeks_or = {(w["season"], w["week"]) for w in weeks if w.get("backfill")}
     for key, fz in frozen.items():
         kept = [b_ for b_ in fz["bets"] if (b_["season"], b_["week"], b_["bet"]) not in void_keys]
         if len(kept) != len(fz["bets"]): print(f"  frozen week {key}: {len(fz['bets']) - len(kept)} voided bet(s) removed from the frozen record"); fz["bets"] = kept
     bets_current = rescore_edges(allp, models, rules_from=None) + yard_bets(rules_from=None)   # plain blend re-score: today's blend and edge rule, 1u for every role, no board rules
     partial = {(w["season"], w["week"]) for w in weeks if w.get("partial")}
     rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, " + ("fitted" if any(BL.coef_for(models, m) for m in ("any", "first", "two")) else "50/50")
-                + " model-market blend; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor")
+                + " model-market blend; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor"
+                + ("; from week 8 the record is the capped card at each game's decision pull at that pull's prices (alt rungs 0.25u, first-TD longshots +2000 with model > 2x market "
+                   "routed to the bench at 0.25u, 25 bets per kickoff window)" if dec_weeks else ""))
     by_wk = {}
     for b_ in bets: by_wk.setdefault(f"{b_['season']}-{b_['week']}", []).append(b_)
     for w in weeks:
@@ -336,6 +380,65 @@ def main():
         b_.setdefault("stake", 1.0); b_["kind"] = kind_of(b_); b_.setdefault("ratio", RU.ratio_of(b_.get("model_p"), b_.get("mkt_p")))
         b_["group"] = "bench" if b_.get("role") == "Bench" else "main"
     print(f"  bet record: {len(bets)} bets ({sum(len(v['bets']) for v in frozen.values())} frozen over {len(frozen)} weeks); under current rules {len(bets_current)}")
+    # ---- "My bets" (placed_bets.jsonl, assignment 2026-10-20): the bets actually placed, graded on their own card, never in the record ----
+    graded_weeks = {(w["season"], w["week"]) for w in weeks if not w.get("partial")}
+    my_bets = PB.grade(PB.load(), tdhit, ymap, graded_weeks)
+    # ---- one-ruler regrade, weeks 3-6 (ruling 3 / item 9): the frozen TD bets re-flagged with the 50/50 blend (the one ruler) under the same flag rule
+    #      and the stakes of their era (1u before week 6; Bench 0.25u and the ratio block from week 6); yard bets were always 50/50 and carry over.
+    #      Shown beside the frozen record, never replacing it; the drop list is every frozen bet the one ruler does not flag (W4 / W5 first TD). ----
+    OR_WEEKS = (3, 4, 5, 6)
+    one_ruler = None
+    if len(allp) and any(int(w["week"]) in OR_WEEKS and not w.get("backfill") for w in weeks):
+        orp = allp[allp.week.isin(OR_WEEKS)]
+        fz_rows = [b_ for k in sorted(frozen) for b_ in frozen[k]["bets"] if int(b_["week"]) in OR_WEEKS and (int(b_["season"]), int(b_["week"])) not in backfill_weeks_or]
+        keyf = lambda b_: (int(b_["week"]), b_["bet"])
+        fz_td = [b_ for b_ in fz_rows if b_["market"] in ("any", "first", "two")]; fz_y = [b_ for b_ in fz_rows if b_["market"] not in ("any", "first", "two")]
+        fz_keys = {keyf(b_) for b_ in fz_td}
+        def half_row(b_):
+            """The frozen bet re-judged by the one ruler from its OWN stored fields (model P, market P, price, EV at the median): the median price is
+               recovered from the stored EV@median and blend, so a slate file rewritten later (Kalshi off in replays) can never fake a drop."""
+            m_, k_ = float(b_["model_p"]), float(b_["mkt_p"]); half = float(BL.blend([m_], [k_])[0]); bf = float(b_["blend_p"]) if b_.get("blend_p") else None
+            dec_ = 1 + (b_["price"] / 100 if b_["price"] > 0 else 100 / -b_["price"])
+            dec_m = (float(b_["ev_med"]) + 1) / bf if bf and b_.get("ev_med") is not None else None
+            ev_h, evm_h = half * dec_ - 1, (half * dec_m - 1) if dec_m else None
+            med = None if dec_m is None else (int(round((dec_m - 1) * 100)) if dec_m >= 2 else int(round(-100 / (dec_m - 1))))
+            return dict(week=int(b_["week"]), bet=b_["bet"], market=b_["market"], role=b_.get("role"), price=b_["price"], book=b_.get("book"), med=med,
+                        model_p=round(m_, 4), mkt_p=round(k_, 4), blend_fitted=b_.get("blend_p"), blend_half=round(half, 4), ev_fitted=b_.get("ev"), ev_med_fitted=b_.get("ev_med"),
+                        ev_half=round(ev_h, 4), ev_med_half=None if evm_h is None else round(evm_h, 4), fitted=bool(b_.get("fitted")), won=bool(b_["won"]),
+                        profit=float(b_["profit"]), stake=float(b_.get("stake") or 1.0),
+                        flag_half=bool(bf is not None and abs(bf - half) < 1e-4) or bool(ev_h >= MIN_EV - 1e-9 and (evm_h is None or evm_h >= MIN_EV - 1e-9)))   # a 50/50-era bet keeps its flag: no rounding artefact
+        judged = [half_row(b_) for b_ in fz_td]
+        kept_td = [dict(b_, ev=j["ev_half"], ev_med=j["ev_med_half"], blend_p=j["blend_half"]) for b_, j in zip(fz_td, judged) if j["flag_half"]]
+        dropped = [j for j in judged if not j["flag_half"]]
+        # bets the one ruler flags that the fitted ruler did not: re-scored from the slate rows, only where the stored blend was a fitted one
+        or_td = rescore_edges(orp, {}, rules_from=RU.BOARD_RULES_WEEK)
+        stored = {}
+        for r in orp.itertuples():
+            for mk, pre, pcol, kcol in (("any", "any_", "p_any", "any_mkt_p"), ("first", "first_", "p_first", "first_mkt_p"), ("two", "two_", "p_2plus", "two_mkt_p")):
+                b0, m0, k0 = getattr(r, pre + "blend_p", None), getattr(r, pcol, None), getattr(r, kcol, None)
+                if b0 is not None and m0 is not None and k0 is not None and b0 == b0 and m0 == m0 and k0 == k0:
+                    stored[(int(r.week), r.name, mk)] = abs(float(b0) - 0.5 * (float(m0) + float(k0))) > 1e-4
+        name_of = lambda b_: b_["bet"].rsplit(" Anytime TD", 1)[0].rsplit(" First TD", 1)[0].rsplit(" 2+ TD", 1)[0]
+        added_src = [b_ for b_ in or_td if keyf(b_) not in fz_keys and stored.get((int(b_["week"]), name_of(b_), b_["market"]), False)]
+        added = [dict(week=int(b_["week"]), bet=b_["bet"], market=b_["market"], role=b_.get("role"), price=b_["price"], book=b_.get("book"), blend_half=b_["blend_p"], ev_half=b_["ev"], ev_med_half=b_.get("ev_med"),
+                      won=bool(b_["won"]), profit=float(b_["profit"]), stake=float(b_.get("stake") or 1.0)) for b_ in added_src]
+        or_bets = kept_td + fz_y + added_src
+        def tl(g):
+            stk = sum(float(b_.get("stake") or 1.0) for b_ in g)
+            return dict(n=len(g), won=sum(1 for b_ in g if b_["won"]), units=round(sum(float(b_["profit"]) for b_ in g), 2), expected=round(sum(float(b_.get("stake") or 1.0) * float(b_["ev"]) for b_ in g), 2),
+                        staked=round(stk, 2), roi=round(sum(float(b_["profit"]) for b_ in g) / stk, 4) if stk else None)
+        by_week = []
+        for w_ in OR_WEEKS:
+            fw = [b_ for b_ in fz_rows if int(b_["week"]) == w_]; ow = [b_ for b_ in or_bets if int(b_["week"]) == w_]
+            if not fw and not ow: continue
+            by_week.append(dict(week=w_, frozen=tl(fw), one_ruler=tl(ow), dropped=sum(1 for d_ in dropped if d_["week"] == w_), added=sum(1 for a_ in added if a_["week"] == w_),
+                                first_td=dict(frozen=tl([b_ for b_ in fw if b_["market"] == "first"]), one_ruler=tl([b_ for b_ in ow if b_["market"] == "first"])),
+                                fitted_in_frozen=sum(1 for b_ in fw if b_.get("fitted"))))
+        one_ruler = dict(weeks=[w_["week"] for w_ in by_week], by_week=by_week, cum=dict(frozen=tl(fz_rows), one_ruler=tl(or_bets)), dropped=dropped, added=added,
+                         rule="weeks 3-6 re-judged with the 50/50 blend (the one ruler) under the same flag rule (EV >= 5% at the median and best book, 2+ books) at the frozen prices "
+                              "and stakes; dropped = frozen bets the one ruler does not flag; added = players the fitted blend left unflagged that the one ruler flags (same slate "
+                              "prices); yard bets carry over unchanged (always 50/50). A view beside the frozen record, never replacing it")
+        print(f"  one ruler W3-6: frozen {tl(fz_rows)['n']} bets {tl(fz_rows)['units']:+.2f}u vs one ruler {tl(or_bets)['n']} bets {tl(or_bets)['units']:+.2f}u; dropped {len(dropped)} (first TD {sum(1 for d_ in dropped if d_['market'] == 'first')}), added {len(added)}")
 
     # ---- yards head-to-head at the books' main lines, from week 4 on: model P(over) vs no-vig book P(over) vs 50/50,
     #      and whether our median or the book line was closer to the actual yards ----
@@ -354,7 +457,7 @@ def main():
     def yh2h(g):
         pm, pk, yv = g.p_yds.values, g.yds_mkt_p.values, g.yds_hit.values.astype(float)
         dm, db = np.abs(g["median"].values - g.y.values), np.abs(g.line.values - g.y.values)
-        return dict(n=int(len(g)), model=round(BL.brier(pm, yv), 4), book=round(BL.brier(pk, yv), 4), blend=round(BL.brier(0.5 * pm + 0.5 * pk, yv), 4),
+        return dict(n=int(len(g)), model=round(BL.brier(pm, yv), 4), book=round(BL.brier(pk, yv), 4), blend=round(BL.brier(BL.blend(pm, pk), yv), 4),
                     median_closer=int((dm < db).sum()), book_closer=int((db < dm).sum()), ties=int((dm == db).sum()),
                     median_closer_pct=round(float((dm < db).sum() / max(1, (dm != db).sum())), 4))
     yards_h2h = None
@@ -476,7 +579,7 @@ def main():
     def mb(m, mk):
         c = COLS[mk]; mp = m[c[0]].astype(float); y = m[c[1]].astype(float); pm = m[c[2]].astype(float)
         return dict(n=int(len(m)), model=round(float(((pm - y) ** 2).mean()), 4), market=round(float(((mp - y) ** 2).mean()), 4),
-                    blend=round(float(((0.5 * pm + 0.5 * mp - y) ** 2).mean()), 4))
+                    blend=round(float(((BL.blend(pm.values, mp.values) - y.values) ** 2).mean()), 4))
     market_brier = {}
     for mk, pcol in [("any", "any_mkt_p"), ("first", "first_mkt_p"), ("two", "two_mkt_p")]:
         if pcol in allp:
@@ -619,8 +722,10 @@ def main():
                slips=dict(rows=slips_rows, summary=slips_summary), slips_backtest=slips_bt, research_alt=research_alt, alt_rules=alt_rules,
                record=record, record_current_rules=record_current_rules, bench_gate=bench_gate, longshot_gate=longshot_gate, clv_by_week=clv_by_week,
                research_pass=research_pass, research_ratio=research_ratio, research_ud=research_ud, research_lineshop=research_lineshop, research_pending=pending,
+               research_first_seen=research_first_seen, decision=decision_out, my_bets=my_bets, one_ruler=one_ruler,
                board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
-                                min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE))
+                                min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
+                                alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP))
     out["voided"] = voided
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),

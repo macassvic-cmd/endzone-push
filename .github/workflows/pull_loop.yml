@@ -119,6 +119,7 @@ jobs:
           python test_pull_loop.py
           python test_yards_source.py
           python test_board_rules.py
+          python test_card_rules.py
           python refresh.py --data-only
       - name: Grade and refit the blend gate (same state as the scheduled runs, which run results.py before the model)
         run: python results.py

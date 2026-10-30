@@ -44,6 +44,21 @@ The idempotence rule above means an external kick and a GitHub cron minutes apar
     pip install -r requirements.txt
     python refresh.py && python results.py
 
+## Decision-pull record, card cap and stakes (2026-10-29)
+
+- **Primary record** = the capped card at each game's decision pull, at that pull's prices (`decision.py`, `decision_log/<season>_w<week>.json`).
+  Sunday early / late games: the first build at or after 9:23 AM Pacific (the last actionable build before 9:23 if the first one after it is inside
+  the 30-min kickoff cutoff). TNF / SNF / MNF / London / Saturday: the last build before the cutoff. A game with no build at its decision time is
+  "missed" and has no primary-record bets. The first-seen edge log stays as the secondary research record.
+- **Card cap**: 25 actionable bets per kickoff window (the `pull_windows.json` cluster), ranked by EV at the median book, one alt rung per
+  player-stat; the rest show greyed as "over card cap", go to `research/card_cap_*.json` and never reach the edge log, Discord or the record.
+- **Stakes**: alt rungs 0.25u for every role (created at that stake); Bench plays 0.25u; first-TD edges priced +2000 or longer with model P more
+  than 2x the market sit in the bench section at 0.25u whatever the role. The flag rule itself is unchanged.
+- **Blends**: `blend.blend()` is the one blend function (50/50; fitted blends only through `coef_for` with approval + gates, none approved).
+- **My bets**: `python placed_bets.py add "Name Anytime TD" --book FanDuel --price +650 --stake 1` logs a placed bet to `placed_bets.jsonl`;
+  graded on its own Results card, never in the model record.
+- Scheduled crons in `update.yml` are written in PST from 2026-11-01 (the Sunday 9:23 PT run is 17:23 UTC).
+
 ## Credits rule (2026-10-18)
 **No Odds API calls outside CI.** `odds._get` refuses a live call unless the process runs in GitHub Actions or `ODDS_LIVE=1` is set;
 `python run_week.py` on a laptop replays the newest saved pull for the week (`odds_history/`, same as `ODDS_MOCK=<file>`) and says so;
