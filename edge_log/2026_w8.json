@@ -6270,5 +6270,43 @@
 "ok": false
 }
 ]
+},
+"00-0041013|yds|rush|14.5": {
+"pid": "00-0041013",
+"bet": "Emmett Johnson Over 14.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "KC",
+"role": "Bench",
+"kind": "rush",
+"line": 14.5,
+"flagged": "20261030T0627Z",
+"best": 225,
+"book": "FanDuel",
+"med": 225,
+"mkt_p": 0.2888,
+"blend_p": 0.3752,
+"model_p": 0.4615,
+"ev": 0.2193,
+"ev_med": 0.2193,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.6,
+"bet_down_to": 180,
+"best_venue": {
+"venue": "FanDuel",
+"price": 225,
+"net": 225,
+"size_label": "",
+"captured": "2026-10-30T06:26:26Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+}
+]
 }
 }
