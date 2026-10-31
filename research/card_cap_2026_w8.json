@@ -11984,5 +11984,927 @@
 "over card cap (rank 59 of 62, cap 25; 3 slot(s) held by main-line yard edges under the yard floor of 10)"
 ],
 "flagged": "20261031T2015Z"
+},
+"00-0036259|any|None|None": {
+"bet": "Jauan Jennings Anytime TD",
+"pid": "00-0036259",
+"market": "any",
+"team": "MIN",
+"model_p": 0.16315,
+"mkt_p": 0.117,
+"blend_p": 0.1401,
+"best": 727,
+"book": "Kalshi",
+"ev": 0.1586,
+"med": 700,
+"ev_med": 0.1208,
+"nbooks": 3,
+"games": 20,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 727,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T18:00Z",
+"group": "main",
+"routed": null,
+"ratio": 1.39,
+"bet_down_to": 650,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 727,
+"net": 727,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 174.12,
+"size_label": "$174 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 700,
+"net": 700,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:44.898493591Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+},
+{
+"venue": "FanDuel",
+"kind": "sportsbook",
+"price": 600,
+"net": 600,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:44.898921977Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 727,
+"net": 727,
+"size_label": "$174 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "Anytime TD",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.3086
+},
+"3-pick": {
+"higher": 0.3625
+},
+"5-pick flex": {
+"higher": 0.3656
+}
+},
+"margins": {
+"higher": -0.2224
+},
+"higher": {
+"price": 477.0,
+"mult": 3.5
+},
+"lower": null,
+"blend_higher": 0.1401,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2224,
+"flag": false
+},
+"kick_min": 1291.0,
+"age_min": -2.2,
+"game_id": "2026_08_MIN_DET",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 44,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 44 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0039361|first|None|None": {
+"bet": "Bucky Irving First TD",
+"pid": "00-0039361",
+"market": "first",
+"team": "TB",
+"model_p": 0.12668333333333334,
+"mkt_p": 0.1298,
+"blend_p": 0.1833,
+"best": 519,
+"book": "Kalshi",
+"ev": 0.1344,
+"med": 497,
+"ev_med": 0.0941,
+"nbooks": 2,
+"games": 17,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 519,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T18:00Z",
+"group": "main",
+"routed": null,
+"ratio": 0.98,
+"bet_down_to": 473,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 519,
+"net": 519,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 3318.16,
+"size_label": "$3,318 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 475,
+"net": 475,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:02.096070079Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 519,
+"net": 519,
+"size_label": "$3,318 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "First TD Scorer",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.3482
+},
+"3-pick": {
+"higher": 0.3928
+},
+"5-pick flex": {
+"higher": 0.3928
+}
+},
+"margins": {
+"higher": -0.2095
+},
+"higher": {
+"price": 428.0,
+"mult": 2.75
+},
+"lower": null,
+"blend_higher": 0.1833,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2095,
+"flag": false
+},
+"kick_min": 1291.0,
+"age_min": -2.2,
+"game_id": "2026_08_ATL_TB",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 49,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 49 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0038597|first|None|None": {
+"bet": "Chase Brown First TD",
+"pid": "00-0038597",
+"market": "first",
+"team": "CIN",
+"model_p": 0.1281,
+"mkt_p": 0.1369,
+"blend_p": 0.1915,
+"best": 482,
+"book": "Kalshi",
+"ev": 0.1146,
+"med": 466,
+"ev_med": 0.0839,
+"nbooks": 2,
+"games": 23,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 482,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T18:00Z",
+"group": "main",
+"routed": null,
+"ratio": 0.94,
+"bet_down_to": 449,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 482,
+"net": 482,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 3685.85,
+"size_label": "$3,686 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 450,
+"net": 450,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326091529Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 482,
+"net": 482,
+"size_label": "$3,686 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "First TD Scorer",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.3616
+},
+"3-pick": {
+"higher": 0.4028
+},
+"5-pick flex": {
+"higher": 0.4017
+}
+},
+"margins": {
+"higher": -0.2113
+},
+"higher": {
+"price": 344.0,
+"mult": 2.55
+},
+"lower": null,
+"blend_higher": 0.1915,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2113,
+"flag": false
+},
+"kick_min": 1291.0,
+"age_min": -2.2,
+"game_id": "2026_08_TEN_CIN",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 56,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 56 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0036900|first|None|None": {
+"bet": "Ja'Marr Chase First TD",
+"pid": "00-0036900",
+"market": "first",
+"team": "CIN",
+"model_p": 0.11861666666666666,
+"mkt_p": 0.123,
+"blend_p": 0.1695,
+"best": 561,
+"book": "Kalshi",
+"ev": 0.1203,
+"med": 530,
+"ev_med": 0.0678,
+"nbooks": 2,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 561,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T18:00Z",
+"group": "main",
+"routed": null,
+"ratio": 0.96,
+"bet_down_to": 520,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 561,
+"net": 561,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 6879.56,
+"size_label": "$6,880 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 500,
+"net": 500,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326091529Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 561,
+"net": 561,
+"size_label": "$6,880 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "First TD Scorer",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.3203
+},
+"3-pick": {
+"higher": 0.3715
+},
+"5-pick flex": {
+"higher": 0.3738
+}
+},
+"margins": {
+"higher": -0.202
+},
+"higher": {
+"price": 443.0,
+"mult": 3.25
+},
+"lower": null,
+"blend_higher": 0.1695,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.202,
+"flag": false
+},
+"kick_min": 1291.0,
+"age_min": -2.2,
+"game_id": "2026_08_TEN_CIN",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 60,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 60 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0036355|any|None|None": {
+"bet": "Justin Herbert Anytime TD",
+"pid": "00-0036355",
+"market": "any",
+"team": "LAC",
+"model_p": 0.19048333333333334,
+"mkt_p": 0.1369,
+"blend_p": 0.1637,
+"best": 608,
+"book": "Kalshi",
+"ev": 0.159,
+"med": 550,
+"ev_med": 0.064,
+"nbooks": 3,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 608,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T21:05Z",
+"group": "main",
+"routed": null,
+"ratio": 1.39,
+"bet_down_to": 542,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 608,
+"net": 608,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 3298.95,
+"size_label": "$3,299 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "FanDuel",
+"kind": "sportsbook",
+"price": 550,
+"net": 550,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.976234818Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 500,
+"net": 500,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.962465815Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 608,
+"net": 608,
+"size_label": "$3,299 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "Anytime TD",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.3333
+},
+"3-pick": {
+"higher": 0.3816
+},
+"5-pick flex": {
+"higher": 0.3828
+}
+},
+"margins": {
+"higher": -0.2179
+},
+"higher": {
+"price": 409.0,
+"mult": 3.0
+},
+"lower": null,
+"blend_higher": 0.1637,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2179,
+"flag": false
+},
+"kick_min": 1476.0,
+"age_min": -2.2,
+"game_id": "2026_08_LAC_LA",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 63,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 63 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0039648|any|None|None": {
+"bet": "David Martin-Robinson Anytime TD",
+"pid": "00-0039648",
+"market": "any",
+"team": "TEN",
+"model_p": 0.022133333333333335,
+"mkt_p": 0.0158,
+"blend_p": 0.019,
+"best": 7000,
+"book": "DraftKings",
+"ev": 0.3458,
+"med": 5500,
+"ev_med": 0.0615,
+"nbooks": 2,
+"games": 4,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"captured": "2026-10-31T20:29:55.326091529Z",
+"stake": 0.25,
+"kick_utc": "2026-11-01T18:00Z",
+"group": "bench",
+"routed": null,
+"ratio": 1.4,
+"bet_down_to": 5427,
+"venues": [
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 7000,
+"net": 7000,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326091529Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": true
+},
+{
+"venue": "FanDuel",
+"kind": "sportsbook",
+"price": 4000,
+"net": 4000,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326130773Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "DraftKings",
+"price": 7000,
+"net": 7000,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326091529Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "Anytime TD",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.1309
+},
+"3-pick": {
+"higher": 0.2046
+},
+"5-pick flex": {
+"higher": 0.2168
+}
+},
+"margins": {
+"higher": -0.1856
+},
+"higher": {
+"price": 2610.0,
+"mult": 19.46
+},
+"lower": null,
+"blend_higher": 0.019,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.1856,
+"flag": false
+},
+"kick_min": 1291.0,
+"age_min": -0.9,
+"game_id": "2026_08_TEN_CIN",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 64,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 64 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0037840|first|None|None": {
+"bet": "Kyren Williams First TD",
+"pid": "00-0037840",
+"market": "first",
+"team": "LA",
+"model_p": 0.12091666666666667,
+"mkt_p": 0.1329,
+"blend_p": 0.1811,
+"best": 519,
+"book": "Kalshi",
+"ev": 0.1212,
+"med": 485,
+"ev_med": 0.0596,
+"nbooks": 2,
+"games": 24,
+"w": 0.5,
+"role": "Starter",
+"kalshi": 519,
+"kalshi_liquid": true,
+"captured": "2026-10-31T20:31:09Z",
+"stake": 1.0,
+"kick_utc": "2026-11-01T21:05Z",
+"group": "main",
+"routed": null,
+"ratio": 0.91,
+"bet_down_to": 480,
+"venues": [
+{
+"venue": "Kalshi",
+"kind": "prediction market",
+"price": 519,
+"net": 519,
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true,
+"size": 6180.0,
+"size_label": "$6,180 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": false,
+"eligible": true,
+"best": true
+},
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 450,
+"net": 450,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.962465815Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "Kalshi",
+"price": 519,
+"net": 519,
+"size_label": "$6,180 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "First TD Scorer",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.342
+},
+"3-pick": {
+"higher": 0.3882
+},
+"5-pick flex": {
+"higher": 0.3887
+}
+},
+"margins": {
+"higher": -0.2071
+},
+"higher": {
+"price": 387.0,
+"mult": 2.85
+},
+"lower": null,
+"blend_higher": 0.1811,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2071,
+"flag": false
+},
+"kick_min": 1476.0,
+"age_min": -2.2,
+"game_id": "2026_08_LAC_LA",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 65,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 65 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
+},
+"00-0040311|any|None|None": {
+"bet": "Theo Wease Jr. Anytime TD",
+"pid": "00-0040311",
+"market": "any",
+"team": "LAC",
+"model_p": 0.0582,
+"mkt_p": 0.0399,
+"blend_p": 0.049,
+"best": 2500,
+"book": "DraftKings",
+"ev": 0.2752,
+"med": 2050,
+"ev_med": 0.0545,
+"nbooks": 2,
+"games": 5,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"captured": "2026-10-31T20:30:29.962465815Z",
+"stake": 0.25,
+"kick_utc": "2026-11-01T21:05Z",
+"group": "bench",
+"routed": null,
+"ratio": 1.46,
+"bet_down_to": 2043,
+"venues": [
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 2500,
+"net": 2500,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.962465815Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": true
+},
+{
+"venue": "FanDuel",
+"kind": "sportsbook",
+"price": 1600,
+"net": 1600,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.976234818Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "DraftKings",
+"price": 2500,
+"net": 2500,
+"size_label": "",
+"captured": "2026-10-31T20:30:29.962465815Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"ud": {
+"ud_stat": "Anytime TD",
+"line": 0.5,
+"breakeven": {
+"2-pick": {
+"higher": 0.1925
+},
+"3-pick": {
+"higher": 0.2646
+},
+"5-pick flex": {
+"higher": 0.2749
+}
+},
+"margins": {
+"higher": -0.2156
+},
+"higher": {
+"price": 1140.0,
+"mult": 9.0
+},
+"lower": null,
+"blend_higher": 0.049,
+"ref": "3-pick",
+"side": "higher",
+"margin": -0.2156,
+"flag": false
+},
+"kick_min": 1476.0,
+"age_min": -1.5,
+"game_id": "2026_08_LAC_LA",
+"window": "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z",
+"cap_rank": 66,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 66 of 66, cap 25; 5 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261031T2028Z"
 }
 }

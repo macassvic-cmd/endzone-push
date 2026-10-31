@@ -7038,5 +7038,225 @@
 "ok": true
 }
 ]
+},
+"00-0023459|any": {
+"pid": "00-0023459",
+"bet": "Aaron Rodgers Anytime TD",
+"market": "any",
+"team": "PIT",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261031T2028Z",
+"best": 1893,
+"book": "Kalshi",
+"med": 1800,
+"mkt_p": 0.0502,
+"blend_p": 0.0697,
+"model_p": 0.08915,
+"ev": 0.3884,
+"ev_med": 0.3236,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.78,
+"bet_down_to": 1407,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1893,
+"net": 1893,
+"size_label": "$331 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1893,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1800,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1500,
+"ok": true
+}
+]
+},
+"00-0036997|first": {
+"pid": "00-0036997",
+"bet": "Javonte Williams First TD",
+"market": "first",
+"team": "DAL",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261031T2028Z",
+"best": 421,
+"book": "Kalshi",
+"med": 411,
+"mkt_p": 0.1517,
+"blend_p": 0.2467,
+"model_p": 0.17386666666666667,
+"ev": 0.2852,
+"ev_med": 0.2605,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.15,
+"bet_down_to": 326,
+"best_venue": {
+"venue": "Kalshi",
+"price": 421,
+"net": 421,
+"size_label": "$3,862 at the ask",
+"captured": "2026-10-31T20:31:09Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 421,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 400,
+"ok": true
+}
+]
+},
+"00-0040784|yds|rush|69.5": {
+"pid": "00-0040784",
+"bet": "Quinshon Judkins Over 69.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "CLE",
+"role": "Starter",
+"kind": "rush",
+"line": 69.5,
+"flagged": "20261031T2028Z",
+"best": 280,
+"book": "DraftKings",
+"med": 280,
+"mkt_p": 0.2536,
+"blend_p": 0.3316,
+"model_p": 0.4095,
+"ev": 0.2599,
+"ev_med": 0.2599,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.61,
+"bet_down_to": 217,
+"best_venue": {
+"venue": "DraftKings",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-10-31T20:30:02.096070079Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 280,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 265,
+"ok": true
+}
+]
+},
+"00-0036223|yds|rush|49.5": {
+"pid": "00-0036223",
+"bet": "Jonathan Taylor Over 49.5 rush yds",
+"market": "yds",
+"team": "IND",
+"role": "Starter",
+"kind": "rush",
+"line": 49.5,
+"flagged": "20261031T2028Z",
+"best": -113,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.5016,
+"blend_p": 0.5996,
+"model_p": 0.6976,
+"ev": 0.1302,
+"ev_med": 0.1302,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.39,
+"bet_down_to": -133,
+"best_venue": {
+"venue": "DraftKings",
+"price": -113,
+"net": -113,
+"size_label": "",
+"captured": "2026-10-31T20:30:13.816122545Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -113,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+}
+]
+},
+"00-0035261|yds|rush|65.5": {
+"pid": "00-0035261",
+"bet": "Tony Pollard Over 65.5 rush yds",
+"market": "yds",
+"team": "TEN",
+"role": "Starter",
+"kind": "rush",
+"line": 65.5,
+"flagged": "20261031T2028Z",
+"best": -113,
+"book": "FanDuel",
+"med": -113,
+"mkt_p": 0.5021,
+"blend_p": 0.5626,
+"model_p": 0.623,
+"ev": 0.0604,
+"ev_med": 0.0604,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": -115,
+"best_venue": {
+"venue": "FanDuel",
+"price": -113,
+"net": -113,
+"size_label": "",
+"captured": "2026-10-31T20:29:55.326130773Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -114,
+"ok": true
+}
+]
 }
 }
