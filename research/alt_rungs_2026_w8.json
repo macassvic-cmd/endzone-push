@@ -21888,5 +21888,116 @@
 "price"
 ],
 "flagged": "20261031T0718Z"
+},
+"00-0036410|rec|149.5": {
+"bet": "Tee Higgins Over 149.5 rec yds (alt)",
+"pid": "00-0036410",
+"market": "yds_alt",
+"kind": "rec",
+"line": 149.5,
+"team": "CIN",
+"model_p": 0.0664,
+"mkt_p": 0.0728,
+"blend_p": 0.0696,
+"best": 1420,
+"book": "DraftKings",
+"ev": 0.0583,
+"med": 1420,
+"ev_med": 0.0583,
+"nbooks": 5,
+"curve_rungs": 23,
+"games": 21,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel",
+"Fanatics"
+],
+"listed_p": 0.0623,
+"captured": "2026-10-31T07:47:43Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T0748Z"
+},
+"00-0039139|rec|99.5": {
+"bet": "Jahmyr Gibbs Over 99.5 rec yds (alt)",
+"pid": "00-0039139",
+"market": "yds_alt",
+"kind": "rec",
+"line": 99.5,
+"team": "DET",
+"model_p": 0.022,
+"mkt_p": 0.0391,
+"blend_p": 0.0305,
+"best": 4000,
+"book": "DraftKings",
+"ev": 0.2515,
+"med": 4000,
+"ev_med": 0.2515,
+"nbooks": 4,
+"curve_rungs": 17,
+"games": 23,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"BetMGM",
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-10-31T07:47:55Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T0748Z"
+},
+"00-0037256|rec|69.5": {
+"bet": "Rachaad White Over 69.5 rec yds (alt)",
+"pid": "00-0037256",
+"market": "yds_alt",
+"kind": "rec",
+"line": 69.5,
+"team": "WAS",
+"model_p": 0.0156,
+"mkt_p": 0.039,
+"blend_p": 0.0273,
+"best": 3800,
+"book": "DraftKings",
+"ev": 0.065,
+"med": 3800,
+"ev_med": 0.065,
+"nbooks": 4,
+"curve_rungs": 15,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0243,
+"captured": "2026-10-31T07:47:46Z",
+"kick_utc": "2026-11-02T01:20Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T0748Z"
 }
 }

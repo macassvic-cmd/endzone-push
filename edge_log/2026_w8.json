@@ -6851,5 +6851,96 @@
 "ok": true
 }
 ]
+},
+"00-0036919|yds|rush|24.5": {
+"pid": "00-0036919",
+"bet": "Kenny Gainwell Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "TB",
+"role": "Bench",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261031T0748Z",
+"best": 254,
+"book": "DraftKings",
+"med": 254,
+"mkt_p": 0.2859,
+"blend_p": 0.3443,
+"model_p": 0.4027,
+"ev": 0.2189,
+"ev_med": 0.2189,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.41,
+"bet_down_to": 205,
+"best_venue": {
+"venue": "DraftKings",
+"price": 254,
+"net": 254,
+"size_label": "",
+"captured": "2026-10-31T07:47:48Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 254,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 210,
+"ok": true
+}
+]
+},
+"00-0040179|any": {
+"pid": "00-0040179",
+"bet": "DJ Giddens Anytime TD",
+"market": "any",
+"team": "IND",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261031T0748Z",
+"best": 3400,
+"book": "BetRivers",
+"med": 2800,
+"mkt_p": 0.0272,
+"blend_p": 0.0419,
+"model_p": 0.056633333333333334,
+"ev": 0.4665,
+"ev_med": 0.2151,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.08,
+"bet_down_to": 2406,
+"best_venue": {
+"venue": "BetRivers",
+"price": 3400,
+"net": 3400,
+"size_label": "",
+"captured": "2026-10-31T07:47:47Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 3400,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 2200,
+"ok": true
+}
+]
 }
 }
