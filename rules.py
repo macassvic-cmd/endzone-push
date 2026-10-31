@@ -9,6 +9,11 @@ from nansafe import val, flag, text, num, isnan
 
 MIN_BOOKS, MIN_EV = 2, 0.05
 MARKETS = [("any_", "Anytime TD", "p_any"), ("first_", "First TD", "p_first"), ("two_", "2+ TD", "p_2plus")]
+# CEO ruling 2026-10-31: 2+ TD produces NO actionable edges (not on the card, not in Discord, not in the decision-pull record, not graded,
+# never logged): the EV-flag version surfaced longshot backups (104 flags W4-W7, 1 cashed, 0-2 in the record) and never matched the
+# original ask, a likelihood list of low-odds 2-TD scorers for 2-3 player parlays. Player rows keep p_2plus and the 2+ pricing fields
+# (the 2+ TD tab and the parlay builder read them); only the edge creation is gated here, at the source. Frozen weeks are never rewritten.
+DEAD_MARKETS = ("two",)
 
 # Board rules in force from BOARD_RULES_WEEK (2026 week 6; weeks 3-5 were played at 1u for every role with no ratio block,
 # and their frozen record is never rewritten):
@@ -240,6 +245,7 @@ def td_edges(df, min_books=MIN_BOOKS, min_ev=MIN_EV):
         if text(r, "weak_spot"):
             continue
         for m, lbl, pcol in MARKETS:
+            if m[:-1] in DEAD_MARKETS: continue                     # 2+ TD: no edge is ever created (ruling 2026-10-31)
             ev, ev_med = val(r, m + "ev"), val(r, m + "ev_med")
             if ev is None or ev_med is None or isnan(val(r, m + "best")) or isnan(val(r, m + "med")):
                 continue
@@ -257,7 +263,7 @@ def qualifying_rows(df, min_books=MIN_BOOKS, min_ev=MIN_EV):
     """Independent count of (row, market) pairs that satisfy the rule, for tests: computed with plain pandas masks."""
     n = 0
     for m, _, _ in MARKETS:
-        if m + "ev" not in df or m + "ev_med" not in df:
+        if m[:-1] in DEAD_MARKETS or m + "ev" not in df or m + "ev_med" not in df:
             continue
         ok = df[m + "ev"].notna() & df[m + "ev_med"].notna() & (df[m + "ev"] >= min_ev) & (df[m + "ev_med"] >= min_ev)
         ok &= df[m + "nbooks"].fillna(0) >= min_books if m + "nbooks" in df else False

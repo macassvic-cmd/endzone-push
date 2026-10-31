@@ -18408,5 +18408,98 @@
 }
 ]
 }
+},
+"replay_2026_10_31": {
+"note": "the same two saved pulls replayed before (e9e5cda+quota: 50/50 first TD, 2+ TD flagged) and after the 2026-10-31 rulings (fitted first TD, 2+ TD dead): anytime / yds / yds_alt pre-cap sets byte-identical; first TD re-flagged by the fitted blend; 2+ TD gone",
+"pulls": {
+"replay_1533": {
+"as_of": "2026-10-29T15:40:00Z",
+"by_market": {
+"any": {
+"n_before": 27,
+"n_after": 27,
+"sha256_before": "132280e67d2da19061e5a8333d7b81ade841d8bc038c3eec3ab7f048d7cfe8e6",
+"sha256_after": "132280e67d2da19061e5a8333d7b81ade841d8bc038c3eec3ab7f048d7cfe8e6",
+"identical": true
+},
+"first": {
+"n_before": 15,
+"n_after": 5,
+"sha256_before": "77b8103dc24ffa3429a98eae90e807a5a106e021fef4112872111d8aa4da24e3",
+"sha256_after": "e464cab0c9acf09e3137d6e5356ef5022cc4509eb400c2597f283974331b7c52",
+"identical": false
+},
+"two": {
+"n_before": 22,
+"n_after": 0,
+"sha256_before": "d0cea6a0fe4cfa8f22d6096637650507ae2ddaa78ccaf8bddc6a28d1d1c03e8d",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": false
+},
+"yds": {
+"n_before": 0,
+"n_after": 0,
+"sha256_before": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": true
+},
+"yds_alt": {
+"n_before": 0,
+"n_after": 0,
+"sha256_before": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": true
+}
+},
+"first_td_flags": {
+"half": 15,
+"fitted": 5
+}
+},
+"replay_0005": {
+"as_of": "2026-10-30T00:12:00Z",
+"by_market": {
+"any": {
+"n_before": 24,
+"n_after": 24,
+"sha256_before": "2bcd51611d0bf6146f227bdcc0b22f668cb811b99429d7a5a09b8bb490d1cd0f",
+"sha256_after": "2bcd51611d0bf6146f227bdcc0b22f668cb811b99429d7a5a09b8bb490d1cd0f",
+"identical": true
+},
+"first": {
+"n_before": 12,
+"n_after": 5,
+"sha256_before": "1a6a01a53335da1bb0b755791a93d3379d22329006e1c04a486d4c76090e8747",
+"sha256_after": "472971fbabcb452a2ac0b5a30d83b1e8969b34ad2ba0368c43fecb5d37053541",
+"identical": false
+},
+"two": {
+"n_before": 17,
+"n_after": 0,
+"sha256_before": "366e9ac6de0ceca82f4365cc3c609d0101fce0267a9cb81b321d882c2c5d1ed3",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": false
+},
+"yds": {
+"n_before": 0,
+"n_after": 0,
+"sha256_before": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": true
+},
+"yds_alt": {
+"n_before": 0,
+"n_after": 0,
+"sha256_before": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"sha256_after": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+"identical": true
+}
+},
+"first_td_flags": {
+"half": 14,
+"fitted": 6
+}
+}
+}
 }
 }

@@ -3,14 +3,17 @@
   1. an alt-rung edge is created at 0.25u (rules.ALT_STAKE), every role, at the source (run_week creation dict + rules.split_board);
   2. a first-TD edge priced +2000 or longer with model P > 2x the market routes to the bench section at 0.25u, every role;
   3. the card cap never exceeds 25 actionable bets per kickoff window and never allows two alt rungs of the same player-stat;
-  4. no stored blend_p falls outside [min(model, market), max(model, market)]: the one blend function, every slate / latest.json /
-     edge-log / decision-log row on disk;
+  4. no stored 50/50 blend_p falls outside [min(model, market), max(model, market)]: the one blend function, every slate / latest.json /
+     edge-log / decision-log row on disk; first-TD rows (fitted W1-6 blend, CEO ruling 2026-10-31) are exempt only when they reproduce
+     blend(model_p, mkt_p, coef_for("first")) exactly, and every first-TD row stored after the switch must; anytime / 2+ TD stay 50/50;
   5. the decision rule (Sunday 9:23 AM PT for early / late games, DST-aware; final pre-cutoff pull otherwise) and the decision log's
      pending -> decided / missed transitions;
   6. the card-cap quota (CEO ruling 2026-10-30): in any window with 10+ actionable main-line yard edges the 10 highest-EV@median yard mains
      are all on the card; with fewer, every yard main is on the card and the card still reaches 25 when enough edges exist; alt rungs never
      claim floor slots; the cap stays <= 25 per window;
-  7. flag invariance: the cap step is a pure partition. Re-running it on the pre-cap edge sets of the week 8 replay and the live board built by
+  7. 2+ TD produces no actionable edge (CEO ruling 2026-10-31): gated in rules.td_edges / qualifying_rows; builds under the rule carry none
+     in edges / over_cap / held, the edge log and decision snapshots after the switch carry none, player rows keep p_2plus, frozen W5 bets stay;
+  8. flag invariance: the cap step is a pure partition. Re-running it on the pre-cap edge sets of the week 8 replay and the live board built by
      the pre-quota code (research/card_cap_quota_invariance_2026_w8.json) gives back the same rows byte for byte (sha256), only cap_rank /
      over_cap / quota may differ.
 
@@ -112,18 +115,37 @@ def _check_bounds(label, m, k, b):
     assert lo - TOL <= b <= hi + TOL, (label, m, k, b)
 
 
+FIT_TOL = 3e-4                        # |stored blend_p - blend(model_p, mkt_p, coef)| allowed by the 4-decimal rounding of all three (replays: max 1.3e-4)
+FIRST_FITTED_FROM = "20261031T0740Z"   # CEO ruling 2026-10-31: first TD on the fitted W1-6 blend from this build stamp on; rows flagged / snapshotted earlier are 50/50-era
+
+
 def test_blend_is_between_model_and_market_everywhere():
+    """50/50 markets: every stored blend inside [min(model, market), max(model, market)]. First TD (CEO ruling 2026-10-31): a row is exempt from
+       the bounds ONLY when it reproduces blend(model_p, mkt_p, coef_for("first")) exactly (to the stored 4 decimals); every first-TD row stored
+       after the switch must be that fitted value (no stale 50/50 rows); first-TD rows from before the switch are 50/50-era and must be in bounds."""
     import numpy as np
     rng = np.random.default_rng(0)
     pm, pk = rng.uniform(0.001, 0.999, 500), rng.uniform(0.001, 0.999, 500)
     b = BL.blend(pm, pk)
     assert np.all(b >= np.minimum(pm, pk) - TOL) and np.all(b <= np.maximum(pm, pk) + TOL)
     assert np.allclose(BL.predict(None, pm, pk), b), "predict(None, ...) is the same function"
-    assert BL.coef_for(BL.load(), "any") is None and BL.coef_for(BL.load(), "first") is None and BL.coef_for(BL.load(), "two") is None, "fitted TD blends pinned to 50/50 (ratified 2026-10-29)"
-    n, legacy = 0, 0
+    models = BL.load()
+    assert BL.coef_for(models, "any") is None and BL.coef_for(models, "two") is None, "anytime and 2+ TD stay 50/50 everywhere (board, grading, research)"
+    coef = BL.coef_for(models, "first")
+    assert coef is not None and np.allclose(coef, [1.192, 0.649, 0.753], atol=1e-3) and models["first"]["weeks"] == [1, 2, 3, 4, 5, 6], (coef, models["first"].get("weeks"))
+    assert models["first"].get("frozen") and models["first"]["in_use"], "the live first-TD coefficients are the stored W1-6 fit, frozen; the weekly refit only reports"
+    assert BL.coef_for(BL.freeze_approved({"first": dict(models["first"], coef=[9, 9, 9])}, models), "first") == coef, "a refit never moves the live coefficients"
+    n, legacy, n_fit, n_half = 0, 0, 0, 0
     def week_of(fn, d=None):
         m = re.search(r"_w(\d+)\.json$", fn)
         return int(m.group(1)) if m else int((d or {}).get("week") or 99)
+    def judge(label, m, k, b_, first, must_fit):
+        nonlocal n, n_fit, n_half
+        if first:
+            if abs(float(BL.blend([m], [k], coef)[0]) - b_) <= FIT_TOL: n_fit += 1; return       # stored blend and its two inputs are rounded to 4 decimals (logit slopes amplify that)
+            assert not must_fit, (label, "first-TD blend stored after the switch is not blend(model, market, coef_for('first'))", m, k, b_)
+            _check_bounds(label, m, k, b_); n_half += 1; return
+        _check_bounds(label, m, k, b_); n += 1
     for fn in ["latest.json"] + sorted(glob.glob("slate_*_w*.json")):
         if not os.path.exists(fn): continue
         d = json.load(open(fn))
@@ -131,14 +153,15 @@ def test_blend_is_between_model_and_market_everywhere():
             legacy += sum(1 for e in d.get("edges", []) if e.get("blend_p") is not None and e.get("model_p") is not None and e.get("mkt_p") is not None
                           and not (min(e["model_p"], e["mkt_p"]) - TOL <= e["blend_p"] <= max(e["model_p"], e["mkt_p"]) + TOL))
             continue
+        must = bool(((d.get("rules") or {}).get("blend_coef") or {}).get("first"))     # built under the ruling: every first-TD row carries the fitted blend
         for e in d.get("edges", []) + d.get("held", []) + d.get("over_cap", []):
             if e.get("blend_p") is not None and e.get("model_p") is not None and e.get("mkt_p") is not None:
-                _check_bounds((fn, e.get("bet")), float(e["model_p"]), float(e["mkt_p"]), float(e["blend_p"])); n += 1
+                judge((fn, e.get("bet")), float(e["model_p"]), float(e["mkt_p"]), float(e["blend_p"]), e.get("market") == "first", must)
         for p in d.get("players", []):
             for pre, pcol in (("any_", "p_any"), ("first_", "p_first"), ("two_", "p_2plus")):
                 b_, m_, k_ = p.get(pre + "blend_p"), p.get(pcol), p.get(pre + "mkt_p")
                 if b_ is not None and m_ is not None and k_ is not None:
-                    _check_bounds((fn, p.get("name"), pre), float(m_), float(k_), float(b_)); n += 1
+                    judge((fn, p.get("name"), pre), float(m_), float(k_), float(b_), pre == "first_", must)
         for y in d.get("yards", []):
             for g in y.get("rungs", []):
                 if g.get("blend") is not None and g.get("mkt_p") is not None: _check_bounds((fn, y.get("name"), g.get("line")), float(g["p"]), float(g["mkt_p"]), float(g["blend"])); n += 1
@@ -146,11 +169,13 @@ def test_blend_is_between_model_and_market_everywhere():
     for fn in sorted(glob.glob("edge_log/*_w*.json")) + sorted(glob.glob("decision_log/*_w*.json")):
         if week_of(fn) < ONE_RULER_FROM_WEEK: continue
         d = json.load(open(fn))
-        rows = d.values() if "edge_log" in fn else [e for r in d.values() for e in (r.get("edges") or [])]
-        for e in rows:
+        if "edge_log" in fn: rows = [(e, (e.get("flagged") or "") >= FIRST_FITTED_FROM) for e in d.values()]
+        else: rows = [(e, (r.get("as_of") or "") >= FIRST_FITTED_FROM) for r in d.values() for e in (r.get("edges") or [])]
+        for e, must in rows:
             if e.get("blend_p") is not None and e.get("model_p") is not None and e.get("mkt_p") is not None:
-                _check_bounds((fn, e.get("bet")), float(e["model_p"]), float(e["mkt_p"]), float(e["blend_p"])); n += 1
-    print(f"  blend bounds: {n} stored blends on disk (week {ONE_RULER_FROM_WEEK}+) inside [min(model, market), max(model, market)]; {legacy} fitted-era edge rows before that, untouched")
+                judge((fn, e.get("bet")), float(e["model_p"]), float(e["mkt_p"]), float(e["blend_p"]), e.get("market") == "first", must)
+    print(f"  blend bounds: {n} stored 50/50 blends on disk (week {ONE_RULER_FROM_WEEK}+) inside [min(model, market), max(model, market)]; first TD: {n_fit} rows on the fitted W1-6 blend, "
+          f"{n_half} 50/50-era rows (before {FIRST_FITTED_FROM}) in bounds; {legacy} fitted-era edge rows before week {ONE_RULER_FROM_WEEK}, untouched")
 
 
 def test_decision_rule_and_log():
@@ -296,6 +321,46 @@ def test_cap_is_a_pure_partition_flag_invariant():
             assert _sha(_strip(card + dropped)) == _sha(_strip(pre))
             assert {(e["bet"], e["book"], e["best"]) for e in card} == {(e["bet"], e["book"], e["best"]) for e in d.get("edges", [])}, "latest.json card is what the rule gives"
     assert "quota" in DEC.FIELDS, "the decision snapshot keeps the floor tag"
+
+
+def test_two_plus_td_produces_no_edges():
+    """CEO ruling 2026-10-31: 2+ TD produces no actionable edge, gated where edges are created (rules.td_edges / qualifying_rows), so nothing
+       reaches the card, Discord (alerts only ever see the card), the first-seen edge log or the decision snapshot. Player rows keep p_2plus and the
+       2+ pricing fields (the 2+ TD tab is a likelihood list by p_2plus; the parlay builder reads them). Frozen weeks are never rewritten."""
+    import pandas as pd
+    assert RU.DEAD_MARKETS == ("two",)
+    row = dict(name="X Y", pid="p", team="KC", role="Starter", weak_spot="", games=5)
+    for pre, p in (("any_", "p_any"), ("first_", "p_first"), ("two_", "p_2plus")):
+        row.update({p: 0.3, pre + "ev": 0.2, pre + "ev_med": 0.15, pre + "best": 400, pre + "med": 350, pre + "nbooks": 4, pre + "mkt_p": 0.2, pre + "blend_p": 0.25, pre + "book": "DK", pre + "w": 0.5})
+    df = pd.DataFrame([row])
+    edges = RU.td_edges(df)
+    assert {e["market"] for e in edges} == {"any", "first"}, [e["bet"] for e in edges]
+    assert RU.qualifying_rows(df) == 2 == len(edges), "the independent count agrees: 2+ TD never qualifies"
+    assert float(df.p_2plus.iloc[0]) == 0.3 and float(df.two_best.iloc[0]) == 400, "player data untouched"
+    card, dropped = RU.apply_card_cap([dict(e, kick_utc="2026-11-01T18:00Z") for e in edges], CLUSTERS)
+    assert not any(e["market"] == "two" for e in card + dropped)
+    # builds under the rule: no 2+ TD edge in any list, player rows still carry p_2plus
+    for fn in ["latest.json"] + sorted(glob.glob("slate_*_w*.json")):
+        if not os.path.exists(fn): continue
+        d = json.load(open(fn))
+        if "two" not in ((d.get("rules") or {}).get("dead_markets") or []): continue
+        bad = [e["bet"] for L in ("edges", "over_cap", "held") for e in d.get(L, []) if e.get("market") == "two"]
+        assert not bad, (fn, bad[:5])
+        assert sum(1 for p in d.get("players", []) if p.get("p_2plus") is not None) > 0, (fn, "player rows must keep p_2plus")
+    # first-seen edge log and decision snapshots written after the switch carry no 2+ TD rows (earlier rows are history, untouched)
+    for fn in sorted(glob.glob("edge_log/*_w*.json")):
+        d = json.load(open(fn))
+        bad = [e.get("bet") for e in d.values() if e.get("market") == "two" and (e.get("flagged") or "") >= FIRST_FITTED_FROM]
+        assert not bad, (fn, bad[:5])
+    for fn in sorted(glob.glob("decision_log/*_w*.json")):
+        d = json.load(open(fn))
+        bad = [e.get("bet") for r in d.values() if (r.get("as_of") or "") >= FIRST_FITTED_FROM for e in (r.get("edges") or []) if e.get("market") == "two"]
+        assert not bad, (fn, bad[:5])
+    # the frozen record keeps its history: the two graded week-5 2+ TD bets stay
+    if os.path.exists("bets_frozen.json"):
+        fz = json.load(open("bets_frozen.json"))
+        assert sum(1 for k, v in fz.items() for b in v["bets"] if b.get("market") == "two") == 2, "frozen 2+ TD bets (W5) must never be rewritten"
+    print("  2+ TD: no edge created at the source (card, Discord, edge log, decision snapshot all empty of it); player rows keep p_2plus; frozen W5 bets untouched")
 
 
 if __name__ == "__main__":

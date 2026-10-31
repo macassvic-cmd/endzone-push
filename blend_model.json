@@ -91,9 +91,59 @@
    },
    "ok": false
   },
-  "approved": false,
-  "in_use": false,
-  "reason": "fails a gate: between, game_sum"
+  "frozen": "2026-10-31 CEO ruling: first-TD coefficients frozen as stored (the weeks 1-6 fit) and restored over the between-inputs and game-sum gates; results.py refits every run for the report only (refit)",
+  "refit": {
+   "coef": [
+    1.19182,
+    0.64939,
+    0.75292
+   ],
+   "n": 1634,
+   "weeks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "brier": {
+    "model": 0.03892,
+    "market": 0.03868,
+    "half": 0.03873,
+    "fitted": 0.03827
+   },
+   "loo": {
+    "fitted": 0.0385,
+    "half": 0.03873,
+    "market": 0.03868,
+    "model": 0.03892,
+    "n": 1634
+   },
+   "gates": {
+    "monotone": {
+     "ok": true
+    },
+    "between": {
+     "ok": false,
+     "rows_outside": 1144,
+     "n": 1634,
+     "max_excursion": 0.1125
+    },
+    "game_sum": {
+     "ok": false,
+     "games_outside": 14,
+     "games": 77,
+     "max_over_one": 0.1842,
+     "max_under_inputs": 0.0287,
+     "tol": 0.02
+    },
+    "ok": false
+   }
+  },
+  "approved": true,
+  "in_use": true,
+  "reason": "in use (CEO ruling 2026-10-31: gate waived, fails between, game_sum)"
  },
  "two": {
   "coef": [

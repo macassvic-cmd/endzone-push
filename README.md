@@ -57,10 +57,18 @@ The idempotence rule above means an external kick and a GitHub cron minutes apar
   and never reach the edge log, Discord or the record.
 - **Stakes**: alt rungs 0.25u for every role (created at that stake); Bench plays 0.25u; first-TD edges priced +2000 or longer with model P more
   than 2x the market sit in the bench section at 0.25u whatever the role. The flag rule itself is unchanged.
-- **Blends**: `blend.blend()` is the one blend function (50/50; fitted blends only through `coef_for` with approval + gates, none approved).
+- **Blends**: `blend.blend()` is the one blend function. Anytime TD, 2+ TD and yards run 50/50 everywhere (board, grading, research). First TD
+  runs the fitted weeks 1-6 blend stored in `blend_model.json` (coef ≈ [1.192, 0.649, 0.753]), restored by CEO ruling 2026-10-31 over the
+  between-inputs and game-sum gates it fails (`blend.GATE_WAIVED`), frozen as stored (`blend.freeze_approved`: the weekly refit is reported
+  beside it, never used) and applied from the week 8 Sunday decision pull on; weeks 3-7 stay frozen under the 50/50 ruler.
+- **2+ TD**: no actionable edges (CEO ruling 2026-10-31, `rules.DEAD_MARKETS`): never on the card, in Discord, in the edge log or the record.
+  The 2+ TD tab is a likelihood list (players by model P(2+ TD), fair price, best price and book for reference) for 2-3 player parlays; the
+  parlay builder still reads p_2plus. The two graded week-5 2+ TD bets stay in the frozen record.
 - **My bets**: `python placed_bets.py add "Name Anytime TD" --book FanDuel --price +650 --stake 1` logs a placed bet to `placed_bets.jsonl`;
   graded on its own Results card, never in the model record.
 - Scheduled crons in `update.yml` are written in PST from 2026-11-01 (the Sunday 9:23 PT run is 17:23 UTC).
+- The loop finalize commits new log directories file by file (`git status --untracked-files=all`, fixed 2026-10-31: `decision_log/` had been
+  listed as one directory line and never reached main).
 
 ## Credits rule (2026-10-18)
 **No Odds API calls outside CI.** `odds._get` refuses a live call unless the process runs in GitHub Actions or `ODDS_LIVE=1` is set;

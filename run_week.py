@@ -579,6 +579,7 @@ RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_M
                  bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE,
                  venue_stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL,
                  alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP, card_yard_floor=RU.CARD_YARD_FLOOR,
+                 blend_coef={k[:-1]: v for k, v in BLEND_COEF.items()}, dead_markets=list(RU.DEAD_MARKETS),        # the blend each TD market was built with (None = 50/50; first TD fitted from 2026-10-31, CEO ruling)
                  decision_rule="Sunday early / late games: the first pull at or after 9:23 AM Pacific; TNF, SNF, MNF, London and Saturday games: the last pull before the kickoff cutoff")
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held, over_cap=over_cap, decision=DECISION, lineshop=LINESHOP, pickem_ud=UD_SUMMARY,

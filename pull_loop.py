@@ -151,7 +151,7 @@ def select_pulls(paths, step_min):
 
 def changed(paths):
     paths = [p for p in paths if os.path.exists(p) or os.path.isdir(p)] or paths
-    st = subprocess.run(["git", "status", "--porcelain", "--", *paths], text=True, capture_output=True, check=True).stdout
+    st = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", *paths], text=True, capture_output=True, check=True).stdout   # =all: a NEW directory (decision_log/ on 2026-10-30) otherwise shows as one "dir/" line and its files are never committed
     return sorted({ln[3:].strip() for ln in st.splitlines() if ln.strip()})   # "XY path": never strip the line itself
 
 

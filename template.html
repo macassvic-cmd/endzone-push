@@ -130,7 +130,7 @@ const recvMult = (r) => { const g=D.games.find(x=>x.game_id===r.game_id); const 
 const TABS = {
  any:{label:'Anytime TD', note:'Probability of a rushing or receiving TD. Fair = no-vig American price. Type a book price to see your edge (saved in this browser).'},
  top15:{label:'Top 15', note:'This week\'s 15 highest anytime-TD projections with fair odds and the best book price, then how past weeks\' top 15 did, then everyone who has made a top 15.'},
- two:{label:'2+ TD', note:'Two or more rushing/receiving TDs in the game. Fair = no-vig price for the model probability; the book line is Over 1.5 touchdowns (Kalshi: "2+"). Validated on the 2024-25 backtests, see CHANGELOG.'},
+ two:{label:'2+ TD', note:'Likelihood list for parlays (CEO ruling 2026-10-31): every priced player ranked by model P(2+ TD), with the fair (no-vig) price for that probability and the best book price for reference. Pick 2\u20133 likely two-TD scorers and parlay them; nothing here is flagged, staked, alerted or graded \u2014 2+ TD produces no edges. The book line is Over 1.5 touchdowns (Kalshi: "2+").'},
  parlays:{label:'Parlays', note:'2+ TD parlays, Starter legs only, every leg from a different game, no weak-spot QBs. Most likely = legs ranked by model probability, parlays by joint probability. Best value = legs at 10%+ EV with real liquidity, parlays by EV. Price = product of best-book odds unless you type a book\'s parlay/SGP price. Stake = 1/8 Kelly capped at 0.25% of bankroll, 0 when the price is not worth it. The top 3 of each mode are tracked each week.'},
  yards:{label:'Yards', note:'Rushing and receiving yards from the same sim games as the TDs. Actionable = the rungs flagged under the live rules, exactly as the Edge Board and the Results grading see them. Below: every player with a book line (median, line, lean for pick\'em, P(over), market); click a player for its priced rungs with the rule check. UD \u2713 = an Underdog higher/lower line at one of our rungs where the blend beats the pick\'em break-even by 3+ pts (Pick\'em filter shows only those). Passing-yard rungs are research-only until the passing model beats the books. Backtest gate: 2024-25 weeks 4-18, see CHANGELOG.'},
  slips:{label:'Slips', note:'Underdog-style slips priced from this week\'s sim games: paste legs, get each leg\'s P(hit), the joint probability (same-game and same-player correlation kept), the independence product, and EV at your payout. Log a slip with the copy-command button (slips.py --log appends it to slips_log.jsonl in the repo) and the Results tab grades it.'},
@@ -348,7 +348,7 @@ function render(){
     const rows=filt(D.players.filter(p=>p.p_2plus>0.005));
     html=table([{k:'name',h:'Player',l:1,cls:'n',f:nameCell},{k:'team',h:'Tm',l:1},{k:'role',h:'Role',l:1,f:r=>roleTag(r.role)},
       {k:'p_2plus',h:'2+ TD',f:r=>meter(r.p_2plus,0.4)},{k:'fair_2plus',h:'Fair',f:r=>am(r.fair_2plus)},
-      {k:'two_best',h:'Best price',f:r=>bookCell(r,'two_',r.p_2plus,'two|'+r.name+'|'+r.team)},
+      {k:'two_best',h:'Best price',f:r=>r.two_best!=null?`${am(r.two_best)} <span style="color:var(--muted)">${esc(r.two_book||'')}</span>`:'\u2013'},
       {k:'two_kalshi',h:'Kalshi',f:r=>r.two_kalshi==null?'\u2013':r.two_kalshi_liquid?am(r.two_kalshi):`<span style="color:var(--muted)">${am(r.two_kalshi)} ref</span>`}],rows,'p_2plus');
   } else if(st.tab==='parlays'){
     const PM=(D.parlays&&D.parlays.modes)||{}; const cur=PM[st.pmode]||{pool:[],parlays:[]};

@@ -73,6 +73,26 @@ def test_early_week_slots_and_cluster_skip():
     print(f"  early slots: Tue-Sat PT, 45-min grace, DST ok; {e['slots']} slots/week ~{e['credits']} credits at 14 games")
 
 
+def test_changed_sees_files_in_a_new_log_directory():
+    """2026-10-30/31: decision_log/ was a new directory, so `git status --porcelain` listed it as one "?? decision_log/" line, finalize() kept
+       only paths ending in .json and the decision log was never committed to main (two once-runs, both "logs merged"). --untracked-files=all."""
+    import subprocess, tempfile, os, json
+    import pull_loop as PLP
+    d = tempfile.mkdtemp(prefix="plp_"); cwd = os.getcwd()
+    try:
+        os.chdir(d)
+        subprocess.run(["git", "init", "-q"], check=True)
+        open("a.txt", "w").write("x"); subprocess.run(["git", "add", "a.txt"], check=True)
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "init"], check=True)
+        os.makedirs("decision_log"); json.dump({}, open("decision_log/2026_w8.json", "w"))
+        os.makedirs("edge_log"); json.dump({}, open("edge_log/2026_w8.json", "w"))
+        got = PLP.changed(["edge_log", "research", "decision_log"])
+        assert got == ["decision_log/2026_w8.json", "edge_log/2026_w8.json"], got
+    finally:
+        os.chdir(cwd)
+    print("  changed(): files inside a new log directory are listed one by one")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     failed = 0

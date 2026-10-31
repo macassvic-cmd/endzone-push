@@ -185,10 +185,12 @@ def test_blend_with_negative_coefficient_not_used():
 def test_blend_gates_and_approval():
     """A fitted blend goes live only if the market is in blend.APPROVED AND it passes every gate: non-negative coefficients, blend
        between the model and market probability on every row, first-TD per-game sums <= 1 + 0.02 and >= min(input sums) - 0.02.
-       2026-10-17: APPROVED is empty, so anytime and first TD run 50/50 like yards whatever their fits say."""
+       2026-10-17: APPROVED was empty. 2026-10-31 (CEO ruling): first TD is approved with the between / game-sum gates waived (GATE_WAIVED);
+       anytime and 2+ TD run 50/50 like yards whatever their fits say; the monotone gate is never waived."""
     import blend as BL
     import numpy as np, pandas as pd
-    assert BL.APPROVED == frozenset(), "no fitted blend is approved for live use"
+    assert BL.APPROVED == frozenset({"first"}) and BL.GATE_WAIVED == frozenset({"first"}), "first TD only (CEO ruling 2026-10-31)"
+    assert BL.coef_for({"first": dict(coef=[1.0, 0.5, -0.1], n=2000, weeks=[1], loo=dict(fitted=0.1, half=0.2), gates=dict(ok=False))}, "first") is None, "the monotone gate is never waived"
     good_loo = dict(fitted=0.1, half=0.2)
     fit_first = [1.19182, 0.64939, 0.75292]; fit_any = [0.25058, 0.31846, 0.82285]
     rec = dict(coef=fit_any, n=1668, weeks=[1, 2, 3, 4, 5, 6], loo=good_loo, gates=dict(ok=True))
@@ -209,7 +211,10 @@ def test_blend_gates_and_approval():
     df = pd.DataFrame(dict(season=2026, week=rng.choice([3, 4, 5, 6], 500), game_id=[f"g{x}" for x in g], p_first=pm2, first_mkt_p=pk2))
     df["first_hit"] = (rng.uniform(size=500) < df.p_first).astype(int)
     r = BL.fit_market(df, "first")
-    assert r and r["approved"] is False and r["in_use"] is False and "game_sum" in r["gates"] and "between" in r["gates"], r and r.get("gates")
+    assert r and r["approved"] is True and r["in_use"] == (BL.coef_for({"first": r}, "first") is not None) and "game_sum" in r["gates"] and "between" in r["gates"], r and r.get("gates")
+    dfa = df.rename(columns=dict(p_first="p_any", first_mkt_p="any_mkt_p", first_hit="hit"))
+    ra = BL.fit_market(dfa, "any")
+    assert ra and ra["approved"] is False and ra["in_use"] is False, "anytime TD stays 50/50 whatever its fit says"
     print(f"  approval gate holds; first-TD fit: between {r['gates']['between']['ok']}, game sums {r['gates']['game_sum']['ok']} -> {r['reason']}")
 
 

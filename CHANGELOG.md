@@ -1805,3 +1805,81 @@ all 5 on the card by the floor — J.K. Dobbins Over 29.5 rush yds (BetRivers +1
 Emmett Johnson Over 14.5, Justice Hill Over 19.5, Kenny Gainwell Over 24.5; EV@med 21.7–24.3%) and Jacoby Brissett 2+ TD (+10000, 23.8%)
 to over-cap research rows. The top of the card is unchanged (Rucci 2+ TD 161%, Rucci Anytime 150%, Rucci First TD 100%). SNF window 10 edges
 incl. Burks Over 22.5 rec yds (#10, on EV alone); MNF 2. Screenshot: `runs/capped_card_2026-10-31.png`.
+
+## 2026-10-31 — Fitted blend restored for first TD (CEO ruling)
+
+**Ruling.** The 2026-10-25 pin is reversed for the FIRST TD market only. `blend.coef_for("first")` returns the fitted first-TD coefficients
+already stored in `blend_model.json` (the weeks 1-6 fit, coef [1.19182, 0.64939, 0.75292], n 1,634); first-TD board flags, EVs and grading all
+flow through the single `blend.blend()` function with that coef (no second code path, no hand-entered numbers). `coef_for("any")` and
+`coef_for("two")` stay None: anytime and 2+ TD remain 50/50 everywhere (board, grading, research). Nothing else changes: flag rule, stakes,
+first-TD longshot bench routing, the card cap and the yards quota, the decision-pull record.
+
+**Known and accepted (CEO).** The fitted first-TD blend sits above both of its inputs on many rows and failed the between-inputs gate in the
+October reviews (1,144 of 1,634 fitted rows outside the interval, max +0.1125; 14 of 77 games over a first-TD sum of 1, max +0.18). Its W4/W5
+record was 7-33 for +21.9u, carried by seven winners at +311 to +1322. The CEO restores it anyway, for first TD only, as a results call over the
+gate. Weeks 3-7 frozen records are NOT rewritten; the fitted first-TD ruler applies from the week 8 Sunday decision pull forward. Grading uses the
+same blend as the board (one ruler per era, as before).
+
+**Code.** `blend.APPROVED = {"first"}`, `blend.GATE_WAIVED = {"first"}`: `coef_for` still requires enough rows, a leave-one-week-out win over 50/50
+and the monotone gate (never waived), and waives the between-inputs and game-sum gates for a waived market. `blend.freeze_approved(models, prev)`:
+the live coefficients of an approved market are frozen as stored (model frozen); `results.py` keeps refitting every run but stores the fresh fit
+beside the frozen record under `refit` for the report (`blend_model.json: first.frozen`, `first.reason` = "in use (CEO ruling 2026-10-31: gate
+waived, fails between, game_sum)"). `blend.status()` is the one in_use / reason rule. `latest.json` rules carry `blend_coef` per TD market (None =
+50/50); the Results rule text names the first-TD ruler.
+
+**Replay comparison (saved week 8 pulls, ODDS_MOCK, same pull under 50/50 and under the fitted blend; every flagged first-TD edge, held ones
+included).**
+
+| pull | first-TD flags 50/50 | fitted | 50/50 by band (<+500 / +500-1000 / >+1000) | fitted by band | routed longshots 50/50 → fitted |
+|---|---|---|---|---|---|
+| Thu 15:33Z (as of 15:40Z) | 15 | 5 | 0 / 0 / 15 | 3 / 1 / 1 | 3 → 1 |
+| Fri 00:05Z (as of 00:12Z) | 14 | 6 | 0 / 0 / 14 | 3 / 2 / 1 | 3 → 1 |
+
+The 50/50 ruler flags only +2000 and longer (Estime +6000, Rucci +9000, Kaytron Allen +12000, Moore +10000 …); the fitted blend drops 13-14 of
+those and adds the short first-TD prices the W4/W5 record was built on: Javonte Williams +400 (EV@med 17-18%), Kyren Williams +450/+475 (15-18%),
+Jeanty +600/+608 (9%), Walker +410 (6%), Gibbs +330 (6%), Aaron Jones +900 (7%). Anytime, main-line yard and alt-rung pre-cap sets are
+byte-identical between the two runs on both pulls (sha256 per market in `research/card_cap_quota_invariance_2026_w8.json: replay_2026_10_31`).
+
+**CI (`test_card_rules.py`, `test_ladder_integrity.py`; all suites under the 3.11 gate).** The blend-bounds scan keeps every 50/50 blend inside
+[min(model, market), max(model, market)]; a first-TD row is exempt only when it reproduces `blend(model_p, mkt_p, coef_for("first"))` to the stored
+4 decimals (tolerance 3e-4 for the rounding of all three numbers; replay max 1.3e-4); every first-TD row stored after the switch
+(`FIRST_FITTED_FROM` = build stamp 20261031T0740Z: builds whose rules carry `blend_coef.first`, edge-log rows flagged from then, decision snapshots
+from then) must be the fitted value, so no stale 50/50 first-TD row can appear; first-TD rows flagged before the switch (week 8 Thursday builds,
+16 edge-log rows) are 50/50-era history and stay in bounds. `coef_for("any")` and `coef_for("two")` are asserted None; the live first-TD coef is
+asserted to be the stored weeks 1-6 fit (≈ [1.192, 0.649, 0.753]), frozen, and a refit is asserted not to move it; the monotone gate is asserted
+unwaivable.
+
+Files: `blend.py`, `results.py`, `run_week.py`, `blend_model.json` (frozen record), `test_card_rules.py`, `test_ladder_integrity.py`, README.md,
+this file.
+
+## 2026-10-31 — 2+ TD edges killed, tab retasked to a likelihood list (CEO ruling)
+
+**Ruling and reason (CEO).** 2+ TD ("two") produces NO actionable edges: not on the capped card, not in Discord alerts, not in the decision-pull
+record, not graded, never logged. The EV-flag version surfaced longshot backups (104 flags W4-W7, 1 cashed, 0-2 in the record) and never matched
+the original ask, which was a likelihood list of low-odds 2-TD scorers for 2-3 player parlays. Historical records are untouched: the 2 graded W5
+bets stay in the frozen record; past weeks are never rewritten. Player rows keep p_2plus and the 2+ pricing fields.
+
+**Code.** `rules.DEAD_MARKETS = ("two",)`, applied where edges are created (`rules.td_edges`, `rules.qualifying_rows`) and in `results.rescore_edges`
+(the current-rules view); nothing downstream ever sees a 2+ TD edge, so the card, `clv.log_edges`, Discord and `decision.update` are clean by
+construction. `latest.json` rules carry `dead_markets`. The 2+ TD tab already sorted by model P(2+ TD) descending (verified: default sort
+`p_2plus`); its best-price cell is now a plain price + book for reference (no EV tooltip or colouring) and its note states what the tab is. The
+parlay builder (Parlays tab, 2+ TD legs by probability) is unchanged.
+
+**Replay (saved week 8 pulls).** 22 (Thu 15:33Z) and 17 (Fri 00:05Z) 2+ TD flags before → 0 after; 341 player rows keep p_2plus; the anytime,
+yard and alt-rung pre-cap sets are byte-identical (see the entry above). CI: `test_two_plus_td_produces_no_edges` (a qualifying 2+ TD row creates
+no edge and the independent count agrees; builds under the rule carry none in edges / over_cap / held and keep p_2plus; edge-log rows and decision
+snapshots after the switch carry none; the two frozen W5 bets stay).
+
+Files: `rules.py`, `results.py`, `run_week.py`, `template.html` / `index.html`, `test_card_rules.py`, README.md, this file.
+
+## 2026-10-31 — Decision log was never committed by the loop finalize (fixed)
+
+`pull_loop.changed()` read `git status --porcelain`, which lists a NEW directory as one line (`?? decision_log/`); `finalize()` keeps only paths
+ending in `.json`, so `decision_log/2026_w8.json` written by the 2026-10-30 00:07Z and 06:27Z and the 2026-10-31 07:18Z once-runs was dropped
+("logs merged", no decision log on main). Inside one loop job the file persists between pulls, so the Sunday rule (first build at or after 9:23 PT,
+fallback to the last actionable build before it) would still have worked within the kickoff loop job, but the record would have been lost at
+the end of the job. Fixed with `--untracked-files=all`; `test_pull_loop.test_changed_sees_files_in_a_new_log_directory` builds a temp repo with a
+new log directory and requires its files listed one by one. Consequence for week 8: the Thursday game (CAR@GB) has no decision record (it was
+"missed" in the 00:07Z build anyway: that build came 7 min before kickoff).
+
+Files: `pull_loop.py`, `test_pull_loop.py`, README.md, this file.

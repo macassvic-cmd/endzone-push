@@ -61,7 +61,7 @@ def rescore_edges(allp, models, rules_from=RU.BOARD_RULES_WEEK):
     out = []
     for mk, (pcol, kcol, ycol, pre, lbl) in {"any": ("p_any", "any_mkt_p", "hit", "any_", "Anytime TD"), "first": ("p_first", "first_mkt_p", "first_hit", "first_", "First TD"),
                                              "two": ("p_2plus", "two_mkt_p", "two_hit", "two_", "2+ TD")}.items():
-        if kcol not in allp or pre + "best" not in allp:
+        if mk in RU.DEAD_MARKETS or kcol not in allp or pre + "best" not in allp:          # 2+ TD: no edges under today's rule (ruling 2026-10-31); frozen weeks keep theirs
             continue
         d = allp[allp[kcol].notna() & allp[pre + "best"].notna() & allp[pcol].notna()].copy()
         if d.empty: continue
@@ -174,6 +174,7 @@ def main():
 
     # ---- fitted model+market blend (refit every run on all graded priced rows), then the bet record under the live rule ----
     models = {mk: rec for mk in BL.MARKETS if (rec := BL.fit_market(allp, mk))}
+    models = BL.freeze_approved(models, BL.load())      # an approved market keeps its stored coefficients (first TD: the W1-6 fit, CEO ruling 2026-10-31); the refit is reported beside it
     BL.save(models)
     for mk, m in models.items():
         print(f"  blend {mk}: coef {m['coef']} n {m['n']} | Brier model {m['brier']['model']} market {m['brier']['market']} 50/50 {m['brier']['half']} fitted {m['brier']['fitted']}"
@@ -364,8 +365,9 @@ def main():
         if len(kept) != len(fz["bets"]): print(f"  frozen week {key}: {len(fz['bets']) - len(kept)} voided bet(s) removed from the frozen record"); fz["bets"] = kept
     bets_current = rescore_edges(allp, models, rules_from=None) + yard_bets(rules_from=None)   # plain blend re-score: today's blend and edge rule, 1u for every role, no board rules
     partial = {(w["season"], w["week"]) for w in weeks if w.get("partial")}
-    rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, " + ("fitted" if any(BL.coef_for(models, m) for m in ("any", "first", "two")) else "50/50")
-                + " model-market blend; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor"
+    rule_now = ("EV >= 5% at the median and best book, 2+ books, no weak-spot players, 50/50 model-market blend"
+                + (" (first TD: the fitted weeks 1-6 blend, restored by CEO ruling 2026-10-31 from the week 8 Sunday decision pull; anytime and 2+ TD 50/50)" if BL.coef_for(models, "first") else "")
+                + "; closing prices for backfilled weeks, flag-time prices for live weeks; yard edges from the slate's edge list at a 10-yard floor"
                 + ("; from week 8 the record is the capped card at each game's decision pull at that pull's prices (alt rungs 0.25u, first-TD longshots +2000 with model > 2x market "
                    "routed to the bench at 0.25u, 25 bets per kickoff window)" if dec_weeks else ""))
     by_wk = {}

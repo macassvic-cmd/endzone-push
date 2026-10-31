@@ -11,7 +11,13 @@ with a light ridge so the weekly CI run needs no extra dependency. Leave-one-wee
 import json, os, numpy as np
 
 FILE, MIN_ROWS, RIDGE = "blend_model.json", 300, 1e-3
-APPROVED = frozenset()          # markets whose fitted blend the user has approved for live use (2026-10-17: none; every market runs 50/50)
+APPROVED = frozenset({"first"})  # markets whose fitted blend the CEO has approved for live use. 2026-10-17: none. 2026-10-31 (CEO ruling): first TD, the
+                                 # stored weeks 1-6 fit, frozen as stored (freeze_approved); anytime and 2+ TD stay 50/50 everywhere
+GATE_WAIVED = frozenset({"first"})   # CEO ruling 2026-10-31: the first-TD fit fails the between-inputs and game-sum gates (sits above both inputs on 70% of
+                                 # rows, max +0.11; 14 of 77 games over 1) and is restored anyway as a results call over the gate (W4/W5 record 7-33, +21.9u).
+                                 # Known and accepted; recorded in CHANGELOG 2026-10-31. The monotone gate is never waived.
+FROZEN_NOTE = ("2026-10-31 CEO ruling: first-TD coefficients frozen as stored (the weeks 1-6 fit) and restored over the between-inputs and game-sum gates; "
+               "results.py refits every run for the report only (refit)")
 BETWEEN_TOL = 1e-6              # gate 1: the blend must lie between the model and the market probability on every fitted row
 GAME_SUM_TOL = 0.02             # gate 2 (first TD): per game, sum of blend P(first) <= 1 + tol and >= min(model sum, market sum) - tol
 GAME_SUM_MARKETS = ("first",)   # first TD is one-of-N: the candidates' probabilities sum to 1 - P(no TD in the game), 1-3% in NFL games
@@ -42,8 +48,8 @@ def fit(pm, pk, y, iters=50):
 
 def blend(pm, pk, coef=None):
     """THE blend (one ruler, 2026-10-20 / ratified 2026-10-29): P(hit) from the model probability pm and the no-vig market probability pk.
-       coef None (every market today: APPROVED is empty) = 50/50 in probability space, which always lies between its two inputs. A fitted
-       logistic blend is used only through coef_for() (approval + gates). Every EV on the board, in grading and in the research scripts
+       coef None (anytime TD, 2+ TD, yards) = 50/50 in probability space, which always lies between its two inputs. A fitted logistic
+       blend is used only through coef_for() (approval + gates, or the CEO waiver of 2026-10-31 for first TD). Every EV on the board, in grading and in the research scripts
        goes through this function; nothing else may average model and market."""
     pm, pk = np.asarray(pm, float), np.asarray(pk, float)
     if coef is None:
@@ -90,12 +96,37 @@ def fit_market(df, mk):
                           market=round(float(np.mean(oos_mkt)), 5), model=round(float(np.mean(oos_mod)), 5), n=len(oos))
     rec["gates"] = gates(coef, pm, pk, d, mk)
     rec["approved"] = mk in APPROVED
-    rec["in_use"] = bool(rec.get("loo") and rec["loo"]["fitted"] < rec["loo"]["half"]) and rec["gates"]["ok"] and rec["approved"]
-    rec["reason"] = ("in use" if rec["in_use"] else
-                     "not better than 50/50 held out" if not (rec.get("loo") and rec["loo"]["fitted"] < rec["loo"]["half"]) else
-                     "fails a gate: " + ", ".join(k for k, v in rec["gates"].items() if isinstance(v, dict) and not v.get("ok", True)) if not rec["gates"]["ok"] else
-                     "not approved for live use (blend.APPROVED)")
+    rec["in_use"], rec["reason"] = status(rec, mk)
     return rec
+
+
+def status(rec, mk):
+    """(in_use, reason) of a fit record under today's approval / gate / waiver state; in_use is exactly coef_for() returning its coefficients."""
+    loo_ok = bool(rec.get("loo") and rec["loo"]["fitted"] < rec["loo"]["half"])
+    bad = [k for k, v in (rec.get("gates") or {}).items() if isinstance(v, dict) and not v.get("ok", True)]
+    in_use = coef_for({mk: rec}, mk) is not None
+    if in_use: reason = "in use" + (f" (CEO ruling 2026-10-31: gate waived, fails {', '.join(bad)})" if bad and mk in GATE_WAIVED else "")
+    elif not loo_ok: reason = "not better than 50/50 held out"
+    elif bad: reason = "fails a gate: " + ", ".join(bad)
+    else: reason = "not approved for live use (blend.APPROVED)"
+    return in_use, reason
+
+
+def freeze_approved(models, prev):
+    """The live coefficients of an APPROVED market never move with the weekly refit (model frozen): the record already stored in
+       blend_model.json (prev) stays the ruler for its era and the fresh fit is kept beside it under "refit" for the report."""
+    out = dict(models or {})
+    for mk in APPROVED:
+        p = (prev or {}).get(mk)
+        if not p or not p.get("coef"): continue
+        new = out.get(mk)
+        rec = {k: v for k, v in p.items() if k not in ("refit", "in_use", "reason", "approved")}
+        rec["frozen"] = p.get("frozen") or FROZEN_NOTE
+        rec["refit"] = {k: new.get(k) for k in ("coef", "n", "weeks", "brier", "loo", "gates")} if new else p.get("refit")
+        rec["approved"] = True
+        rec["in_use"], rec["reason"] = status(rec, mk)
+        out[mk] = rec
+    return out
 
 
 def between_inputs(coef, pm, pk, tol=BETWEEN_TOL):
@@ -145,11 +176,12 @@ def load(fn=FILE):
 
 
 def coef_for(models, mk):
-    """Fitted coefficients only when the market is in APPROVED (user sign-off), the fit has enough rows, beat 50/50 out of
-       sample (leave-one-week-out) and passed every gate (monotone, between the inputs, first-TD game sums); otherwise None,
-       which predict() treats as the 50/50 blend. Refit and re-gated every run; approval is the only manual step."""
+    """Fitted coefficients only when the market is in APPROVED (CEO sign-off), the fit has enough rows, beat 50/50 out of sample
+       (leave-one-week-out), rises with both inputs (monotone, never waived) and passed every other gate (between the inputs, first-TD
+       game sums) unless the market is in GATE_WAIVED (2026-10-31: first TD); otherwise None, which blend() treats as 50/50.
+       An approved market's record is frozen as stored (freeze_approved): the weekly refit never moves the live coefficients."""
     m = (models or {}).get(mk)
     if not m or m.get("n", 0) < MIN_ROWS or not m.get("loo") or mk not in APPROVED:
-        return None                                      # not approved by the user -> 50/50, whatever the fit says
-    ok = m["loo"]["fitted"] < m["loo"]["half"] and monotone(m["coef"]) and (m.get("gates") or {}).get("ok", False)
+        return None                                      # not approved -> 50/50, whatever the fit says
+    ok = m["loo"]["fitted"] < m["loo"]["half"] and monotone(m["coef"]) and ((m.get("gates") or {}).get("ok", False) or mk in GATE_WAIVED)
     return m["coef"] if ok else None
