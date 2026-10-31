@@ -14,7 +14,7 @@ def line(e):
     stake = e.get("stake", 1.0)
     bv = e.get("best_venue")
     venue = f" \u00b7 best place {bv['venue']} {fmt_price(bv['net'])} after fees{' (' + bv['size_label'] + ')' if bv.get('size_label') else ''}" if bv and bv.get("venue") != e.get("book") else ""
-    rank = f" \u00b7 card #{e['cap_rank']}" if e.get("cap_rank") else ""
+    rank = (f" \u00b7 card #{e['cap_rank']}" + (" (yard floor)" if e.get("quota") == "yard_floor" else "")) if e.get("cap_rank") else ""
     routed = f" ({e['routed']} \u2192 bench)" if e.get("routed") else ""
     return (f"\u2022 **{e['bet']}** \u2014 {e.get('book') or '?'} {fmt_price(e.get('best'))} \u00b7 bet down to {fmt_price(e.get('bet_down_to'))}"
             f" \u00b7 EV {e['ev'] * 100:+.1f}% \u00b7 {e.get('role') or 'Unknown'} {stake:g}u{routed}{rank}{venue}")

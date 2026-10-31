@@ -725,7 +725,7 @@ def main():
                research_first_seen=research_first_seen, decision=decision_out, my_bets=my_bets, one_ruler=one_ruler,
                board_rules=dict(week=RU.BOARD_RULES_WEEK, board_rules_week=RU.BOARD_RULES_WEEK, bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS),
                                 min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
-                                alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP))
+                                alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP, card_yard_floor=RU.CARD_YARD_FLOOR))
     out["voided"] = voided
     json.dump(out, open("results.json", "w"), default=lambda o: o.item() if hasattr(o, "item") else str(o))
     print("graded weeks:", [(w["season"], w["week"]) for w in weeks], "bets:", len(bets),

@@ -540,7 +540,8 @@ held = [dict(e, reasons=w) for e, w in _act if w]
 edges = [e for e, w in _act if not w]
 print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
 _flag = _stamp if odds_asof else f"{NOW_UTC:%Y%m%dT%H%M}Z"                            # flag time = the pull the prices came from (NOW_UTC honours AS_OF in replays)
-# ---------- card cap (rulings 10-12): per kickoff window one alt rung per player-stat, then the top CARD_CAP bets by EV at the median book.
+# ---------- card cap (rulings 10-12 + the 2026-10-30 quota): per kickoff window one alt rung per player-stat, main-line yard edges first on up to
+#            CARD_YARD_FLOOR of the CARD_CAP slots, the rest by EV at the median book.
 #            The rest display greyed ("over card cap"), go to research/card_cap_*.json and never reach the edge log, Discord or the record ----------
 _gid = {t: g["game_id"] for g in games for t in (g["home"], g["away"])}
 for e in edges + held: e["game_id"] = _gid.get(e["team"])
@@ -548,7 +549,8 @@ _clusters = (json.load(open("pull_windows.json")).get("clusters") if os.path.exi
 edges, over_cap = RU.apply_card_cap(edges, _clusters)
 _wins = sorted({e.get("window") for e in edges})
 print(f"card cap: {len(edges)} actionable bet(s) on the card over {len(_wins)} kickoff window(s) (cap {RU.CARD_CAP} each); {len(over_cap)} dropped "
-      f"({sum(1 for e in over_cap if e.get('cap') == 'alt')} duplicate alt rungs, {sum(1 for e in over_cap if e.get('cap') == 'card')} over the cap)")
+      f"({sum(1 for e in over_cap if e.get('cap') == 'alt')} duplicate alt rungs, {sum(1 for e in over_cap if e.get('cap') == 'card')} over the cap); "
+      f"{sum(1 for e in edges if e.get('market') == 'yds')} main-line yard edge(s) on the card, {sum(1 for e in edges if e.get('quota') == 'yard_floor')} of them by the yard floor of {RU.CARD_YARD_FLOOR}")
 # ---------- decision-pull record (ruling 7): the primary record is the card at each game's decision pull, at that pull's prices ----------
 DEC_LOG = DEC.load(season, week)
 _dec_changes = DEC.update(DEC_LOG, games, edges, NOW_UTC, _flag)
@@ -576,7 +578,7 @@ RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_M
                  kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=MAX_AGE, loop_price_age_min=RU.MAX_PRICE_AGE_MIN, in_loop=bool(os.environ.get("IN_LOOP")),
                  bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE,
                  venue_stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL,
-                 alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP,
+                 alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP, card_yard_floor=RU.CARD_YARD_FLOOR,
                  decision_rule="Sunday early / late games: the first pull at or after 9:23 AM Pacific; TNF, SNF, MNF, London and Saturday games: the last pull before the kickoff cutoff")
 data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
             as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held, over_cap=over_cap, decision=DECISION, lineshop=LINESHOP, pickem_ud=UD_SUMMARY,

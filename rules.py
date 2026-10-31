@@ -26,6 +26,11 @@ BOARD_RULES_WEEK, BENCH_STAKE, MAX_RATIO_ROT, HIDDEN_KINDS = 6, 0.25, 2.5, ("pas
 # at the median book, with one alt rung per player-stat per window (apply_card_cap); the rest display greyed "over card cap", are logged as
 # research and never enter the primary record. The flag rule itself (MIN_EV at the median and best book, MIN_BOOKS) is unchanged.
 ALT_STAKE, LONGSHOT_FIRST_PRICE, LONGSHOT_FIRST_RATIO, CARD_CAP = 0.25, 2000, 2.0, 25
+# Card cap quota (CEO ruling 2026-10-30, live from the week 8 Sunday decision pull): per kickoff window, main-line yard edges (market "yds", the
+# Results by_market bucket; alt rungs do not count) get first claim on up to CARD_YARD_FLOOR of the CARD_CAP slots, ranked by EV at the median
+# book; everything else fills the rest by EV at the median; unused floor slots flow back to the pool. A floor for yards, not a cap on TDs:
+# ranking only, nothing about which edges are flagged, their EV or their stake changes.
+CARD_YARD_FLOOR = 10
 DECISION_PT = (9, 23)      # ruling 7: Sunday early / late games are graded at the first pull at or after 9:23 AM Pacific; other games at the last pre-cutoff pull
 # Timing rules (2026-10-15): an edge is actionable only while its game is more than KICKOFF_CUTOFF_MIN minutes from kickoff
 # and, once MAX_PRICE_AGE_MIN is set, only while the price it was flagged at is younger than that. Edges that fail are held
@@ -175,28 +180,42 @@ def window_key(e, clusters=None):
     return k
 
 
-def apply_card_cap(edges, clusters=None, cap=CARD_CAP):
-    """Rulings 10-11: actionable edges -> (card, dropped). Per kickoff window: one alt rung per player-stat (the highest EV at the median book;
-       ties by EV at the best book, then the longer line), then the top `cap` bets by EV at the median book. Card rows carry cap_rank and
-       window; dropped rows carry reasons (research only, greyed on the board, never in the primary record)."""
+def apply_card_cap(edges, clusters=None, cap=CARD_CAP, yard_floor=CARD_YARD_FLOOR):
+    """Rulings 10-11 and the card-cap quota (2026-10-30): actionable edges -> (card, dropped). Per kickoff window:
+       1. one alt rung per player-stat (the highest EV at the median book; ties by EV at the best book, then the longer line);
+       2. main-line yard edges (market "yds") get first claim on up to `yard_floor` of the `cap` slots, highest EV at the median first;
+       3. every remaining edge (TD markets, alt rungs, the yard mains past the floor) fills the remaining slots by EV at the median;
+          floor slots a window cannot use flow back here, so the card reaches `cap` whenever enough edges exist.
+       Card rows carry cap_rank (EV-at-median order within the card), window and quota ("yard_floor" when the row is on the card only
+       because of the floor); dropped rows carry cap ("alt" | "card"), a rank after the card and reasons (research only, greyed on the board,
+       never in the primary record). A pure partition of the input: no flag, price, EV or stake of any edge changes."""
     card, dropped, by_w = [], [], {}
+    key = lambda e: (-(e.get("ev_med") or 0), -(e.get("ev") or 0), -(e.get("line") or 0), e.get("bet") or "")
     for e in edges:
         by_w.setdefault(window_key(e, clusters), []).append(e)
     for w, rows in by_w.items():
-        rows = sorted(rows, key=lambda e: (-(e.get("ev_med") or 0), -(e.get("ev") or 0), -(e.get("line") or 0), e.get("bet") or ""))
+        rows = sorted(rows, key=key)
         seen, kept = {}, []
         for e in rows:
             e["window"] = w
             if e.get("market") == "yds_alt":
                 k = (e.get("pid"), e.get("kind"))
                 if k in seen:
-                    dropped.append(dict(e, cap="alt", cap_rank=None, reasons=[f"alt-rung cap: one rung per player-stat per window (Over {seen[k]:g} kept)"])); continue
+                    dropped.append(dict(e, cap="alt", cap_rank=None, quota=None, reasons=[f"alt-rung cap: one rung per player-stat per window (Over {seen[k]:g} kept)"])); continue
                 seen[k] = float(e.get("line") or 0)
             kept.append(e)
-        for i, e in enumerate(kept, 1):
-            e["cap_rank"] = i
-            if i <= cap: card.append(e)
-            else: dropped.append(dict(e, cap="card", reasons=[f"over card cap (rank {i} of {len(kept)}, cap {cap})"]))
+        ev_rank = {id(e): i for i, e in enumerate(kept, 1)}                                   # rank by EV alone (what the card was before the quota)
+        floor = [e for e in kept if e.get("market") == "yds"][:max(min(yard_floor, cap), 0)]  # main-line yard edges: first claim on up to yard_floor slots
+        fid = {id(e) for e in floor}
+        pool = [e for e in kept if id(e) not in fid]
+        n_pool = max(cap - len(floor), 0)                                                      # unused floor slots flow back to the pool
+        on = sorted(floor + pool[:n_pool], key=key)
+        for i, e in enumerate(on, 1):
+            e["cap_rank"], e["quota"] = i, ("yard_floor" if id(e) in fid and ev_rank[id(e)] > cap else None)
+            card.append(e)
+        for j, e in enumerate(pool[n_pool:], len(on) + 1):
+            e["cap_rank"], e["quota"] = j, None
+            dropped.append(dict(e, cap="card", reasons=[f"over card cap (rank {j} of {len(kept)}, cap {cap}" + (f"; {len(floor)} slot(s) held by main-line yard edges under the yard floor of {yard_floor}" if floor else "") + ")"]))
     return card, dropped
 
 

@@ -50,8 +50,11 @@ The idempotence rule above means an external kick and a GitHub cron minutes apar
   Sunday early / late games: the first build at or after 9:23 AM Pacific (the last actionable build before 9:23 if the first one after it is inside
   the 30-min kickoff cutoff). TNF / SNF / MNF / London / Saturday: the last build before the cutoff. A game with no build at its decision time is
   "missed" and has no primary-record bets. The first-seen edge log stays as the secondary research record.
-- **Card cap**: 25 actionable bets per kickoff window (the `pull_windows.json` cluster), ranked by EV at the median book, one alt rung per
-  player-stat; the rest show greyed as "over card cap", go to `research/card_cap_*.json` and never reach the edge log, Discord or the record.
+- **Card cap**: 25 actionable bets per kickoff window (the `pull_windows.json` cluster), one alt rung per player-stat. Quota (2026-10-31):
+  main-line yard edges (the Results `by_market` bucket `yds`; alt rungs do not count) get first claim on up to 10 of the 25 slots by EV at the
+  median book, the rest fill by EV at the median, and unused floor slots flow back so the card still reaches 25 when enough edges exist. A row
+  on the card only by the floor is tagged "yard floor". The rest show greyed as "over card cap" with their rank, go to `research/card_cap_*.json`
+  and never reach the edge log, Discord or the record.
 - **Stakes**: alt rungs 0.25u for every role (created at that stake); Bench plays 0.25u; first-TD edges priced +2000 or longer with model P more
   than 2x the market sit in the bench section at 0.25u whatever the role. The flag rule itself is unchanged.
 - **Blends**: `blend.blend()` is the one blend function (50/50; fitted blends only through `coef_for` with approval + gates, none approved).

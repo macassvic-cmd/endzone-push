@@ -1746,3 +1746,53 @@ Files: `rules.py`, `blend.py`, `decision.py` (new), `placed_bets.py` (new), `tai
 `run_week.py`, `results.py`, `alerts.py`, `pull_loop.py`, `test_reconcile.py`, `prepush_check.py`, `.github/workflows/update.yml` (PST crons,
 tests, decision_log), `.github/workflows/pull_loop.yml` (tests), `template.html` / `index.html`, `research/tail_calibration_2026_w4-6.json`,
 README.md, this file.
+
+## 2026-10-31 — Card cap quota (CEO ruling 2026-10-30; ranking only, model frozen)
+
+**Ruling.** Per kickoff window (the `pull_windows.json` cluster, as before): (1) main-line yard edges — the Results `by_market` bucket
+`yds`, the book's primary rush / receiving line; alt rungs (`yds_alt`) do not count — get first claim on up to 10 of the 25 card slots, ranked
+by EV at the median book, highest first; (2) every remaining edge (anytime / first / 2+ TD, alt rungs, yard mains past the floor) fills the
+remaining slots by EV at the median, highest first; (3) a window with fewer than 10 main-line yard edges gives the unused floor slots back to
+the general pool in the same step, so the card still fills to 25 whenever 25+ actionable edges exist; (4) the existing rule stands and applies
+before ranking: one alt rung per player-stat per window (highest EV@med kept); (5) everything downstream is unchanged: over-cap rows display
+greyed with their rank, go to `research/card_cap_*.json` and never reach the edge log, Discord or the record; Discord still receives only the
+capped card; decision-pull snapshots freeze the capped card exactly as before. Flags, EVs, stakes and the model are untouched (flag- and
+EV-invariant under the freeze amendment): the ruling changes only which flagged edges make the capped card, which from the week 8 Sunday
+decision pull on is what the primary record grades.
+
+**Rationale (CEO, recorded as ruled).** Ranked by EV@med alone, TD longshots take the top of the card (the week 8 Sunday card's top five were
+bench longshots at 98–135% EV) and push main-line yard edges over the cap. Longshot EVs are the model's own tail probabilities grading
+themselves (first-seen union record: +2.24u against +151.6u expected). Yards are the calibrated segment: the W4–W6 tail calibration shows the
+model understates yardage overs, so yard EVs are conservative. The quota is a floor for yards, not a cap on TDs: longshots still make the
+card, they just no longer evict the proven market.
+
+**Code.** `rules.CARD_YARD_FLOOR = 10`; `rules.apply_card_cap(edges, clusters, cap=CARD_CAP, yard_floor=CARD_YARD_FLOOR)`: per window, the
+alt-rung dedupe, then the sort by EV@med, then the first 10 `market == "yds"` rows claim slots, then the rest by EV@med into the remaining
+slots. `cap_rank` is the EV@med order within the card (1…n) and continues through the over-cap rows; a row on the card only because of the
+floor (EV rank past 25) carries `quota = "yard_floor"`, shows "#rank · yard floor" on the board and "card #n (yard floor)" in Discord, and the
+decision snapshot keeps the field (`decision.FIELDS`). Over-cap reasons name the slots held by the floor. `latest.json` rules and
+`results.json` board_rules carry `card_yard_floor`; the Edge Board notice and the Results decision paragraph state the floor.
+
+**Before / after, the live Sunday window** (board built 2026-10-30 06:27Z by the pre-quota code, 77 actionable edges, re-capped under the
+quota): Sunday early + late window 25 on the card and 44 over the cap, before and after. Main-line yard edges over the cap under EV ranking:
+0; on the card now by the floor: 0. That window has no flagged main-line yard edge at all in that build (173 Sunday yard rows carry a priced
+main line; none clears 5% EV at 2+ books), so the card is identical rank for rank and the top five are still Hayden Rucci 2+ TD (+20000,
+125%), Rucci Anytime TD (+2200, 123%), Nikko Remigio Anytime TD (+3500, 109%), Mitchell Tinsley 2+ TD (+17500, 100%), Rucci First TD (+8000,
+92%). SNF window: 7 edges, 1 yard main (Treylon Burks Over 22.5 rec yds, EV@med 8%, #6) on the card before and after; MNF window: 1. The
+floor binds the moment main-line yard edges are flagged in a window where 25+ TD / alt edges outrank them (the state the ruling describes
+from the 00:07Z Thursday build); on today's card there is nothing for it to move.
+
+**Flag invariance (CI).** `research/card_cap_quota_invariance_2026_w8.json` holds the pre-cap actionable sets (edges + over_cap with
+cap_rank / window / cap / reasons / quota stripped, sorted) built by the pre-quota code e9e5cda: the replay of the saved Thursday 15:33Z pull
+as of 15:40Z (`ODDS_MOCK`, the consolidated-build replay; 64 edges, sha256 790d922f…) and the live 06:27Z board (77 edges incl. 29 alt rungs
+and 1 yard main, sha256 1087ca9d…). `test_card_rules.test_cap_is_a_pure_partition_flag_invariant` re-runs the cap on both and requires the
+stripped union of card + dropped to be byte-identical (same sha256); the same pull replayed with the quota code reproduced sha 790d922f… and
+the identical card, rank for rank. (Local replays carry no yard ladders — SharpAPI is live-only — so the floor cannot bind in a replay; the
+live-board fixture is the one with yard rows.) New tests also fail on: a window with 10+ yard mains whose 10 highest-EV@med mains are not all
+on the card (15 yard mains at 5–8% EV under 40 TD edges → the 10 highest on the card, 5 over the cap, 15 TD slots); fewer than 10 yard mains
+not all on the card or the card not reaching 25 (4 mains → all on, 21 TD); an alt rung claiming a floor slot; more than 25 per window; two
+rungs of one player-stat; the decision snapshot dropping `quota`. `test_card_rules`: 8/8. Full gate under Python 3.11 (`prepush_check.py`):
+every suite passes.
+
+Files: `rules.py`, `run_week.py`, `results.py`, `alerts.py`, `decision.py`, `test_card_rules.py`, `template.html` / `index.html`,
+`research/card_cap_quota_invariance_2026_w8.json` (new), README.md, this file.

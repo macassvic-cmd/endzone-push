@@ -6,7 +6,13 @@
   4. no stored blend_p falls outside [min(model, market), max(model, market)]: the one blend function, every slate / latest.json /
      edge-log / decision-log row on disk;
   5. the decision rule (Sunday 9:23 AM PT for early / late games, DST-aware; final pre-cutoff pull otherwise) and the decision log's
-     pending -> decided / missed transitions.
+     pending -> decided / missed transitions;
+  6. the card-cap quota (CEO ruling 2026-10-30): in any window with 10+ actionable main-line yard edges the 10 highest-EV@median yard mains
+     are all on the card; with fewer, every yard main is on the card and the card still reaches 25 when enough edges exist; alt rungs never
+     claim floor slots; the cap stays <= 25 per window;
+  7. flag invariance: the cap step is a pure partition. Re-running it on the pre-cap edge sets of the week 8 replay and the live board built by
+     the pre-quota code (research/card_cap_quota_invariance_2026_w8.json) gives back the same rows byte for byte (sha256), only cap_rank /
+     over_cap / quota may differ.
 
     python test_card_rules.py
 """
@@ -98,7 +104,7 @@ def test_card_cap_per_window_and_one_alt_rung_per_player_stat():
                 assert len(g) <= d["rules"]["card_cap"], (w, len(g))
                 alts = [(e["pid"], e.get("kind")) for e in g if e.get("market") == "yds_alt"]
                 assert len(alts) == len(set(alts)), (w, alts)
-    print("  card cap: <= 25 per kickoff window, one alt rung per player-stat, ranked by EV at the median")
+    print("  card cap: <= 25 per kickoff window, one alt rung per player-stat, EV at the median within the card")
 
 
 def _check_bounds(label, m, k, b):
@@ -184,6 +190,112 @@ def test_decision_rule_and_log():
     s = DEC.summary(log)
     assert s["decided"] == 2 and s["bets"] == 2 and s["missed"] == 0
     print("  decision rule: Sunday 9:23 PT (DST-aware) / final pre-cutoff pull; log pending -> decided | missed, prices frozen at the decision pull")
+
+
+def _yard(i, ev_med, kind="rush", **kw):
+    e = _edge(bet=f"Y{i} Over {50.5 + i} {kind} yds", pid=f"y{i}", market="yds", kind=kind, line=50.5 + i, best=-110, med=-115, ev=ev_med + 0.01, ev_med=ev_med, nbooks=3, stake=1.0, blend_p=0.55)
+    e.update(kw); return e
+
+
+def _by_window(card):
+    by_w = {}
+    for e in card: by_w.setdefault(e["window"], []).append(e)
+    return by_w
+
+
+SUN = "2026-11-01T15:00:00Z..2026-11-01T21:25:00Z"
+CLUSTERS = [dict(start="2026-11-01T15:00:00Z", end="2026-11-01T21:25:00Z"), dict(start="2026-11-01T22:20:00Z", end="2026-11-02T01:20:00Z")]
+
+
+def test_yard_floor_honored_and_alts_do_not_count():
+    assert RU.CARD_YARD_FLOOR == 10 and RU.CARD_CAP == 25
+    rows = [_edge(bet=f"P{i} Anytime TD", pid=f"p{i}", ev_med=0.30 - i * 0.005, ev=0.35 - i * 0.005) for i in range(40)]          # 40 TD edges, EV 0.105-0.30
+    rows += [_yard(i, 0.05 + i * 0.002) for i in range(15)]                                                                         # 15 yard mains, EV 0.050-0.078: all below every TD edge
+    rows += [_edge(bet=f"A{i} Over 29.5 rec yds (alt)", pid=f"a{i}", market="yds_alt", kind="rec", line=29.5, ev_med=0.09 + i * 0.001, ev=0.1, alt=True, stake=0.25) for i in range(12)]   # 12 alt rungs, EV 0.090-0.101
+    card, dropped = RU.apply_card_cap([dict(r) for r in rows], CLUSTERS)
+    sun = _by_window(card)[SUN]
+    assert len(sun) == 25 and len(card) + len(dropped) == len(rows)
+    mains_on = sorted(e["pid"] for e in sun if e["market"] == "yds")
+    top10 = sorted(e["pid"] for e in sorted((r for r in rows if r["market"] == "yds"), key=lambda r: -r["ev_med"])[:10])
+    assert mains_on == top10, ("the 10 highest-EV@median yard mains are all on the card", mains_on, top10)
+    assert all(e["quota"] == "yard_floor" for e in sun if e["market"] == "yds"), "on the card only by the floor (every one ranks past 25 by EV alone)"
+    assert sum(1 for e in sun if e["market"] == "any") == 15 and not any(e["market"] == "yds_alt" for e in sun), "alt rungs claim no floor slot: the 15 free slots go by EV (all TD edges here)"
+    assert [e["cap_rank"] for e in sun] == list(range(1, 26)) and all(sun[i]["ev_med"] >= sun[i + 1]["ev_med"] for i in range(24)), "cap_rank = EV@median order within the card"
+    over = [e for e in dropped if e["window"] == SUN]
+    assert sorted(e["cap_rank"] for e in over) == list(range(26, 26 + len(over))) and all(e["cap"] == "card" for e in over)
+    assert sum(1 for e in over if e["market"] == "yds") == 5 and all("yard floor" in e["reasons"][0] for e in over), over[0]["reasons"]
+    # a yard main that makes the card by EV alone is not a floor row
+    card2, _ = RU.apply_card_cap([_yard(99, 0.50)] + [dict(r) for r in rows], CLUSTERS)
+    y = [e for e in card2 if e["pid"] == "y99"][0]
+    assert y["cap_rank"] == 1 and y["quota"] is None
+    print("  yard floor: the 10 highest-EV@median main-line yard edges hold their slots; alt rungs never claim one; ranks by EV within the card")
+
+
+def test_yard_floor_backfill_fills_the_card():
+    rows = [_edge(bet=f"P{i} Anytime TD", pid=f"p{i}", ev_med=0.30 - i * 0.005, ev=0.35 - i * 0.005) for i in range(40)]
+    rows += [_yard(i, 0.05 + i * 0.002) for i in range(4)]                                                                          # 4 yard mains < the floor of 10
+    card, dropped = RU.apply_card_cap([dict(r) for r in rows], CLUSTERS)
+    sun = _by_window(card)[SUN]
+    assert len(sun) == 25, "unused floor slots flow back: the card still fills to 25"
+    assert sorted(e["pid"] for e in sun if e["market"] == "yds") == ["y0", "y1", "y2", "y3"], "every yard main is on the card"
+    assert sorted(int(e["pid"][1:]) for e in sun if e["market"] == "any") == list(range(21)), "the 21 free slots go to the 21 highest-EV TD edges"
+    assert len([e for e in dropped if e["window"] == SUN]) == 19
+    # a thin window: everything fits, nothing dropped, no quota tag
+    small = [_edge(bet=f"S{i} Anytime TD", pid=f"s{i}", kick_utc="2026-11-02T01:20Z", ev_med=0.2 - i * 0.01) for i in range(3)] + [_yard(i, 0.06, kick_utc="2026-11-02T01:20Z") for i in range(2)]
+    card, dropped = RU.apply_card_cap([dict(r) for r in small], CLUSTERS)
+    assert len(card) == 5 and not dropped and all(e["quota"] is None for e in card) and [e["cap_rank"] for e in card] == [1, 2, 3, 4, 5]
+    # the cap and the alt-rung rule still bind with the floor in play: 12 yard mains + 3 rungs of one player-stat + 30 TD edges
+    rows = [_yard(i, 0.20 - i * 0.005) for i in range(12)] + [_edge(bet=f"P{i} Anytime TD", pid=f"p{i}", ev_med=0.15 - i * 0.003) for i in range(30)]
+    rows += [_edge(bet=f"Q Over {ln} rush yds (alt)", pid="q", market="yds_alt", kind="rush", line=ln, ev_med=0.4 + ln / 1000, alt=True, stake=0.25) for ln in (39.5, 49.5, 59.5)]
+    card, dropped = RU.apply_card_cap([dict(r) for r in rows], CLUSTERS)
+    sun = _by_window(card)[SUN]
+    assert len(sun) == 25 and sum(1 for e in sun if e["market"] == "yds") == 12, "yard mains past the floor compete in the pool on EV (here they win it)"
+    assert [e["pid"] for e in sun if e["market"] == "yds_alt"] == ["q"] and sun[0]["line"] == 59.5 and sum(1 for e in dropped if e["cap"] == "alt") == 2
+    print("  yard floor backfill: fewer than 10 yard mains -> all on the card and the card still reaches 25; cap and alt-rung rule unchanged")
+
+
+CAP_FIELDS = ("cap_rank", "window", "cap", "reasons", "quota")
+
+
+def _strip(rows):
+    return sorted(({k: v for k, v in r.items() if k not in CAP_FIELDS} for r in rows), key=lambda r: (r.get("bet") or "", r.get("market") or "", r.get("book") or "", r.get("best") or 0, r.get("line") or 0))
+
+
+def _sha(rows):
+    import hashlib
+    return hashlib.sha256(json.dumps(rows, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
+
+
+def test_cap_is_a_pure_partition_flag_invariant():
+    import copy
+    # synthetic: whatever goes in comes out, byte for byte, once the cap fields are stripped
+    rows = [_edge(bet=f"P{i} Anytime TD", pid=f"p{i}", ev_med=0.30 - i * 0.005) for i in range(40)] + [_yard(i, 0.05 + i * 0.002) for i in range(15)]
+    card, dropped = RU.apply_card_cap(copy.deepcopy(rows), CLUSTERS)
+    assert _sha(_strip(card + dropped)) == _sha(_strip(rows))
+    # the week 8 pre-cap sets built by the pre-quota code: the replay of the saved 15:33Z pull and the live 06:27Z board
+    fx = json.load(open("research/card_cap_quota_invariance_2026_w8.json", encoding="utf-8"))
+    for name, st in fx["sets"].items():
+        before = _strip(st["rows"])
+        assert _sha(before) == st["sha256_before"], (name, "fixture rows do not match their recorded sha")
+        card, dropped = RU.apply_card_cap(copy.deepcopy(st["rows"]), fx["clusters"])
+        after = _strip(card + dropped)
+        assert json.dumps(after, sort_keys=True, ensure_ascii=False) == json.dumps(before, sort_keys=True, ensure_ascii=False), (name, "the flagged edge set changed through the cap step")
+        assert _sha(after) == st["sha256_before"] and len(after) == st["n"]
+        for w, g in _by_window(card).items():
+            assert len(g) <= RU.CARD_CAP, (name, w, len(g))
+            mains = sorted((e for e in dropped + card if e["window"] == w and e["market"] == "yds"), key=lambda e: -e["ev_med"])
+            on = {e["bet"] for e in g if e["market"] == "yds"}
+            assert all(e["bet"] in on for e in mains[:RU.CARD_YARD_FLOOR]), (name, w, "a top-10 yard main is over the cap")
+        print(f"  flag invariance ({name}): {len(after)} pre-cap edges byte-identical through the cap step (sha256 {st['sha256_before'][:12]}...), card {len(card)} / dropped {len(dropped)}")
+    # the live board file: re-running the cap on its own pre-cap set reproduces the published card exactly
+    if os.path.exists("latest.json"):
+        d = json.load(open("latest.json", encoding="utf-8"))
+        if (d.get("rules") or {}).get("card_yard_floor"):
+            pre = d.get("edges", []) + d.get("over_cap", [])
+            card, dropped = RU.apply_card_cap(copy.deepcopy(pre), json.load(open("pull_windows.json")).get("clusters") if os.path.exists("pull_windows.json") else None)
+            assert _sha(_strip(card + dropped)) == _sha(_strip(pre))
+            assert {(e["bet"], e["book"], e["best"]) for e in card} == {(e["bet"], e["book"], e["best"]) for e in d.get("edges", [])}, "latest.json card is what the rule gives"
+    assert "quota" in DEC.FIELDS, "the decision snapshot keeps the floor tag"
 
 
 if __name__ == "__main__":

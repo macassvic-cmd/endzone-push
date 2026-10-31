@@ -20,7 +20,7 @@ import rules as RU
 
 DIR = "decision_log"      # run_week.py points this under OUT_DIR for replays
 FIELDS = ("bet", "pid", "market", "kind", "line", "team", "game_id", "role", "group", "routed", "stake", "best", "book", "med", "nbooks", "mkt_p", "model_p",
-          "blend_p", "ev", "ev_med", "rule", "bet_down_to", "captured", "cap_rank", "window", "alt", "listed", "ratio", "best_venue")
+          "blend_p", "ev", "ev_med", "rule", "bet_down_to", "captured", "cap_rank", "window", "quota", "alt", "listed", "ratio", "best_venue")
 TD = ("any", "first", "two")
 
 
