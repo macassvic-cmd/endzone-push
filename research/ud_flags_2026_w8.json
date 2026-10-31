@@ -390,5 +390,33 @@
 "ud_price": -122.0,
 "flagged": "20261031T0718Z",
 "kick_utc": "2026-11-02T01:20Z"
+},
+"00-0040890|Receiving Yards|4.5|lower": {
+"pid": "00-0040890",
+"name": "Cyrus Allen",
+"team": "KC",
+"bet": "Cyrus Allen Receiving Yards lower 4.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 4.5,
+"side": "lower",
+"blend": 0.6385,
+"breakeven": {
+"2-pick": 0.5581,
+"3-pick": 0.538,
+"5-pick flex": 0.5178
+},
+"margins": {
+"2-pick": 0.0804,
+"3-pick": 0.1005,
+"5-pick flex": 0.1207
+},
+"margin": 0.1005,
+"ref": "3-pick",
+"mult": 1.07,
+"ud_price": 106.0,
+"flagged": "20261031T1519Z",
+"kick_utc": "2026-11-01T21:25Z"
 }
 }

@@ -6942,5 +6942,101 @@
 "ok": true
 }
 ]
+},
+"00-0035261|yds|rush|89.5": {
+"pid": "00-0035261",
+"bet": "Tony Pollard Over 89.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "TEN",
+"role": "Starter",
+"kind": "rush",
+"line": 89.5,
+"flagged": "20261031T1518Z",
+"best": 255,
+"book": "DraftKings",
+"med": 255,
+"mkt_p": 0.2751,
+"blend_p": 0.3333,
+"model_p": 0.3915,
+"ev": 0.1833,
+"ev_med": 0.1833,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.42,
+"bet_down_to": 216,
+"best_venue": {
+"venue": "DraftKings",
+"price": 255,
+"net": 255,
+"size_label": "",
+"captured": "2026-10-31T15:18:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 255,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 240,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+}
+]
+},
+"00-0037742|yds|rec|21.5": {
+"pid": "00-0037742",
+"bet": "Treylon Burks Over 21.5 rec yds",
+"market": "yds",
+"team": "WAS",
+"role": "Starter",
+"kind": "rec",
+"line": 21.5,
+"flagged": "20261031T1518Z",
+"best": -112,
+"book": "DraftKings",
+"med": -114,
+"mkt_p": 0.5,
+"blend_p": 0.5794,
+"model_p": 0.6589,
+"ev": 0.0968,
+"ev_med": 0.0877,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.32,
+"bet_down_to": -123,
+"best_venue": {
+"venue": "DraftKings",
+"price": -112,
+"net": -112,
+"size_label": "",
+"captured": "2026-10-31T15:18:02Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -112,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -120,
+"ok": true
+}
+]
 }
 }
