@@ -7258,5 +7258,53 @@
 "ok": true
 }
 ]
+},
+"00-0040646|any": {
+"pid": "00-0040646",
+"bet": "Jalen Royals Anytime TD",
+"market": "any",
+"team": "KC",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261031T2042Z",
+"best": 1300,
+"book": "DraftKings",
+"med": 1250,
+"mkt_p": 0.064,
+"blend_p": 0.0941,
+"model_p": 0.12413333333333333,
+"ev": 0.3169,
+"ev_med": 0.2699,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.94,
+"bet_down_to": 1016,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1300,
+"net": 1300,
+"size_label": "",
+"captured": "2026-10-31T20:44:03.710372703Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1300,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1200,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1144,
+"ok": false
+}
+]
 }
 }

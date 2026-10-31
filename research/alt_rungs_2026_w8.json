@@ -27969,5 +27969,115 @@
 "price"
 ],
 "flagged": "20261031T2031Z"
+},
+"00-0037263|rush|29.5": {
+"bet": "Tyler Allgeier Over 29.5 rush yds (alt)",
+"pid": "00-0037263",
+"market": "yds_alt",
+"kind": "rush",
+"line": 29.5,
+"team": "ARI",
+"model_p": 0.302,
+"mkt_p": 0.2335,
+"blend_p": 0.2677,
+"best": 320,
+"book": "FanDuel",
+"ev": 0.1245,
+"med": 320,
+"ev_med": 0.1245,
+"nbooks": 2,
+"curve_rungs": 13,
+"games": 23,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.2243,
+"captured": "2026-10-31T20:43:48.139437665Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T2045Z"
+},
+"00-0033106|pass|429.5": {
+"bet": "Jared Goff Over 429.5 pass yds (alt)",
+"pid": "00-0033106",
+"market": "yds_alt",
+"kind": "pass",
+"line": 429.5,
+"team": "DET",
+"model_p": 0.055,
+"mkt_p": 0.0315,
+"blend_p": 0.0432,
+"best": 2900,
+"book": "DraftKings",
+"ev": 0.297,
+"med": 2900,
+"ev_med": 0.297,
+"nbooks": 1,
+"curve_rungs": 26,
+"games": 11,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0315,
+"captured": "2026-10-31T20:43:24.14491894Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T2045Z"
+},
+"00-0034855|pass|349.5": {
+"bet": "Baker Mayfield Over 349.5 pass yds (alt)",
+"pid": "00-0034855",
+"market": "yds_alt",
+"kind": "pass",
+"line": 349.5,
+"team": "TB",
+"model_p": 0.0447,
+"mkt_p": 0.0509,
+"blend_p": 0.0478,
+"best": 2100,
+"book": "DraftKings",
+"ev": 0.0516,
+"med": 2100,
+"ev_med": 0.0516,
+"nbooks": 2,
+"curve_rungs": 30,
+"games": 18,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.043,
+"captured": "2026-10-31T20:43:48.109976003Z",
+"kick_utc": "2026-11-01T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261031T2045Z"
 }
 }
