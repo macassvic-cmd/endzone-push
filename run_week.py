@@ -1,0 +1,632 @@
+"""Project the upcoming slate.
+
+    python run_week.py                 # auto: current season, next unplayed week
+    python run_week.py 2026 4          # explicit
+Writes docs/data/slate_<season>_w<week>.json and docs/data/latest.json
+"""
+import sys, os, json, collections, numpy as np, pandas as pd
+import model as M, odds as O, weather as W, kalshi as K, clv as C, parlay as PL, blend as BL, sharpapi as SA, yards as Y, yard_prices as YP
+import rules as RU, alerts as AL
+import lineshop as LS, venues as V, pickem_ud as PU, decision as DEC
+from nansafe import val, flag, text, num, isnan
+
+DATA, OUT = "data", os.environ.get("OUT_DIR", ".")       # OUT_DIR: write the slate files elsewhere (replays never touch the published ones)
+os.makedirs(OUT, exist_ok=True)
+if OUT != ".": C.EDGE_DIR, C.RESEARCH_DIR, DEC.DIR = f"{OUT}/edge_log", f"{OUT}/research", f"{OUT}/decision_log"   # a replay never appends to the published logs
+p, s = M.load()
+# AS_OF=<ISO UTC> replays a build as of that moment (which games are still ahead, the kickoff cutoff, every price age); default = now
+NOW_UTC = pd.Timestamp(os.environ["AS_OF"]) if os.environ.get("AS_OF") else pd.Timestamp.now(tz="UTC")
+NOW_UTC = NOW_UTC.tz_localize("UTC") if NOW_UTC.tzinfo is None else NOW_UTC.tz_convert("UTC")
+now_et = NOW_UTC.tz_convert("America/New_York").tz_localize(None)
+s["kick"] = pd.to_datetime(s.gameday + " " + s.gametime.fillna("13:00"))
+
+if "--live" in sys.argv:                                    # credits rule (2026-10-18): live Odds API calls outside CI only with --live
+    os.environ["ODDS_LIVE"] = "1"; sys.argv.remove("--live")
+if len(sys.argv) >= 3:
+    season, week = int(sys.argv[1]), int(sys.argv[2])
+else:
+    fut = s[(s.game_type == "REG") & s.home_score.isna() & (s.kick > now_et)].sort_values("kick")
+    season, week = int(fut.season.iloc[0]), int(fut.week.iloc[0])
+print(f"== projecting {season} week {week}")
+if not O.live_allowed() and not os.environ.get("ODDS_MOCK"):
+    _np = O.newest_pull(season, week) or O.newest_pull()
+    if _np:
+        os.environ["ODDS_MOCK"] = _np; os.environ.setdefault("KALSHI", "off")
+        print(f"local run: no live Odds API calls outside CI (credits rule); replaying {_np} (pass --live to pull, or set ODDS_MOCK)")
+    else:
+        print("local run: no live Odds API calls outside CI and no saved pull to replay; the board builds without prices (pass --live to pull)")
+
+# ---------- availability ----------
+dc = pd.read_parquet(f"{DATA}/dc.parquet"); dc = dc[dc.dt == dc.dt.max()]
+inj = pd.read_parquet(f"{DATA}/inj.parquet"); inj = inj[inj.week == week]
+out_ids = set(inj[inj.report_status.isin(["Out", "Doubtful"])].gsis_id)
+q_ids = set(inj[inj.report_status == "Questionable"].gsis_id)
+ros = pd.read_parquet(f"{DATA}/rosters.parquet"); ros = ros[ros.week == ros.week.max()]
+inactive = set(ros[ros.status.isin(["RES", "INA", "CUT", "RET", "EXE"])].gsis_id)
+
+wk = s[(s.season == season) & (s.week == week)]
+done = wk[wk.home_score.notna() | (wk.kick <= now_et)].game_id     # played or already kicked off
+s2 = s[~s.game_id.isin(done)].copy()
+sched = s2[(s2.season == season) & (s2.week == week)]
+if sched.empty:
+    print(f"nothing to project: every {season} week {week} game has kicked off; keeping the existing files"); sys.exit(0)
+
+# ---------- live lines (Odds API) ----------
+def merge_sources(oa, sa, keep_both=False):
+    """Merge Odds API events (oa) with SharpAPI events (sa) game by game. Same book from both sources: keep the
+       fresher quote per market (Odds API market last_update vs SharpAPI row timestamp). Every outcome keeps its source.
+       keep_both (research pulls): keep both feeds' rows for every market so a replay can split them by source."""
+    def key(e): return (O.TEAM_ABBR.get(e["away_team"], e["away_team"]), O.TEAM_ABBR.get(e["home_team"], e["home_team"]))
+    O.tag_sources(oa)
+    out = {key(e): e for e in (oa or [])}
+    for e in sa or []:
+        k = key(e)
+        if k not in out:
+            out[k] = e; continue
+        tgt = out[k]
+        if not tgt.get("bookmakers"): tgt["bookmakers"] = e.get("bookmakers", [])
+        tb = {b["title"]: b for b in tgt.setdefault("props", {}).setdefault("bookmakers", [])}
+        for b in e.get("props", {}).get("bookmakers", []):
+            if b["title"] not in tb:
+                tgt["props"]["bookmakers"].append(b); continue
+            tm = {m["key"]: m for m in tb[b["title"]]["markets"]}
+            for m in b["markets"]:
+                if m["key"] not in tm or "yds" in m["key"] or keep_both:
+                    tb[b["title"]]["markets"].append(m); continue          # yardage: both feeds' rows stay (outcomes carry source); ladder_board picks one
+                old = tm[m["key"]]; old_ts = max((o.get("ts") or "" for o in old["outcomes"]), default=""); new_ts = max((o.get("ts") or "" for o in m["outcomes"]), default="")
+                if new_ts >= old_ts:
+                    old["outcomes"] = m["outcomes"]                 # fresher SharpAPI quote replaces the Odds API one for this book+market
+    return list(out.values())
+
+
+# ---- which feed prices the props ----
+# PROPS_SOURCE=oddsapi: The Odds API is primary for every prop market (TD + yardage, region us, fixed book set O.PRIMARY_BOOKS); SharpAPI
+# is fetched only as a fallback (an Odds API call errors, no key, or the credit guard tripped) and the board then says "fallback source".
+# PROPS_SOURCE=sharpapi (default): SharpAPI primary for DK/FD anytime, first TD and yardage, The Odds API for 2+ TD and pass TDs
+# (plus yardage when YARDS_SOURCE=oddsapi). PROPS_FROM_WEEK / YARDS_FROM_WEEK gate a flip so a slate in progress is never touched.
+PROPS_SOURCE = O.props_source()
+if PROPS_SOURCE == "oddsapi" and O.props_source(week) == "sharpapi":
+    os.environ["PROPS_SOURCE"] = PROPS_SOURCE = "sharpapi"
+    print(f"props source: PROPS_SOURCE=oddsapi goes live from week {O.props_from_week()}; week {week} stays on SharpAPI")
+if PROPS_SOURCE == "oddsapi":
+    os.environ["YARDS_SOURCE"] = "oddsapi"                            # primary implies the yardage ladders too
+elif O.yards_source() == "oddsapi" and O.yards_source(week) == "sharpapi":
+    os.environ["YARDS_SOURCE"] = "sharpapi"                           # yardage-only go-live gate
+    print(f"yards source: YARDS_SOURCE=oddsapi goes live from week {O.yards_from_week()}; week {week} stays on SharpAPI")
+YARDS_SOURCE = O.yards_source()                                       # 'sharpapi' | 'oddsapi' (rush/rec ladders from The Odds API, region us)
+DRY_RUN = bool(os.environ.get("DRY_RUN"))                             # DRY_RUN=1: pull and build, never log edges / research / paper parlays
+KEEP_BOTH = bool(os.environ.get("KEEP_BOTH"))                         # research pull: fetch SharpAPI as well and keep both feeds' rows for every market and every book (source-split replays)
+FALLBACK = None                                                       # PROPS_SOURCE=oddsapi: why SharpAPI is pricing this board (None = The Odds API did)
+have_sharp = bool(os.environ.get("SHARPAPI_KEY")) and not os.environ.get("ODDS_MOCK")
+def fetch_sharp(label):
+    try:
+        s = SA.fetch_week(); print(f"sharpapi ({label}): {len(s)} fixtures, {SA.REQS} requests, DK/FD anytime+first+yardage"); return s
+    except Exception as e:
+        print(f"sharpapi ({label}) failed:", e); return None
+sharp = fetch_sharp("primary") if PROPS_SOURCE == "sharpapi" and have_sharp else None
+try:
+    events = O.fetch_all(markets=None if (sharp or PROPS_SOURCE == "oddsapi") else O.PROP_MARKETS)
+except Exception as e:
+    print("odds api failed:", e); events = None
+if PROPS_SOURCE == "oddsapi":
+    FALLBACK = O.fallback_reason(events)
+    if FALLBACK: print("FALLBACK SOURCE: SharpAPI ->", FALLBACK)
+    if (FALLBACK or KEEP_BOTH) and have_sharp:
+        sharp = fetch_sharp("fallback" if FALLBACK else "research")
+    if FALLBACK and not sharp: FALLBACK += " (SharpAPI unavailable too)"
+O.tag_sources(events)                                                 # capture time on every Odds API quote (price-age rule), merge or not
+if sharp:
+    events = merge_sources(events, sharp, keep_both=KEEP_BOTH)
+if PROPS_SOURCE == "oddsapi" and events and not KEEP_BOTH:
+    events = O.only_books(events, O.PRIMARY_BOOKS)                    # fixed book set for every prop market (Kalshi attaches below; SharpAPI's DK/FD are in the set)
+odds_asof = None
+if events is None:
+    # live odds off: reuse the newest saved pull for games that have not kicked off, and say so on the board
+    _pulls = C.pulls(season, week)
+    if _pulls:
+        _stamp, _fn = _pulls[-1]
+        _now = NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ")
+        events = [e for e in json.load(open(_fn)) if e["commence_time"] > _now]
+        odds_asof = pd.Timestamp(f"{_stamp[:4]}-{_stamp[4:6]}-{_stamp[6:8]}T{_stamp[9:11]}:{_stamp[11:13]}Z").tz_convert("America/Los_Angeles").strftime("%a %b %d %I:%M %p PT")
+        print(f"live odds off: reusing {_fn} ({odds_asof}) for {len(events)} games not yet kicked off")
+if events and os.environ.get("KALSHI", "on") != "off":
+    try:
+        _n, _liq = K.attach(events)                                  # Kalshi joins the board as one more book (fee-adjusted prices)
+        print(f"kalshi markets attached: {_n} ({_liq} with >= ${K.MIN_DOLLARS_AT_ASK:.0f} at the ask; the rest are reference-only)")
+    except Exception as e:
+        print("kalshi unavailable:", e)
+PULL_FN = None
+if events and not os.environ.get("ODDS_MOCK") and not odds_asof:
+    # keep every real pull: odds_history/<season>_w<week>_<UTC stamp>.json (committed by the workflow) for blend fitting and closing-line value
+    os.makedirs("odds_history", exist_ok=True)
+    _fn = f"odds_history/{season}_w{week}_{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z.json"
+    json.dump(events, open(_fn, "w")); print("saved odds pull to", _fn); PULL_FN = _fn
+def _has_source(evs, src):
+    return any((o.get("source") or "oddsapi") == src and "yds" in m["key"] for e in evs or [] for b in e.get("props", {}).get("bookmakers", []) for m in b["markets"] for o in m["outcomes"][:1])
+YARDS_EFFECTIVE = YARDS_SOURCE
+if FALLBACK and sharp:
+    YARDS_EFFECTIVE = "sharpapi"; print("yards source: fallback -> SharpAPI ladders (DraftKings, FanDuel)")
+elif YARDS_SOURCE == "oddsapi" and not _has_source(events, "oddsapi"):
+    YARDS_EFFECTIVE = "sharpapi"; print("yards source: YARDS_SOURCE=oddsapi but this pull carries no Odds API yardage rows (key missing, budget guard or an old pull): SharpAPI ladders used")
+else:
+    print(f"yards source: {YARDS_EFFECTIVE}" + (f" (books {', '.join(YP.YARD_BOOKS)})" if YARDS_EFFECTIVE == "oddsapi" else ""))
+ODDS_USAGE = O.usage_summary()
+# credit budget: projected balance at the billing reset (the 1st of the month) from the planned pipeline burn and the trailing observed burn; stage 1 skips the
+# us_ex line-shop pulls, stage 2 also halves the kickoff-loop cadence (pull_loop); the site shows the projection on the Edge Board notice
+BUDGET = O.budget_projection(now=NOW_UTC.to_pydatetime())
+print(f"odds api budget: remaining {BUDGET['remaining']}, burn {BUDGET['burn_per_day']}/day (planned {BUDGET['planned_per_day']}, observed {BUDGET['observed_per_day']}), "
+      f"projected {BUDGET['projected_at_reset']} at the {BUDGET['reset_at'][:10]} reset (floor {BUDGET['floor']:,}), guard stage {BUDGET['stage']}")
+lines = O.game_lines(events)
+board = O.prop_board(events)
+hold = O.measure_hold(events)          # per-book overround measured from this week's boards
+for k, v in sorted(hold.items(), key=str):
+    if isinstance(k, tuple): print(f"hold {k[0]:18} {k[1]:13} {v:.3f}")
+line_src = {}
+for i, g in sched.iterrows():
+    l = lines.get((g.away_team, g.home_team))
+    if l:
+        s2.loc[i, ["spread_line", "total_line"]] = [l["spread_line"], l["total_line"]]
+        line_src[g.game_id] = f"live ({l['books']} books)"
+    else:
+        line_src[g.game_id] = "nflverse"
+
+# ---------- weather ----------
+wx = W.kickoff_weather(sched)
+wind = {k: v["wind"] for k, v in wx.items()}
+
+# ---------- active players ----------
+limits = {"QB": 2, "RB": 3, "WR": 6, "TE": 4}
+active, qbo, names, pos = {}, {}, {}, {}
+for t, g in dc[dc.pos_abb.isin(limits)].groupby("team"):
+    g = g[g.pos_rank <= g.pos_abb.map(limits)]
+    ids = set(g.gsis_id) - out_ids - inactive
+    for _, r in g.iterrows():
+        names[r.gsis_id] = r.player_name; pos[r.gsis_id] = r.pos_abb
+    qb = g[(g.pos_abb == "QB") & g.gsis_id.isin(ids)].sort_values("pos_rank")
+    for side in ["home", "away"]:
+        row = sched[sched[f"{side}_team"] == t]
+        if len(row):
+            m = qb[qb.player_name == row[f"{side}_qb_name"].iloc[0]]
+            if len(m): qb = m
+    if len(qb): qbo[t] = (qb.gsis_id.iloc[0], qb.player_name.iloc[0])
+    active[t] = {i for i in ids if pos.get(i) != "QB" or i == qbo.get(t, (None,))[0]}
+
+# depth-chart slot for the share prior, and recent snap share for the bit-part cap
+depth = {r.gsis_id: (r.pos_abb, r.pos_rank) for r in dc.dropna(subset=["gsis_id"]).sort_values("pos_rank").drop_duplicates("gsis_id").itertuples()}
+snaps3 = None
+try:
+    _sn = pd.read_parquet(f"{DATA}/snaps.parquet")
+    _sn = _sn[(_sn.season == season) & (_sn.game_type == "REG") & (_sn.week < week)]
+    _idmap = ros.dropna(subset=["pfr_id"]).set_index("pfr_id").gsis_id.to_dict()
+    _sn = _sn.assign(gsis_id=_sn.pfr_player_id.map(_idmap)).dropna(subset=["gsis_id"])
+    snaps3 = _sn.sort_values("week").groupby("gsis_id").tail(3).groupby("gsis_id").offense_pct.mean().to_dict()
+except Exception as e:
+    print("snaps unavailable for cap:", e)
+_rk = ros[ros.rookie_year == season].drop_duplicates("gsis_id")
+rookies = {g: M.draft_bucket(d) for g, d in zip(_rk.gsis_id, _rk.draft_number)}
+_cache = M.prep_week(p, s2, season, week)
+teams, pl, qbs, sh = M.build_slate(p, s2, season, week, active=active, qb_override=qbo, wind=wind, depth=depth, snaps=snaps3, rookies=rookies, cache=_cache)
+pl.loc[pl.pid.isin(q_ids), "share"] *= 0.85
+sim = M.simulate(teams, pl, qbs, n=60000)
+df = M.summarize(teams, pl, qbs, sim, names)
+df["pos"] = df.pid.map(pos)
+df["questionable"] = df.pid.isin(q_ids)
+
+# ---------- snap share (role check) ----------
+try:
+    sn = pd.read_parquet(f"{DATA}/snaps.parquet")
+    sn = sn[(sn.season == season) & (sn.game_type == "REG")]
+    idmap = ros.dropna(subset=["pfr_id"]).set_index("pfr_id").gsis_id.to_dict()
+    sn["gsis_id"] = sn.pfr_player_id.map(idmap)
+    last = sn.sort_values("week").groupby("gsis_id").tail(1).set_index("gsis_id").offense_pct
+    avg3 = sn.sort_values("week").groupby("gsis_id").tail(3).groupby("gsis_id").offense_pct.mean()
+    df["snap_last"] = df.pid.map(last); df["snap_3"] = df.pid.map(avg3)
+    df["snap_trend"] = df.snap_last - df.snap_3
+except Exception as e:
+    print("snaps unavailable:", e)
+
+# ---------- role: Starter / Rotational / Bench (last-3-game snap % first, depth-chart slot when snaps are unknown) ----------
+ROLE_STARTER_SNAPS, ROLE_BENCH_SNAPS = 0.60, 0.30
+def role_of(pid, snap3):
+    d = depth.get(pid); pos = M.POS_MAP.get(d[0], d[0]) if d else None
+    top = d is not None and pos in M.RANK_CAP and d[1] <= 1
+    deep = d is None or pos not in M.RANK_CAP or d[1] >= M.RANK_CAP[pos]
+    known = snap3 is not None and snap3 == snap3
+    if top or (known and snap3 >= ROLE_STARTER_SNAPS):
+        return "Starter"
+    if deep or (known and snap3 < ROLE_BENCH_SNAPS):
+        return "Bench"
+    return "Rotational"
+df["role"] = [role_of(r.pid, getattr(r, "snap_3", None)) for r in df.itertuples()]
+print("roles:", df.role.value_counts().to_dict())
+# model weak spot: mobile QBs are under-predicted (CHANGELOG, mobile-QB round); tag them and keep them off the Edge Board
+WEAK_QB_DR = 1.5
+df["qb_dr"] = df.pid.map(sh.drop_duplicates("pid").set_index("pid").qb_dr)
+df["weak_spot"] = np.where(df.qb_dr.fillna(0) >= WEAK_QB_DR, "mobile-qb", None)
+print("weak-spot QBs (off the edge board):", df[df.weak_spot.notna()].name.tolist())
+
+# ---------- first TD: conditional on who receives the opening kickoff ----------
+fmult = {}
+for t, info in teams.items():
+    hr, ar, mix = M.first_td_split(info["spread"])
+    if info["home"]:
+        fmult[t] = dict(recv=hr / mix, kick=ar / mix)
+    else:
+        fmult[t] = dict(recv=(1 - ar) / (1 - mix), kick=(1 - hr) / (1 - mix))
+df["first_if_recv"] = df.p_first * df.team.map(lambda t: fmult[t]["recv"])
+df["first_if_kick"] = df.p_first * df.team.map(lambda t: fmult[t]["kick"])
+for c in ["p_any", "p_first", "p_2plus", "first_if_recv", "first_if_kick"]:
+    df["fair_" + c.replace("p_", "")] = M.fair_american(df[c].values)
+
+
+# ---------- book prices + edge ----------
+BLENDS = BL.load()                                   # fitted model+market blend per market (results.py refits weekly); 50/50 when not in use
+BLEND_COEF = {pre: BL.coef_for(BLENDS, mk) for pre, mk in (("any_", "any"), ("first_", "first"), ("two_", "two"))}
+print("blend in use:", {k[:-1]: ("fitted " + str(v) if v else "50/50") for k, v in BLEND_COEF.items()})
+def attach(row, market, prob, point=None, prefix=""):
+    ps = O.price_summary(board, market, row["name"], point, hold) if board else None
+    if not ps: return {}
+    ev = prob * O.decimal(ps["best"]) - 1
+    coef = BLEND_COEF.get(prefix); w = 0.5 if coef is None else None
+    blend = float(BL.blend([prob], [ps["market_p"]], coef)[0])    # the one blend function: 50/50 unless a fitted blend is approved + gated
+    kal = board.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK, {}).get("yes")
+    kref = O.REFERENCE.get((market, O.norm_name(row["name"]), point), {}).get(K.BOOK)
+    return {f"{prefix}best": ps["best"], f"{prefix}book": ps["book"], f"{prefix}mkt_p": round(ps["market_p"], 4),
+            f"{prefix}kalshi": kal if kal is not None else kref, f"{prefix}kalshi_liquid": kal is not None,
+            f"{prefix}ev": round(blend * O.decimal(ps["best"]) - 1, 4), f"{prefix}model_ev": round(ev, 4),
+            f"{prefix}med": ps["median"], f"{prefix}ev_med": round(blend * O.decimal(ps["median"]) - 1, 4),
+            f"{prefix}blend_p": round(blend, 4), f"{prefix}nbooks": ps["n_books"], f"{prefix}w": w, f"{prefix}captured": ps.get("captured")}
+
+ext = [dict(**attach(r, "player_anytime_td", r.p_any, prefix="any_"),
+            **attach(r, "player_first_td", r.p_first, prefix="first_"),
+            **attach(r, O.TWO_PLUS[0], r.p_2plus, point=O.TWO_PLUS[1], prefix="two_")) for _, r in df.iterrows()]
+df = pd.concat([df.reset_index(drop=True), pd.DataFrame(ext)], axis=1)
+
+# ---------- QB ladders + stacks ----------
+tds, pix = sim["tds"], sim["pix"]
+qrows, stacks, bring = [], [], []
+for t, (qid, qn) in qbs.items():
+    ptd = sim["qb_ptd"][t]
+    q = dict(team=t, opp=teams[t]["opp"], qb=qn, implied=teams[t]["implied"], team_td=teams[t]["lam"],
+             pass_frac=teams[t]["pass_frac"], exp_pass_td=ptd.mean(), p1=(ptd >= 1).mean(), p2=(ptd >= 2).mean(),
+             p3=(ptd >= 3).mean(), p_rush_td=(tds[:, pix[qid]] > 0).mean() if qid in pix else 0,
+             wind=teams[t]["wind"])
+    for pt, key in [(0.5, "p1"), (1.5, "p2"), (2.5, "p3")]:
+        a = attach({"name": qn}, "player_pass_tds", q[key], point=pt)
+        if a: q[f"o{pt}"] = dict(line=pt, best=a["best"], book=a["book"], ev=a["ev"], mkt_p=a["mkt_p"], blend_p=a["blend_p"])
+    qrows.append(q)
+    mates = df[(df.team == t) & (df.pos.isin(["WR", "TE", "RB"])) & (df.rec_share > 0.06)]
+    for _, w in mates.iterrows():
+        wt = tds[:, pix[w.pid]] > 0
+        for k in (1, 2, 3):
+            qk = ptd >= k; j = (wt & qk).mean()
+            stacks.append(dict(team=t, qb=qn, wr=w["name"], pos=w.pos, k=k, p_wr=wt.mean(), p_qb=qk.mean(),
+                               joint=j, lift=j / (wt.mean() * qk.mean()), fair=int(M.fair_american(np.array([j]))[0]),
+                               naive_fair=int(M.fair_american(np.array([wt.mean() * qk.mean()]))[0])))
+    o = teams[t]["opp"]
+    if t < o:
+        a = df[(df.team == t) & (df.rec_share > 0)].nlargest(2, "rec_share")
+        b = df[(df.team == o) & (df.rec_share > 0)].nlargest(2, "rec_share")
+        for _, x in a.iterrows():
+            for _, y in b.iterrows():
+                xa, yb = tds[:, pix[x.pid]] > 0, tds[:, pix[y.pid]] > 0
+                j = (xa & yb).mean()
+                bring.append(dict(game=f"{t}-{o}", a=x["name"], a_team=t, b=y["name"], b_team=o, joint=j,
+                                  lift=j / (xa.mean() * yb.mean()), fair=int(M.fair_american(np.array([j]))[0])))
+
+def _ladders_by_book(board, hold):
+    """{(kind, norm_name, book): [(line, no-vig P(over))]} over the verified yard board (two-sided rows de-vigged against their Under,
+       one-sided rows against the book's measured main-line hold, as yard_prices.book_points does)."""
+    out = {}
+    for (k, n, line), books in board.items():
+        for bk, c in books.items():
+            if "over" not in c: continue
+            p = O.implied(c["over"]) / (O.implied(c["over"]) + O.implied(c["under"])) if "under" in c else O.implied(c["over"]) / hold.get((k, bk), 1.06)
+            out.setdefault((k, n, bk), []).append((line, p))
+    return out
+
+
+def kick_utc(et):
+    """'2026-10-04 13:00' (Eastern, as nflverse lists it) -> '2026-10-04T17:00Z' so the page can sort and show local time."""
+    return pd.Timestamp(et).tz_localize("America/New_York").tz_convert("UTC").strftime("%Y-%m-%dT%H:%MZ")
+
+
+games = []
+for gid in sorted({v["game_id"] for v in teams.values()}):
+    tt = [t for t in teams if teams[t]["game_id"] == gid]
+    home = [t for t in tt if teams[t]["home"]][0]; away = [t for t in tt if not teams[t]["home"]][0]
+    hr, ar, mix = M.first_td_split(teams[home]["spread"])
+    games.append(dict(game_id=gid, away=away, home=home, kickoff=teams[home]["gametime"], kick_utc=kick_utc(teams[home]["gametime"]),
+                      away_imp=teams[away]["implied"], home_imp=teams[home]["implied"],
+                      exp_td=teams[away]["lam"] + teams[home]["lam"] + 2 * M.DST_TD_RATE,
+                      lines=line_src.get(gid), wx=wx.get(gid),
+                      indoor=bool(sched[sched.game_id == gid].roof.isin(['dome', 'closed']).any()), home_first_if_home_recv=hr,
+                      home_first_if_away_recv=ar, home_first=mix))
+
+vac = sh[sh.pid.isin(out_ids | inactive) & (sh.share > 0.08) & (sh.last_ord >= season * 100)]
+vac = vac.assign(team=vac.last_team, name=vac.pid.map(names).fillna(vac.name))
+vac = vac[vac.team.isin(teams)][["name", "team", "kind", "share"]]
+
+# ---------- yard ladders: rushing / receiving / passing yards from the same sim games ----------
+YARD_KINDS = [k for k, ok in Y.SHIP.items() if ok]        # kinds that passed the backtest gate (yards.SHIP)
+yard_rows, yard_edges, alt_research = [], [], []
+_yb = {}                                                                               # verified yard board (the line shop reads every book's listed rung from it)
+if YARD_KINDS:
+    _yc = Y.prep(_cache["past"], season)
+    _tv, _plv, _qv = Y.build(p, s2, season, week, active, qbo, depth, snaps3, rookies, _cache, _yc, wind=wind)
+    _posof = lambda pid: M.POS_MAP.get(pos.get(pid, "WR"), pos.get(pid, "WR"))
+    _yd = Y.simulate(teams, _plv, qbs, _yc, sim, _posof)
+    _yrej = {}                                                                     # (kind, player, book) -> one-sided ladders that failed verification (research view)
+    _yb, _yh = YP.ladder_board(events, rejected=_yrej, source=YARDS_EFFECTIVE) if events else ({}, {})
+    _kick = {t: kick_utc(teams[t]["gametime"]) for t in teams}
+    _name = {r.pid: r["name"] for _, r in df.iterrows()}; _meta = {r.pid: r for _, r in df.iterrows()}
+    _lines = {(pid, k): YP.offered_lines(_yb, k, _name.get(pid, "")) for (pid, k) in _yd if pid in _name}
+    _coef = {k: BL.coef_for(BLENDS, "yds_" + k) or BL.coef_for(BLENDS, "yds") for k in Y.DEFAULT_LADDER}   # pooled yards fit when gated in (3+ weeks, beats 50/50 held out)
+    for r in Y.summarize({k: v for k, v in _yd.items() if k[1] in YARD_KINDS}, _lines):
+        if r["pid"] not in _meta: continue
+        m = _meta[r["pid"]]; rungs = []; best_edge = None
+        _knots = sorted(((float(l), pr) for l, pr in r["ladder"].items()))
+        _rng = YP.book_ranges(_yb, r["kind"], _name[r["pid"]]) if _yb else {}                           # verified listed range per book
+        _unv = [dict(book=bk, reason=v["reason"], n=len(v["rungs"])) for (k, n, bk), v in _yrej.items() if k == r["kind"] and n == O.norm_name(_name[r["pid"]])]
+        curve = YP.market_curve(_yb, _yh, r["kind"], _name[r["pid"]], model=([k[0] for k in _knots], [k[1] for k in _knots])) if _yb else None   # pooled DK + FD, bad rows cross-checked
+        for line, prob in sorted(((float(l), pr) for l, pr in r["ladder"].items())):
+            ps = YP.price_rung(_yb, _yh, r["kind"], _name[r["pid"]], line, model_p=prob) if _yb else None
+            rung = dict(line=line, p=round(prob, 4), fair=int(M.fair_american(np.array([prob]))[0]))
+            _listed = YP.offered_at(_yb, r["kind"], _name[r["pid"]], line) if _yb else []
+            rung["listed"] = sorted(bk for bk, _ in _listed)                                            # books listing this exact rung on the verified board
+            rung["range_ok"] = any(lo <= line <= hi for lo, hi in _rng.values())                         # inside at least one book's verified listed range
+            if ps:
+                blend = float(BL.blend([prob], [ps["market_p"]], _coef.get(r["kind"]))[0])
+                ev, ev_med = blend * O.decimal(ps["best"]) - 1, blend * O.decimal(ps["median"]) - 1
+                rung.update(best=ps["best"], book=ps["book"], med=ps["median"], nbooks=ps["n_books"], mkt_p=round(ps["market_p"], 4), blend=round(blend, 4),
+                            ev=round(ev, 4), ev_med=round(ev_med, 4), two_sided=ps["two_sided"], captured=ps.get("captured"))
+            cp = YP.curve_at(curve, line)                                                    # market curve at this exact line (no extrapolation)
+            offered = [(bk, pr) for bk, pr, _ in (curve["quotes"].get(line, []) if curve else [])]   # only quotes that survived the cross-check
+            if cp is not None and offered:
+                cb = float(BL.blend([prob], [cp], _coef.get(r["kind"]))[0])
+                obk, opr = max(offered, key=lambda x: O.decimal(x[1])); evc = cb * O.decimal(opr) - 1
+                rung.update(curve_p=round(cp, 4), curve_blend=round(cb, 4), offer=int(opr), offer_book=obk, ev_curve=round(evc, 4),
+                            offer_p=round(float(next((p for bk, _, p in curve["quotes"].get(line, []) if bk == obk), cp)), 4),   # the named quote's own no-vig P (the curve is the judge, this is the price)
+                            captured=curve["captured"].get((line, obk)) or rung.get("captured"))
+            rungs.append(rung)
+        main = [g for g in rungs if g.get("two_sided")]
+        main = min(main, key=lambda g: abs(g["line"] - r["median"])) if main else None   # the book's main line sits nearest our median
+        if text(m, "weak_spot"): main_ok = False
+        else: main_ok = True
+        # (1) main-line category: the original rule at the book's main line (2+ books at that line, EV >= 5% at the median and best book)
+        if main_ok and main and main.get("nbooks", 0) >= 2 and main["line"] >= Y.MIN_EDGE_LINE[r["kind"]] and main.get("ev", -1) >= 0.05 and main.get("ev_med", -1) >= 0.05:
+            yard_edges.append(dict(bet=f"{_name[r['pid']]} Over {main['line']:g} {r['kind']} yds", pid=r["pid"], market="yds", kind=r["kind"], line=main["line"], team=m["team"],
+                                   model_p=main["p"], mkt_p=main["mkt_p"], blend_p=main["blend"], best=int(main["best"]), book=main["book"], ev=main["ev"], med=int(main["med"]), ev_med=main["ev_med"],
+                                   nbooks=int(main["nbooks"]), games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=False, rule="main line",
+                                   listed=main["listed"], captured=main.get("captured"), kick_utc=_kick.get(m["team"]), stake=RU.stake_for(val(m, "role", "Unknown"), "yds")))
+        # (2) alt-rung category: every other rung against the pooled curve; flagged only at prices shorter than +300 with model <= 2x curve, the rest logged for research
+        best_alt = None
+        for g in rungs:
+            if g.get("ev_curve") is None or (main and g["line"] == main["line"]): continue
+            if not (curve and curve["eligible"]) or g["line"] < Y.MIN_EDGE_LINE[r["kind"]] or g["ev_curve"] < 0.05 or not main_ok: continue
+            if g["offer_book"] not in g["listed"]: continue                                            # the named book must list this exact rung on the verified board
+            cand = dict(bet=f"{_name[r['pid']]} Over {g['line']:g} {r['kind']} yds (alt)", pid=r["pid"], market="yds_alt", kind=r["kind"], line=g["line"], team=m["team"], model_p=g["p"],
+                        mkt_p=g["curve_p"], blend_p=g["curve_blend"], best=int(g["offer"]), book=g["offer_book"], ev=g["ev_curve"], med=int(g["offer"]), ev_med=g["ev_curve"],
+                        nbooks=len(curve["books"]), curve_rungs=curve["n_rungs"], games=int(num(m, "games", 0)), w=0.5, role=val(m, "role", "Unknown"), kalshi=None, kalshi_liquid=False, alt=True, rule=Y.ALT_RULE,
+                        listed=g["listed"], listed_p=g.get("offer_p"), captured=g.get("captured"), kick_utc=_kick.get(m["team"]),
+                        stake=RU.ALT_STAKE)                                                              # ruling 5: every alt rung is created at 0.25u, every role
+            reasons = [x for x, bad in (("price", g["offer"] >= Y.ALT_MAX_PRICE), ("ratio", g["p"] > Y.ALT_MAX_RATIO * g["curve_p"])) if bad]
+            if reasons: alt_research.append(dict(cand, reasons=reasons)); continue
+            if best_alt is None or g["ev_curve"] > best_alt["ev"]: best_alt = cand
+        if best_alt: yard_edges.append(best_alt)
+        best_edge = None
+        yard_rows.append(dict(pid=r["pid"], name=_name[r["pid"]], team=m["team"], pos=val(m, "pos"), role=val(m, "role", "Unknown"), kind=r["kind"], mean=round(r["mean"], 1),
+                              median=round(r["median"], 1), sd=round(r["sd"], 1), main_line=main["line"] if main else None, main_book=main.get("book") if main else None,
+                              main_p=main["p"] if main else None, main_mkt_p=main.get("mkt_p") if main else None, rungs=rungs, weak_spot=text(m, "weak_spot"),
+                              curve_books=curve["books"] if curve else [], curve_rungs=curve["n_rungs"] if curve else 0, curve_ok=bool(curve and curve["eligible"]),
+                              ranges={bk: list(v) for bk, v in _rng.items()}, unverified=_unv))
+    # monotonicity gate: P(over) must never rise with the line, on the model ladder, the pooled market curve and the blend (research-only rungs included)
+    _viol = []
+    for yrow in yard_rows:
+        for lbl, key in (("model", "p"), ("market curve", "curve_p"), ("blend", "curve_blend")):
+            pts = [(g["line"], g[key]) for g in yrow["rungs"] if g.get(key) is not None]
+            _viol += [(yrow["name"], yrow["kind"], lbl, v) for v in YP.monotone_violations([x for x, _ in pts], [p for _, p in pts])]
+    for (k_, n_, bk_), rows_ in _ladders_by_book(_yb, _yh).items():                                     # verified per-book ladders, same tolerance as the verifier
+        _viol += [(n_, k_, f"{bk_} ladder", v) for v in YP.monotone_violations([x for x, _ in rows_], [p for _, p in rows_], tol=YP.STEP_TOL)]
+    if _viol:
+        for v in _viol[:25]: print("MONOTONICITY VIOLATION:", v)
+        raise SystemExit(f"build failed: {len(_viol)} yard-curve monotonicity violation(s): P(over) rises with the line")
+    _rejn = collections.Counter(bk for _, _, bk in _yrej)
+    print(f"yard curves: monotonicity check passed on {len(yard_rows)} player curves; {len(_yrej)} unverified one-sided ladders kept research-only"
+          + (" (" + ", ".join(f"{bk} {n}" for bk, n in sorted(_rejn.items())) + ")" if _rejn else ""))
+    print(f"yards: {len(yard_rows)} player-stats, {sum(1 for r in yard_rows if r['main_line'] is not None)} with a book line, {sum(1 for r in yard_rows if r['curve_ok'])} with a market curve, "
+          f"{len(yard_edges)} edges ({sum(1 for e in yard_edges if not e.get('alt'))} main line, {sum(1 for e in yard_edges if e.get('alt'))} alt rungs); {len(alt_research)} alt candidates logged for research")
+    if alt_research and not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+        os.makedirs("research", exist_ok=True); _rfn = f"research/alt_rungs_{season}_w{week}.json"
+        _rlog = json.load(open(_rfn)) if os.path.exists(_rfn) else {}
+        _rstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+        for c in alt_research: _rlog.setdefault(f"{c['pid']}|{c['kind']}|{c['line']}", dict(c, flagged=_rstamp))   # first sighting kept
+        json.dump(_rlog, open(_rfn, "w"), indent=0)
+
+# ---------- sim draws for the slip pricer: N sim games per player, every stat from the same game-environment draw ----------
+import slips as SL
+DRAWS_N = 2000
+draws_idx = None
+if YARD_KINDS:
+    _st = Y.stats(_yd, sim, qbs, _posof)
+    LAYOUT = {"rec": dict(bytes=1, scale=1), "rec_yds": dict(bytes=1, scale=1), "rush_yds": dict(bytes=1, scale=1),
+              "pass_att": dict(bytes=1, scale=1), "pass_yds": dict(bytes=1, scale=0.5), "fpts": dict(bytes=2, scale=10, offset=200)}   # fantasy can be negative
+    _keep = [pid for pid in _st if pid in _meta and (_meta[pid]["role"] != "Bench" or _posof(pid) == "QB")]
+    _buf = bytearray(); _plist = []
+    for pid in sorted(_keep, key=lambda x: _name[x]):
+        d = _st[pid]; order = [k for k in ("pass_att", "pass_yds", "rec", "rec_yds", "rush_yds", "fpts") if k in d]
+        _plist.append(dict(pid=pid, name=_name[pid], team=_meta[pid]["team"], pos=val(_meta[pid], "pos"), stats=order, offset=len(_buf)))
+        for k in order:
+            sp = LAYOUT[k]; v = np.asarray(d[k][:DRAWS_N], float) * sp["scale"] + sp.get("offset", 0)
+            _buf += np.clip(np.rint(v), 0, 65535 if sp["bytes"] == 2 else 255).astype("<u2" if sp["bytes"] == 2 else "u1").tobytes()
+    open("draws.bin", "wb").write(bytes(_buf))
+    draws_idx = dict(file="draws.bin", n=int(min(DRAWS_N, sim["n"])), layout=LAYOUT, players=_plist, payout=SL.PAYOUT,
+                     cols=["rec", "rec_yds", "rush_yds", "pass_yds", "pass_att", "fpts"])
+    print(f"draws: {len(_plist)} players x {draws_idx['n']} sim games -> draws.bin ({len(_buf) / 1e6:.1f} MB)")
+
+# ---------- edge board: priced by 2+ books and EV >= 5% at the median book (not just the best one) ----------
+MIN_BOOKS, MIN_EV = RU.MIN_BOOKS, RU.MIN_EV
+edges = RU.td_edges(df)                                       # shared rule (rules.py), every field read NaN-safely
+edges += yard_edges
+for e in edges: e.setdefault("kick_utc", kick_utc(teams[e["team"]]["gametime"]) if e["team"] in teams else None)
+# board rules (rules.py): passing-yard rungs hidden (research log), Rotational players over 2.5x the market blocked (research log),
+# Bench plays kept in their own section at 0.25u; the headline board is Starter + Rotational
+_parts = RU.split_board(edges)
+print(f"board: {len(_parts['main'])} main, {len(_parts['bench'])} bench at {RU.BENCH_STAKE}u | hidden passing-yard rungs {len(_parts['hidden'])} | "
+      f"blocked rotational > {RU.MAX_RATIO_ROT}x {len(_parts['blocked'])}")
+
+# ---------- cross-venue line shop (display + data only): the flag set above is final; this adds WHERE to bet ----------
+# us_ex (Novig, ProphetX, Polymarket) is pulled only for games with >= 1 edge on the board, only on scheduled pulls (EXCHANGE_PULL=all) and on a
+# game's final pre-kickoff loop pull (EXCHANGE_PULL=final), never when the budget guard is at stage 1+. Saved pulls carry the rows under
+# event["exchange"], so ODDS_MOCK replays reuse them without spending credits.
+_board_edges = _parts["main"] + _parts["bench"]
+EX_MODE, EX_SKIP, _ex_raw = O.exchange_mode(), None, {}
+if BUDGET.get("stage", 0) >= 1 and EX_MODE != "off":
+    EX_SKIP = f"budget guard stage {BUDGET['stage']}: projected {BUDGET['projected_at_reset']:,} credits at the {BUDGET['reset_at'][:10]} reset, under {BUDGET['floor']:,}"; EX_MODE = "off"
+if os.environ.get("ODDS_MOCK") or odds_asof:
+    _ex_raw = {e["id"]: e["exchange"] for e in events or [] if e.get("exchange")}
+    EX_MODE = "saved" if _ex_raw else "off"
+elif EX_MODE != "off" and events and board:
+    _teams = {e["team"] for e in _board_edges}
+    _gl = O.exchange_games(_teams, games, NOW_UTC, EX_MODE, step_min=int(os.environ.get("LOOP_STEP_MIN") or 10), cutoff_min=RU.KICKOFF_CUTOFF_MIN)
+    _want = {(g["away"], g["home"]) for g in _gl}
+    _ids = {ev["id"] for ev in events if (O.TEAM_ABBR.get(ev["away_team"]), O.TEAM_ABBR.get(ev["home_team"])) in _want}
+    _ex_raw = O.fetch_exchange(events, _ids)
+    for ev in events:
+        if ev["id"] in _ex_raw: ev["exchange"] = _ex_raw[ev["id"]]
+    if _ex_raw and PULL_FN: json.dump(events, open(PULL_FN, "w"))                      # the saved pull carries the exchange rows for replays / research
+    print(f"exchange (us_ex): mode {EX_MODE}, {len(_gl)} game(s) with edges due, {O.FETCH.get('exchange_events', 0)} fetched, {O.FETCH.get('exchange_errors', 0)} errors")
+if EX_SKIP: print("EXCHANGE PULL SKIPPED:", EX_SKIP)
+LINESHOP = LS.attach(_board_edges, events, board, _yb, list(_ex_raw.values()))
+LINESHOP.update(mode=EX_MODE, skipped=EX_SKIP, games_pulled=len(_ex_raw), stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL,
+                venues_known=list(V.VENUES))
+print(f"line shop: venues {LINESHOP['venues'] or 'books + Kalshi only'}; {LINESHOP['edges_with_exchange_quote']} edges with an exchange quote, best place off the flagging book on "
+      f"{LINESHOP['best_off_book']}; {LINESHOP['outliers']} outlier quotes greyed, {LINESHOP['ladders_rejected']} exchange ladders failed verification (research-only)")
+if BUDGET.get("stage") and not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    print("discord (budget guard):", AL.notify_guard(BUDGET))
+
+# ---------- Underdog pick'em flags (read-only; PICKEM_SOURCE=off disables; one fetch per scheduled run, cached in ud_lines.json) ----------
+UD_SUMMARY = None
+if PU.enabled():
+    _ud = PU.lines(NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), fetch=bool(os.environ.get("UD_FETCH")) and not os.environ.get("ODDS_MOCK"), write_cache=(OUT == "." and not os.environ.get("ODDS_MOCK")))
+    _slate = [(r.pid, r["name"], r.team) for _, r in df.iterrows()]
+    _tdb = {}
+    for _, r in df.iterrows():
+        for _pre, _mk in (("any_", "any"), ("first_", "first")):
+            _v = val(r, _pre + "blend_p")
+            if _v is not None: _tdb[(r.pid, _mk)] = _v
+    UD_SUMMARY = PU.flag(_ud, _slate, yard_rows, _tdb)
+    if UD_SUMMARY:
+        _udk = {(lg["pid"], lg["market"], lg.get("kind"), lg["line"]): lg for lg in UD_SUMMARY["legs"]}
+        for e in _board_edges:
+            lg = _udk.get((e["pid"], "yds", e.get("kind"), float(e["line"]))) if e["market"] in ("yds", "yds_alt") else _udk.get((e["pid"], e["market"], None, 0.5))
+            if lg: e["ud"] = dict({k: lg[k] for k in ("ud_stat", "line", "breakeven", "margins", "higher", "lower", "blend_higher", "ref")}, side="higher", margin=lg["margins"].get("higher"), flag=lg["flag_higher"])   # an edge is a higher bet
+        print(f"underdog: {UD_SUMMARY['ud_lines']} lines (fetched {UD_SUMMARY['fetched']}), {UD_SUMMARY['matched']} match our lines, {UD_SUMMARY['flagged']} flagged "
+              f"(blend beats the {UD_SUMMARY['ref']} break-even by >= {UD_SUMMARY['flag_margin']:.0%}), {len(UD_SUMMARY['dropped_other_team'])} same-name / other-team drops")
+    else: print("underdog: no lines (no cache yet or fetch failed)")
+else: print("underdog: off (PICKEM_SOURCE)")
+# research logs (first-seen, never bets; results.py grades them): Underdog flagged legs and line-shop improvements over the flagging book
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    _rstamp = f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+    _kick_all = {t: kick_utc(teams[t]["gametime"]) for t in teams}
+    if UD_SUMMARY: print("underdog flags newly logged for research:", PU.log_flags(UD_SUMMARY["legs"], season, week, _rstamp, kick=_kick_all, d=C.RESEARCH_DIR))
+    print("line-shop improvements newly logged for research:", LS.log_improvements(_board_edges, season, week, _rstamp, d=C.RESEARCH_DIR))
+# timing rules (rules.py), on the board rows only (hidden / blocked rows go to the research logs whatever the clock says): nothing is
+# actionable inside KICKOFF_CUTOFF_MIN of kickoff or once the game is underway, nor (when MAX_PRICE_AGE_MIN is set) on a price older than
+# that; held edges are shown with the reason, never logged for CLV, never graded
+MAX_AGE = RU.price_age_limit()                                        # 15 min inside a kickoff loop (IN_LOOP=1), no limit outside (age shown, BET DOWN TO rule)
+_act = [(e, RU.not_actionable(e, NOW_UTC, max_age=MAX_AGE)) for e in _parts["main"] + _parts["bench"]]
+held = [dict(e, reasons=w) for e, w in _act if w]
+edges = [e for e, w in _act if not w]
+print(f"timing: {len(held)} edge(s) held off the board as of {NOW_UTC:%Y-%m-%dT%H:%MZ}" + (": " + "; ".join(f"{h['bet']} ({', '.join(h['reasons'])})" for h in held[:12]) if held else ""))
+_flag = _stamp if odds_asof else f"{NOW_UTC:%Y%m%dT%H%M}Z"                            # flag time = the pull the prices came from (NOW_UTC honours AS_OF in replays)
+# ---------- card cap (rulings 10-12 + the 2026-10-30 quota): per kickoff window one alt rung per player-stat, main-line yard edges first on up to
+#            CARD_YARD_FLOOR of the CARD_CAP slots, the rest by EV at the median book.
+#            The rest display greyed ("over card cap"), go to research/card_cap_*.json and never reach the edge log, Discord or the record ----------
+_gid = {t: g["game_id"] for g in games for t in (g["home"], g["away"])}
+for e in edges + held: e["game_id"] = _gid.get(e["team"])
+_clusters = (json.load(open("pull_windows.json")).get("clusters") if os.path.exists("pull_windows.json") else None) or []
+edges, over_cap = RU.apply_card_cap(edges, _clusters)
+_wins = sorted({e.get("window") for e in edges})
+print(f"card cap: {len(edges)} actionable bet(s) on the card over {len(_wins)} kickoff window(s) (cap {RU.CARD_CAP} each); {len(over_cap)} dropped "
+      f"({sum(1 for e in over_cap if e.get('cap') == 'alt')} duplicate alt rungs, {sum(1 for e in over_cap if e.get('cap') == 'card')} over the cap); "
+      f"{sum(1 for e in edges if e.get('market') == 'yds')} main-line yard edge(s) on the card, {sum(1 for e in edges if e.get('quota') == 'yard_floor')} of them by the yard floor of {RU.CARD_YARD_FLOOR}")
+# ---------- decision-pull record (ruling 7): the primary record is the card at each game's decision pull, at that pull's prices ----------
+DEC_LOG = DEC.load(season, week)
+_dec_changes = DEC.update(DEC_LOG, games, edges, NOW_UTC, _flag)
+DECISION = DEC.summary(DEC_LOG)
+if _dec_changes: print("decision pulls:", "; ".join(f"{g} {st}" for g, st in _dec_changes))
+print(f"decision record: {DECISION['decided']} game(s) decided ({DECISION['bets']} bets), {DECISION['pending']} pending, {DECISION['missed']} missed")
+clean = lambda d: d.replace({np.nan: None})
+if DRY_RUN: print("DRY_RUN: edges, research rows and paper parlays not logged")
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    DEC.save(DEC_LOG, season, week)
+    if over_cap: print("over-cap rows newly logged for research:", C.log_research("card_cap", over_cap, season, week, _flag))
+    if edges:
+        _new = C.log_edges(edges, season, week, _flag); print("edges newly logged for CLV:", len(_new))
+        if _new: print("discord:", AL.notify_new_edges(_new, season, week, _flag))      # first-seen only; no-op without DISCORD_WEBHOOK_URL
+    if _parts["hidden"]: print("passing-yard rungs newly logged for research:", C.log_research("pass_yds", _parts["hidden"], season, week, _flag))
+    if _parts["blocked"]: print("ratio-blocked rotational edges newly logged for research:", C.log_research("ratio_block", _parts["blocked"], season, week, _flag))
+_pl = PL.build(clean(df.round(4)).to_dict("records"))        # "likely" works without prices; "value" needs them
+print("parlays:", {m: f"{len(v['pool'])} legs / {len(v['parlays'])} parlays" for m, v in _pl["modes"].items()})
+if not os.environ.get("ODDS_MOCK") and not DRY_RUN:
+    _pstamp = _stamp if odds_asof else f"{pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M}Z"
+    print("paper parlays newly logged:", PL.log_paper(_pl["modes"], season, week, _pstamp))
+# the live thresholds, published so the page labels rungs with the same numbers the board and grading use (never re-defined in display code)
+RULES_OUT = dict(min_ev=RU.MIN_EV, min_books=RU.MIN_BOOKS, alt_max_price=Y.ALT_MAX_PRICE, alt_max_ratio=Y.ALT_MAX_RATIO, min_edge_line=Y.MIN_EDGE_LINE, alt_rule=Y.ALT_RULE,
+                 bench_stake=RU.BENCH_STAKE, max_ratio_rotational=RU.MAX_RATIO_ROT, hidden_kinds=list(RU.HIDDEN_KINDS), board_rules_week=RU.BOARD_RULES_WEEK,
+                 kickoff_cutoff_min=RU.KICKOFF_CUTOFF_MIN, max_price_age_min=MAX_AGE, loop_price_age_min=RU.MAX_PRICE_AGE_MIN, in_loop=bool(os.environ.get("IN_LOOP")),
+                 bet_down_to_rule=RU.BET_DOWN_TO_RULE, listed_rule=RU.LISTED_RULE, ladder_rule=YP.LADDER_RULE,
+                 venue_stale_min=LS.STALE_MIN, kickoff_window_min=LS.KICKOFF_WINDOW_MIN, outlier_rel=V.OUTLIER_REL,
+                 alt_stake=RU.ALT_STAKE, longshot_first_price=RU.LONGSHOT_FIRST_PRICE, longshot_first_ratio=RU.LONGSHOT_FIRST_RATIO, card_cap=RU.CARD_CAP, card_yard_floor=RU.CARD_YARD_FLOOR,
+                 blend_coef={k[:-1]: v for k, v in BLEND_COEF.items()}, dead_markets=list(RU.DEAD_MARKETS),        # the blend each TD market was built with (None = 50/50; first TD fitted from 2026-10-31, CEO ruling)
+                 decision_rule="Sunday early / late games: the first pull at or after 9:23 AM Pacific; TNF, SNF, MNF, London and Saturday games: the last pull before the kickoff cutoff")
+data = dict(season=season, week=week, odds_live=bool(board), odds_asof=odds_asof, n_events=len(events or []), parlays=_pl, yards=yard_rows, draws=draws_idx, rules=RULES_OUT,
+            as_of=NOW_UTC.strftime("%Y-%m-%dT%H:%M:%SZ"), held=held, over_cap=over_cap, decision=DECISION, lineshop=LINESHOP, pickem_ud=UD_SUMMARY,
+            odds_api=dict(props_source=PROPS_SOURCE, props_from_week=O.props_from_week(), props_effective="sharpapi" if FALLBACK else PROPS_SOURCE, fallback=FALLBACK,
+                          books=list(O.PRIMARY_BOOKS) if PROPS_SOURCE == "oddsapi" else None,
+                          yards_source=YARDS_SOURCE, yards_from_week=O.yards_from_week(), yards_effective=YARDS_EFFECTIVE, yard_books=list(YP.YARD_BOOKS) if YARDS_EFFECTIVE == "oddsapi" else None,
+                          loops_drop_odds=bool(os.environ.get("ODDS_GUARD_TRIPPED")), budget=BUDGET, **ODDS_USAGE),
+            generated=pd.Timestamp.now(tz="America/Los_Angeles").strftime("%a %b %d %I:%M %p PT"),
+            players=clean(df.round(4)).to_dict("records"),
+            qbs=qrows, stacks=pd.DataFrame(stacks).round(4).to_dict("records"),
+            bring=pd.DataFrame(bring).round(4).to_dict("records"), games=games,
+            vacated=vac.round(3).to_dict("records"),
+            edges=sorted(edges, key=lambda e: -e["ev"]))
+# ---------- lock in games that already kicked off (keeps pre-game projections for grading) ----------
+slate_fn = f"{OUT}/slate_{season}_w{week}.json"
+if os.path.exists(slate_fn):
+    old = json.load(open(slate_fn))
+    live = {g["game_id"] for g in games}
+    keep = lambda rows, key="game_id": [r for r in rows if r.get(key) not in live and r.get(key) in set(done)]
+    for _e in old.get("edges", []): _e.setdefault("bet_down_to", RU.bet_down_to(_e.get("blend_p")))   # rows frozen before 2026-10-18 get the field too
+    locked_games = keep(old.get("games", []))
+    lg = {g["game_id"] for g in locked_games}
+    for g in locked_games:
+        g["locked"] = True
+        if not g.get("kick_utc") and g.get("kickoff"): g["kick_utc"] = kick_utc(g["kickoff"])
+    data["games"] = locked_games + data["games"]
+    data["players"] = [r for r in old.get("players", []) if r.get("game_id") in lg] + data["players"]
+    lteams = {t for g in locked_games for t in (g["home"], g["away"])}
+    data["edges"] = [e for e in old.get("edges", []) if e.get("team") in lteams] + data["edges"]
+    data["yards"] = [y for y in old.get("yards", []) if y.get("team") in lteams] + data["yards"]
+    # parlays whose legs have all kicked off are locked with their flag-time prices
+    for m, v in data["parlays"]["modes"].items():
+        v["parlays"] = [c for c in old.get("parlays", {}).get("modes", {}).get(m, {}).get("parlays", []) if all(l["team"] in lteams for l in c["legs"])] + v["parlays"]
+    data["bring"] = [b for b in old.get("bring", []) if b.get("a_team") in lteams] + data["bring"]
+
+# ---------- red zone / end zone usage (2025 + current season) ----------
+import redzone
+rz = redzone.table(p, season)
+_r = pd.read_parquet(f"{DATA}/rosters.parquet").drop_duplicates("gsis_id", keep="last").set_index("gsis_id")
+for row in rz:
+    if row["pid"] in _r.index:
+        row["name"] = _r.at[row["pid"], "full_name"]; row["pos"] = _r.at[row["pid"], "position"]
+data["redzone"] = rz
+
+enc = lambda o: o.item() if hasattr(o, "item") else (None if o != o else str(o))
+txt = json.dumps(data, default=enc).replace("NaN", "null")
+for fn in [f"{OUT}/slate_{season}_w{week}.json", f"{OUT}/latest.json"]:
+    open(fn, "w").write(txt)
+print(df.sort_values("p_any", ascending=False)[["name", "team", "pos", "p_any", "p_first"]].head(10).to_string())
+print("edges:", len(edges), "| weather games:", len(wx), "| live lines:", sum(v != 'nflverse' for v in line_src.values()))
