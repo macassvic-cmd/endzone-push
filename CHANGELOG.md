@@ -1796,3 +1796,12 @@ every suite passes.
 
 Files: `rules.py`, `run_week.py`, `results.py`, `alerts.py`, `decision.py`, `test_card_rules.py`, `template.html` / `index.html`,
 `research/card_cap_quota_invariance_2026_w8.json` (new), README.md, this file.
+
+**Published 2026-10-31 07:18Z** (a6c7599, once-mode Pull loop, fresh prices): 90 actionable edges, 37 on the card over 3 windows, 53 over the
+cap. Sunday early + late window: 5 main-line yard edges flagged, all 5 over the cap under EV ranking (EV ranks 38, 44, 62, 67, 78 of 78) and
+all 5 on the card by the floor — J.K. Dobbins Over 29.5 rush yds (BetRivers +105, EV@med 14.4%, #21), Aaron Jones Sr. Over 29.5 rush yds
+(DraftKings −108, 13.0%, #22), Ollie Gordon II Over 10.5 rec yds (DraftKings −107, 7.4%, #23), Omarion Hampton Over 34.5 rush yds (BetRivers
+−112, 6.0%, #24), Jonathan Taylor Over 57.5 rush yds (DraftKings −109, 5.1%, #25). They displaced four alt rungs (Jonathan Taylor Over 79.5,
+Emmett Johnson Over 14.5, Justice Hill Over 19.5, Kenny Gainwell Over 24.5; EV@med 21.7–24.3%) and Jacoby Brissett 2+ TD (+10000, 23.8%)
+to over-cap research rows. The top of the card is unchanged (Rucci 2+ TD 161%, Rucci Anytime 150%, Rucci First TD 100%). SNF window 10 edges
+incl. Burks Over 22.5 rec yds (#10, on EV alone); MNF 2. Screenshot: `runs/capped_card_2026-10-31.png`.
