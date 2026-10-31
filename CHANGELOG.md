@@ -1883,3 +1883,11 @@ new log directory and requires its files listed one by one. Consequence for week
 "missed" in the 00:07Z build anyway: that build came 7 min before kickoff).
 
 Files: `pull_loop.py`, `test_pull_loop.py`, README.md, this file.
+
+**Published 2026-10-31 07:48Z** (8effda3, once-mode Pull loop 41181958696, fresh prices): blend in use any 50/50 / first fitted [1.19182, 0.64939,
+0.75292] / two 50/50; 72 flagged edges, 33 on the card over 3 windows, 39 over the cap; 2+ TD edges 0 (stat filter chip "2+ TD 0"); first TD 4
+flags, all the short prices the fitted ruler adds (Javonte Williams +400 EV@med 13%, Gibbs +330 12%, Jeanty +663 11%, Walker +421 6%), all over
+the Sunday cap (ranks 33-57); every stored first-TD blend reproduces the fitted value (max deviation 4e-6); 308 player rows carry p_2plus; the 5
+yard-floor rows hold ranks 21-25; `decision_log/2026_w8.json` committed to main for the first time (13 pending games). Screenshots:
+`runs/two_td_tab_2026-10-31.png` (2+ TD tab top rows by P(2+ TD)), `runs/edge_board_filter_2026-10-31.png` (Edge Board with the 2+ TD chip at 0).
+Leftover: the "Priced edges" section header still reads "anytime, first and 2+ TD" (display text only; next build).
