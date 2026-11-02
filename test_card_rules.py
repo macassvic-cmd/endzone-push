@@ -100,11 +100,16 @@ def test_card_cap_per_window_and_one_alt_rung_per_player_stat():
     if os.path.exists("latest.json"):
         d = json.load(open("latest.json"))
         if (d.get("rules") or {}).get("card_cap"):
+            # the cap binds per build: rows of games that have kicked off are carried over from their own capped build (run_week lock-in,
+            # games[].locked) and sit beside this build's card in the same window (2026-11-01 20:48Z: 18 carried + 13 fresh in the Sunday window)
+            locked = {g["game_id"] for g in d.get("games", []) if g.get("locked")}
             per = {}
             for e in d.get("edges", []):
                 if e.get("window"): per.setdefault(e["window"], []).append(e)
             for w, g in per.items():
-                assert len(g) <= d["rules"]["card_cap"], (w, len(g))
+                own = [e for e in g if e.get("game_id") not in locked]
+                assert len(own) <= d["rules"]["card_cap"], (w, len(own), f"this build's rows; {len(g) - len(own)} carried over from kicked-off games")
+                assert all(e.get("cap_rank") and e["cap_rank"] <= d["rules"]["card_cap"] for e in g), (w, "a row that was never on a card")
                 alts = [(e["pid"], e.get("kind")) for e in g if e.get("market") == "yds_alt"]
                 assert len(alts) == len(set(alts)), (w, alts)
     print("  card cap: <= 25 per kickoff window, one alt rung per player-stat, EV at the median within the card")
@@ -312,14 +317,30 @@ def test_cap_is_a_pure_partition_flag_invariant():
             on = {e["bet"] for e in g if e["market"] == "yds"}
             assert all(e["bet"] in on for e in mains[:RU.CARD_YARD_FLOOR]), (name, w, "a top-10 yard main is over the cap")
         print(f"  flag invariance ({name}): {len(after)} pre-cap edges byte-identical through the cap step (sha256 {st['sha256_before'][:12]}...), card {len(card)} / dropped {len(dropped)}")
-    # the live board file: re-running the cap on its own pre-cap set reproduces the published card exactly
+    # the live board file: re-running the cap on the build's own pre-cap set reproduces the published card exactly, rank for rank.
+    # The build's own rows are the edges of the games not yet kicked off at as_of. Once a game kicks off, run_week.py carries its pre-game card
+    # rows over from the previous slate for grading (the lock-in step; games[].locked), so edges = this build's capped card + the frozen cards
+    # of the locked games, each capped in its own build; the union is never re-capped (2026-11-01 20:48Z: 18 carried rows + 13 fresh rows in
+    # the one chained Sunday window, 31 > 25, which is what the first version of this check tripped on). The windows come from the rows
+    # themselves: pull_windows.json on disk may already describe the next week.
     if os.path.exists("latest.json"):
         d = json.load(open("latest.json", encoding="utf-8"))
         if (d.get("rules") or {}).get("card_yard_floor"):
-            pre = d.get("edges", []) + d.get("over_cap", [])
-            card, dropped = RU.apply_card_cap(copy.deepcopy(pre), json.load(open("pull_windows.json")).get("clusters") if os.path.exists("pull_windows.json") else None)
+            locked = {g["game_id"] for g in d.get("games", []) if g.get("locked")}
+            fresh = [e for e in d.get("edges", []) if e.get("game_id") not in locked]
+            carried = [e for e in d.get("edges", []) if e.get("game_id") in locked]
+            over = d.get("over_cap", [])
+            assert not [e["bet"] for e in over if e.get("game_id") in locked], "over-cap rows are never carried over"
+            pre = fresh + over
+            wins = sorted({e["window"] for e in pre if ".." in (e.get("window") or "")})
+            card, dropped = RU.apply_card_cap(copy.deepcopy(pre), [dict(start=w.split("..")[0], end=w.split("..")[1]) for w in wins])
             assert _sha(_strip(card + dropped)) == _sha(_strip(pre))
-            assert {(e["bet"], e["book"], e["best"]) for e in card} == {(e["bet"], e["book"], e["best"]) for e in d.get("edges", [])}, "latest.json card is what the rule gives"
+            key = lambda e: (e["bet"], e["book"], e["best"], e.get("cap_rank"), e.get("quota"), e.get("window"))
+            assert {key(e) for e in card} == {key(e) for e in fresh}, "latest.json card is what the rule gives (this build's rows, rank for rank)"
+            assert {key(e) for e in dropped} == {key(e) for e in over}, "latest.json over-cap rows are what the rule gives"
+            bad = [e["bet"] for e in carried if not (e.get("cap_rank") and e["cap_rank"] <= RU.CARD_CAP)]
+            assert not bad, ("a row carried over from a kicked-off game was never on a card", bad[:5])
+            print(f"  live board: {len(fresh)} card rows + {len(over)} over cap reproduced rank for rank; {len(carried)} rows carried over from {len(locked)} kicked-off game(s)")
     assert "quota" in DEC.FIELDS, "the decision snapshot keeps the floor tag"
 
 

@@ -68,7 +68,11 @@ The idempotence rule above means an external kick and a GitHub cron minutes apar
   graded on its own Results card, never in the model record.
 - Scheduled crons in `update.yml` are written in PST from 2026-11-01 (the Sunday 9:23 PT run is 17:23 UTC).
 - The loop finalize commits new log directories file by file (`git status --untracked-files=all`, fixed 2026-10-31: `decision_log/` had been
-  listed as one directory line and never reached main).
+  listed as one directory line and never reached main). Decision-log merge at the finalize: decided > missed > pending; between two decided
+  records the earlier decision stands (fixed 2026-11-02: a scheduled run that re-decided two games from a stale log had overwritten the loop's).
+- The cap binds per build. Once a game kicks off, its pre-game card rows are carried over from the previous slate for grading (`games[].locked`),
+  so `latest.json` edges = this build's capped card + the frozen cards of the kicked-off games; the CI checks apply the cap to the build's own
+  rows only (fixed 2026-11-02 after every run since 2026-11-01 21:17Z failed on the union).
 
 ## Credits rule (2026-10-18)
 **No Odds API calls outside CI.** `odds._get` refuses a live call unless the process runs in GitHub Actions or `ODDS_LIVE=1` is set;

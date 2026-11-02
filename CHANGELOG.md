@@ -1891,3 +1891,37 @@ the Sunday cap (ranks 33-57); every stored first-TD blend reproduces the fitted 
 yard-floor rows hold ranks 21-25; `decision_log/2026_w8.json` committed to main for the first time (13 pending games). Screenshots:
 `runs/two_td_tab_2026-10-31.png` (2+ TD tab top rows by P(2+ TD)), `runs/edge_board_filter_2026-10-31.png` (Edge Board with the 2+ TD chip at 0).
 Leftover: the "Priced edges" section header still reads "anytime, first and 2+ TD" (display text only; next build).
+
+## 2026-11-02 — Update runs failing since 2026-11-01 21:17Z: the card-cap checks re-capped carried-over rows (checks fixed); two decision records restored
+
+**Failing check.** `test_card_rules.test_cap_is_a_pure_partition_flag_invariant`, assertion "latest.json card is what the rule gives" (line 322),
+in every Update run from 21:17Z (41351272752, 41351762315, 41368770970, 41452675898) and in both kickoff-loop runs after the Sunday window
+(41351840992 at 21:24Z for SNF, 41368318099 at 00:39Z), so no SNF loop ran. A second check with the same assumption,
+`test_card_cap_per_window_and_one_alt_rung_per_player_stat` (<= 25 rows per window in latest.json), sits later in the run order and failed next
+once the first was corrected.
+
+**Root cause: the checks, not the data path.** latest.json written by the 20:47Z Update run (commit fe728e1, as_of 20:48:21Z) carried 31 rows in
+the chained Sunday window with 0 over the cap: the 13 rows of the 21:25Z games capped by that build plus 18 rows of the eight 18:00Z games that
+had already kicked off, carried over from the previous slate by run_week.py's lock-in step (pre-game card rows kept for grading; `games[].locked`).
+Each cohort was capped in its own build; the union never is. Both checks re-ran the cap on edges + over_cap and compared the result with edges,
+evicted 6 of the 31 and failed. The grading path was never the problem: with the checks corrected, results.py grades week 8 from the decision
+log and test_reconcile passes unchanged. Nothing was loosened: the checks now apply the rule to the build's own rows (games not locked at as_of)
+and require the card AND the over-cap rows back rank for rank (cap_rank, quota, window), require every carried-over row to carry a card rank
+<= 25, and take the windows from the rows themselves (pull_windows.json on disk describes the next week from Tuesday).
+
+**Found on the way: two Sunday decision records overwritten at the loop finalize (restored).** The kickoff loop (run 41326066402) decided all 11
+Sunday games at its 17:24:01Z build (the first build after 9:23 PT; 25 bets). The scheduled 20:47Z Update run, which checked out Saturday's
+decision log (13 pending), decided KC@DEN and NE@MIA again at 20:48Z from its own board (10 and 3 bets) and committed that log; at the loop's
+21:24Z finalize `pull_loop.merge_decision` ("among equal status the later as_of wins") let the re-decision replace the loop's records. The
+17:24Z records were rebuilt from the loop's 17:24Z board snapshot (board commit 51837f05a9, the build that decided them: that game's card rows
+with the decision fields; the same rebuild reproduces the nine untouched records byte for byte): KC@DEN 4 bets (Emmett Johnson O14.5 rush alt
++261 DK, J.K. Dobbins O39.5 rush alt +188 BetRivers, Jaylen Waddle O59.5 rec alt +280 FD, Dobbins O30.5 rush -113 FD), NE@MIA 1 bet (Kevin
+Coleman Jr. Anytime TD +1800 DK). Each restored record carries `restored` and keeps the discarded 20:48Z re-decision under `discarded_rerun` for
+audit. `merge_decision` now keeps the EARLIER of two decided (or two missed) records (`test_pull_loop.test_merge_decision_first_decision_stands`).
+Week 8 record: 11 decided, 25 bets, all as of the 17:24Z pull.
+
+**SNF / MNF.** No build ran in the SNF window (both loops failed at the test step), so PHI@WAS stands on its last pre-cutoff build, 21:24Z
+(7 bets): under rule "final" a pending game with a final result grades on its last snapshot (decision.grade) and the next build marks it decided.
+CHI@SEA (MNF 2026-11-03 01:15Z) is pending on the 21:24Z snapshot; tonight's 22:15Z loop runs under the fixed checks.
+
+Files: `test_card_rules.py`, `pull_loop.py`, `test_pull_loop.py`, `decision_log/2026_w8.json` (two records restored), README.md, this file.

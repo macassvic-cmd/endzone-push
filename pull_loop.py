@@ -123,11 +123,23 @@ def merge_first_seen(theirs, ours):
 
 
 def merge_decision(theirs, ours):
-    """decision_log/*.json: per game the more advanced record wins (decided > missed > pending); among pending records the later snapshot (as_of)."""
+    """decision_log/*.json: per game the more advanced record wins (decided > missed > pending); among pending records the later snapshot (as_of);
+       between two decided (or two missed) records the EARLIER decision stands. The rule is the first build at or after the decision time (or
+       the last build before the cutoff): a job that started from a stale log and decided the same game again later is not the record. On
+       2026-11-01 the scheduled Update run re-decided KC@DEN and NE@MIA at 20:48Z from Saturday's log while the kickoff loop had decided them
+       at 17:24Z; the old "later as_of wins" rule let the 20:48Z re-decision overwrite the loop's record at the finalize."""
     m = dict(theirs or {})
     for k, v in (ours or {}).items():
         t = m.get(k)
-        if t is None or (DEC_RANK.get(v.get("status"), 0), v.get("as_of") or "") > (DEC_RANK.get(t.get("status"), 0), t.get("as_of") or ""): m[k] = v
+        if t is None:
+            m[k] = v; continue
+        rv, rt = DEC_RANK.get(v.get("status"), 0), DEC_RANK.get(t.get("status"), 0)
+        if rv != rt:
+            if rv > rt: m[k] = v
+        elif v.get("status") == "pending":
+            if (v.get("as_of") or "") > (t.get("as_of") or ""): m[k] = v
+        elif (v.get("decided_at") or v.get("as_of") or "") < (t.get("decided_at") or t.get("as_of") or ""):
+            m[k] = v
     return m
 
 

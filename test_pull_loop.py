@@ -93,6 +93,22 @@ def test_changed_sees_files_in_a_new_log_directory():
     print("  changed(): files inside a new log directory are listed one by one")
 
 
+def test_merge_decision_first_decision_stands():
+    """decision_log merge: decided beats missed beats pending; between two decided records the EARLIER decision stands (2026-11-01: the scheduled
+       run's 20:48Z re-decision of KC@DEN / NE@MIA from Saturday's log must not overwrite the loop's 17:24Z decision at the finalize); among
+       pending records the later snapshot wins."""
+    loop = dict(status="decided", as_of="20261101T1724Z", decided_at="2026-11-01T17:24:01Z", n=4, edges=[{"bet": "a"}] * 4)
+    rerun = dict(status="decided", as_of="20261101T2048Z", decided_at="2026-11-01T20:48:21Z", n=10, edges=[{"bet": "b"}] * 10)
+    pend1 = dict(status="pending", as_of="20261101T1704Z", n=3); pend2 = dict(status="pending", as_of="20261101T2124Z", n=7)
+    missed = dict(status="missed", as_of=None, decided_at="2026-11-01T21:30:00Z")
+    assert PL.merge_decision({"g": rerun}, {"g": loop})["g"] is loop and PL.merge_decision({"g": loop}, {"g": rerun})["g"] is loop
+    assert PL.merge_decision({"g": pend2}, {"g": loop})["g"] is loop and PL.merge_decision({"g": loop}, {"g": pend2})["g"] is loop
+    assert PL.merge_decision({"g": pend1}, {"g": pend2})["g"] is pend2 and PL.merge_decision({"g": pend2}, {"g": pend1})["g"] is pend2
+    assert PL.merge_decision({"g": missed}, {"g": loop})["g"] is loop and PL.merge_decision({"g": pend2}, {"g": missed})["g"] is missed
+    assert PL.merge_decision({}, {"g": loop})["g"] is loop and PL.merge_decision({"g": loop}, {})["g"] is loop and PL.merge_decision({"h": pend1}, {"g": loop}) == {"h": pend1, "g": loop}
+    print("  merge_decision: the first decision stands against a later re-decision; decided > missed > pending; the later pending snapshot wins")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     failed = 0
