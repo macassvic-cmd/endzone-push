@@ -1925,3 +1925,10 @@ Week 8 record: 11 decided, 25 bets, all as of the 17:24Z pull.
 CHI@SEA (MNF 2026-11-03 01:15Z) is pending on the 21:24Z snapshot; tonight's 22:15Z loop runs under the fixed checks.
 
 Files: `test_card_rules.py`, `pull_loop.py`, `test_pull_loop.py`, `decision_log/2026_w8.json` (two records restored), README.md, this file.
+
+**Re-dispatched 2026-11-02 16:06Z (run 41478163308, odds off): green end to end** (tests, grading smoke, model, grade, publish; board snapshot
+d21543eed7; `Projections 2026-11-02 16:07 UTC` e6ef390). results.json gained week 8 (12 of 13 games, partial until MNF): the decision-pull
+record grades 30 bets from 11 decided games + PHI@WAS on its 21:24Z snapshot, 5-25 for -1.5u against +4.9u expected (ROI -11%, -0.8 sigma);
+the 8 am-window games and LAC@LA / KC@DEN / NE@MIA carry the 17:24Z pull stamp. Two decided-game bets have no stat line and are not graded
+(Jack Bech O24.5 rec alt, Xavier Restrepo Anytime TD: no yards / TD row for the player). Season headline after W8: 465 singles, 115-350,
++109.2u against +83.0u expected. Screenshot of the served Results tab: `runs/results_tab_w8_2026-11-02.png`.
