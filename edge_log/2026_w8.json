@@ -9192,5 +9192,134 @@
 "ok": true
 }
 ]
+},
+"00-0038797|yds|rush|39.5": {
+"pid": "00-0038797",
+"bet": "Emanuel Wilson Over 39.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SEA",
+"role": "Rotational",
+"kind": "rush",
+"line": 39.5,
+"flagged": "20261102T2306Z",
+"best": 299,
+"book": "DraftKings",
+"med": 299,
+"mkt_p": 0.2527,
+"blend_p": 0.3399,
+"model_p": 0.4271,
+"ev": 0.3561,
+"ev_med": 0.3561,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.69,
+"bet_down_to": 209,
+"best_venue": {
+"venue": "DraftKings",
+"price": 299,
+"net": 299,
+"size_label": "",
+"captured": "2026-11-02T23:06:37.912898746Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 299,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 250,
+"ok": true
+}
+]
+},
+"00-0039165|yds|rush|39.5": {
+"pid": "00-0039165",
+"bet": "Zach Charbonnet Over 39.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SEA",
+"role": "Starter",
+"kind": "rush",
+"line": 39.5,
+"flagged": "20261102T2306Z",
+"best": 186,
+"book": "DraftKings",
+"med": 186,
+"mkt_p": 0.3406,
+"blend_p": 0.4435,
+"model_p": 0.5464,
+"ev": 0.2684,
+"ev_med": 0.2684,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.6,
+"bet_down_to": 137,
+"best_venue": {
+"venue": "DraftKings",
+"price": 186,
+"net": 186,
+"size_label": "",
+"captured": "2026-11-02T23:06:37.912898746Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 186,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 168,
+"ok": true
+}
+]
+},
+"00-0039165|yds|rush|27.5": {
+"pid": "00-0039165",
+"bet": "Zach Charbonnet Over 27.5 rush yds",
+"market": "yds",
+"team": "SEA",
+"role": "Starter",
+"kind": "rush",
+"line": 27.5,
+"flagged": "20261102T2306Z",
+"best": -111,
+"book": "DraftKings",
+"med": -112,
+"mkt_p": 0.4989,
+"blend_p": 0.6051,
+"model_p": 0.7112,
+"ev": 0.1502,
+"ev_med": 0.1453,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.43,
+"bet_down_to": -136,
+"best_venue": {
+"venue": "DraftKings",
+"price": -111,
+"net": -111,
+"size_label": "",
+"captured": "2026-11-02T23:06:37.912898746Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -111,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
 }
 }

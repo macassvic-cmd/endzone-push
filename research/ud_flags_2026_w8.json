@@ -2938,5 +2938,61 @@
 "ud_price": -125.0,
 "flagged": "20261102T1607Z",
 "kick_utc": "2026-11-03T01:15Z"
+},
+"00-0039165|Rush Yards|27.5|higher": {
+"pid": "00-0039165",
+"name": "Zach Charbonnet",
+"team": "SEA",
+"bet": "Zach Charbonnet Rush Yards higher 27.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 27.5,
+"side": "higher",
+"blend": 0.6051,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0277,
+"3-pick": 0.0548,
+"5-pick flex": 0.0771
+},
+"margin": 0.0548,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261102T2308Z",
+"kick_utc": "2026-11-03T01:15Z"
+},
+"00-0038797|Rush Yards|20.5|higher": {
+"pid": "00-0038797",
+"name": "Emanuel Wilson",
+"team": "SEA",
+"bet": "Emanuel Wilson Rush Yards higher 20.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 20.5,
+"side": "higher",
+"blend": 0.6075,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0301,
+"3-pick": 0.0572,
+"5-pick flex": 0.0795
+},
+"margin": 0.0572,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261102T2308Z",
+"kick_utc": "2026-11-03T01:15Z"
 }
 }
