@@ -9149,5 +9149,48 @@
 "ok": true
 }
 ]
+},
+"00-0040126|first": {
+"pid": "00-0040126",
+"bet": "Colston Loveland First TD",
+"market": "first",
+"team": "CHI",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261102T1606Z",
+"best": 1560,
+"book": "Kalshi",
+"med": 1480,
+"mkt_p": 0.0635,
+"blend_p": 0.0735,
+"model_p": 0.06801666666666667,
+"ev": 0.2194,
+"ev_med": 0.1606,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.07,
+"bet_down_to": 1329,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1560,
+"net": 1560,
+"size_label": "$8,509 at the ask",
+"captured": "2026-11-02T16:07:31Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1400,
+"ok": true
+}
+]
 }
 }

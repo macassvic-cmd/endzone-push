@@ -2854,5 +2854,89 @@
 "ud_price": -150.0,
 "flagged": "20261101T1804Z",
 "kick_utc": "2026-11-01T21:05Z"
+},
+"00-0036275|Receiving Yards|24.5|lower": {
+"pid": "00-0036275",
+"name": "D'Andre Swift",
+"team": "CHI",
+"bet": "D'Andre Swift Receiving Yards lower 24.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 24.5,
+"side": "lower",
+"blend": 0.6562,
+"breakeven": {
+"2-pick": 0.6415,
+"3-pick": 0.5904,
+"5-pick flex": 0.5609
+},
+"margins": {
+"2-pick": 0.0147,
+"3-pick": 0.0658,
+"5-pick flex": 0.0953
+},
+"margin": 0.0658,
+"ref": "3-pick",
+"mult": 0.81,
+"ud_price": -167.0,
+"flagged": "20261102T1607Z",
+"kick_utc": "2026-11-03T01:15Z"
+},
+"00-0039021|Rush Yards|9.5|higher": {
+"pid": "00-0039021",
+"name": "Roschon Johnson",
+"team": "CHI",
+"bet": "Roschon Johnson Rush Yards higher 9.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 9.5,
+"side": "higher",
+"blend": 0.6173,
+"breakeven": {
+"2-pick": 0.6299,
+"3-pick": 0.5833,
+"5-pick flex": 0.5551
+},
+"margins": {
+"2-pick": -0.0126,
+"3-pick": 0.034,
+"5-pick flex": 0.0622
+},
+"margin": 0.034,
+"ref": "3-pick",
+"mult": 0.84,
+"ud_price": -152.0,
+"flagged": "20261102T1607Z",
+"kick_utc": "2026-11-03T01:15Z"
+},
+"00-0041558|Receiving Yards|9.5|lower": {
+"pid": "00-0041558",
+"name": "Sam Roush",
+"team": "CHI",
+"bet": "Sam Roush Receiving Yards lower 9.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 9.5,
+"side": "lower",
+"blend": 0.6733,
+"breakeven": {
+"2-pick": 0.6052,
+"3-pick": 0.5679,
+"5-pick flex": 0.5425
+},
+"margins": {
+"2-pick": 0.0681,
+"3-pick": 0.1054,
+"5-pick flex": 0.1308
+},
+"margin": 0.1054,
+"ref": "3-pick",
+"mult": 0.91,
+"ud_price": -125.0,
+"flagged": "20261102T1607Z",
+"kick_utc": "2026-11-03T01:15Z"
 }
 }
