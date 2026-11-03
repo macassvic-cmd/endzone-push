@@ -1,0 +1,82 @@
+{
+"00-0036971|yds_alt|pass|279.5": {
+"bet": "Trevor Lawrence Over 279.5 pass yds (alt)",
+"pid": "00-0036971",
+"market": "yds_alt",
+"kind": "pass",
+"line": 279.5,
+"team": "JAX",
+"model_p": 0.3732,
+"mkt_p": 0.2593,
+"blend_p": 0.3162,
+"best": 265,
+"book": "DraftKings",
+"ev": 0.1543,
+"med": 265,
+"ev_med": 0.1543,
+"nbooks": 2,
+"curve_rungs": 33,
+"games": 24,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.2593,
+"captured": "2026-11-03T20:59:44.274712704Z",
+"kick_utc": "2026-11-06T01:15Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.44,
+"bet_down_to": 233,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261103T2059Z"
+},
+"00-0039851|yds_alt|pass|279.5": {
+"bet": "Drake Maye Over 279.5 pass yds (alt)",
+"pid": "00-0039851",
+"market": "yds_alt",
+"kind": "pass",
+"line": 279.5,
+"team": "NE",
+"model_p": 0.3694,
+"mkt_p": 0.2458,
+"blend_p": 0.3076,
+"best": 285,
+"book": "DraftKings",
+"ev": 0.1843,
+"med": 285,
+"ev_med": 0.1843,
+"nbooks": 2,
+"curve_rungs": 33,
+"games": 25,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.2458,
+"captured": "2026-11-03T21:00:37.655285167Z",
+"kick_utc": "2026-11-08T21:25Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.5,
+"bet_down_to": 242,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261103T2059Z"
+}
+}
