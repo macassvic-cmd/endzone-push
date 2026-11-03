@@ -502,5 +502,117 @@
 "ud_price": -345.0,
 "flagged": "20261103T2101Z",
 "kick_utc": "2026-11-09T01:20Z"
+},
+"00-0034960|Anytime TD|0.5|lower": {
+"pid": "00-0034960",
+"name": "Jakobi Meyers",
+"team": "JAX",
+"bet": "Jakobi Meyers Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.7227,
+"breakeven": {
+"2-pick": 0.7107,
+"3-pick": 0.6321,
+"5-pick flex": 0.5946
+},
+"margins": {
+"2-pick": 0.012,
+"3-pick": 0.0906,
+"5-pick flex": 0.1281
+},
+"margin": 0.0906,
+"ref": "3-pick",
+"mult": 0.66,
+"ud_price": -323.0,
+"flagged": "20261103T2317Z",
+"kick_utc": "2026-11-06T01:15Z"
+},
+"00-0036971|Anytime TD|0.5|lower": {
+"pid": "00-0036971",
+"name": "Trevor Lawrence",
+"team": "JAX",
+"bet": "Trevor Lawrence Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.8607,
+"breakeven": {
+"2-pick": 0.7392,
+"3-pick": 0.6489,
+"5-pick flex": 0.6081
+},
+"margins": {
+"2-pick": 0.1215,
+"3-pick": 0.2118,
+"5-pick flex": 0.2526
+},
+"margin": 0.2118,
+"ref": "3-pick",
+"mult": 0.61,
+"ud_price": -455.0,
+"flagged": "20261103T2317Z",
+"kick_utc": "2026-11-06T01:15Z"
+},
+"00-0038935|Anytime TD|0.5|lower": {
+"pid": "00-0038935",
+"name": "Brenton Strange",
+"team": "JAX",
+"bet": "Brenton Strange Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.7734,
+"breakeven": {
+"2-pick": 0.695,
+"3-pick": 0.6228,
+"5-pick flex": 0.5872
+},
+"margins": {
+"2-pick": 0.0784,
+"3-pick": 0.1506,
+"5-pick flex": 0.1862
+},
+"margin": 0.1506,
+"ref": "3-pick",
+"mult": 0.69,
+"ud_price": -271.0,
+"flagged": "20261103T2317Z",
+"kick_utc": "2026-11-06T01:15Z"
+},
+"00-0040719|Anytime TD|0.5|lower": {
+"pid": "00-0040719",
+"name": "Bhayshul Tuten",
+"team": "JAX",
+"bet": "Bhayshul Tuten Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.5927,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0153,
+"3-pick": 0.0424,
+"5-pick flex": 0.0647
+},
+"margin": 0.0424,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -109.0,
+"flagged": "20261103T2317Z",
+"kick_utc": "2026-11-06T01:15Z"
 }
 }
