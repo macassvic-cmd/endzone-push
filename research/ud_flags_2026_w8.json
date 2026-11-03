@@ -2994,5 +2994,33 @@
 "ud_price": -112.0,
 "flagged": "20261102T2308Z",
 "kick_utc": "2026-11-03T01:15Z"
+},
+"00-0040648|Receiving Yards|23.5|lower": {
+"pid": "00-0040648",
+"name": "Tory Horton",
+"team": "SEA",
+"bet": "Tory Horton Receiving Yards lower 23.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 23.5,
+"side": "lower",
+"blend": 0.6276,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0502,
+"3-pick": 0.0773,
+"5-pick flex": 0.0996
+},
+"margin": 0.0773,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261102T2353Z",
+"kick_utc": "2026-11-03T01:15Z"
 }
 }

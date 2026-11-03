@@ -9321,5 +9321,159 @@
 "ok": true
 }
 ]
+},
+"00-0039165|yds|rush|28.5": {
+"pid": "00-0039165",
+"bet": "Zach Charbonnet Over 28.5 rush yds",
+"market": "yds",
+"team": "SEA",
+"role": "Starter",
+"kind": "rush",
+"line": 28.5,
+"flagged": "20261102T2353Z",
+"best": -112,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.4985,
+"blend_p": 0.5978,
+"model_p": 0.6972,
+"ev": 0.1316,
+"ev_med": 0.1269,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.4,
+"bet_down_to": -132,
+"best_venue": {
+"venue": "DraftKings",
+"price": -112,
+"net": -112,
+"size_label": "",
+"captured": "2026-11-02T23:52:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -112,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -114,
+"ok": true
+}
+]
+},
+"00-0038797|yds|rush|20.5": {
+"pid": "00-0038797",
+"bet": "Emanuel Wilson Over 20.5 rush yds",
+"market": "yds",
+"team": "SEA",
+"role": "Rotational",
+"kind": "rush",
+"line": 20.5,
+"flagged": "20261103T0013Z",
+"best": -111,
+"book": "BetMGM",
+"med": -113,
+"mkt_p": 0.5,
+"blend_p": 0.6061,
+"model_p": 0.7123,
+"ev": 0.1522,
+"ev_med": 0.1425,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.42,
+"bet_down_to": -136,
+"best_venue": {
+"venue": "BetMGM",
+"price": -111,
+"net": -111,
+"size_label": "",
+"captured": "2026-11-03T00:12:37Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": -111,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -120,
+"ok": true
+}
+]
+},
+"00-0039165|yds|rush|29.5": {
+"pid": "00-0039165",
+"bet": "Zach Charbonnet Over 29.5 rush yds",
+"market": "yds",
+"team": "SEA",
+"role": "Starter",
+"kind": "rush",
+"line": 29.5,
+"flagged": "20261103T0043Z",
+"best": -102,
+"book": "FanDuel",
+"med": -104,
+"mkt_p": 0.4756,
+"blend_p": 0.5797,
+"model_p": 0.6839,
+"ev": 0.1481,
+"ev_med": 0.1372,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.44,
+"bet_down_to": -123,
+"best_venue": {
+"venue": "ProphetX",
+"price": 130,
+"net": 127,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-03T00:42:32Z",
+"fee": "2% of net winnings",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "ProphetX",
+"net": 127,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 108,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -102,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -104,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -108,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": -109,
+"ok": false
+}
+]
 }
 }
