@@ -1,0 +1,110 @@
+{
+ "season": 2026,
+ "week": 9,
+ "lead_h": 3.0,
+ "step_min": 10,
+ "max_job_min": 340,
+ "odds_api_credits": 7910,
+ "early": {
+  "slots": 28,
+  "credits": 3416
+ },
+ "scheduled": {
+  "pulls": 4,
+  "credits": 488
+ },
+ "pickem": {
+  "credits": 105
+ },
+ "exchange": {
+  "markets_per_game": 6,
+  "credits": 450,
+  "note": "us_ex (Novig, ProphetX, Polymarket, Kalshi): games with an edge, 4 scheduled pulls + 1 final pre-kickoff pull per game; <= 6 credits per game per pull"
+ },
+ "credits_note": "2 for lines + 8 markets per game not yet kicked off, per pull (PROPS_SOURCE=oddsapi, region us)",
+ "generated": "2026-11-03T23:15:13Z",
+ "clusters": [
+  {
+   "start": "2026-11-05T22:15:00Z",
+   "end": "2026-11-06T01:15:00Z",
+   "minutes": 180,
+   "pulls": 19,
+   "chained": false,
+   "odds_api_credits": 2310,
+   "kickoffs": [
+    "2026-11-06T01:15Z"
+   ],
+   "games": [
+    "JAX@BAL"
+   ]
+  },
+  {
+   "start": "2026-11-08T11:30:00Z",
+   "end": "2026-11-08T14:30:00Z",
+   "minutes": 180,
+   "pulls": 19,
+   "chained": false,
+   "odds_api_credits": 2158,
+   "kickoffs": [
+    "2026-11-08T14:30Z"
+   ],
+   "games": [
+    "CIN@ATL"
+   ]
+  },
+  {
+   "start": "2026-11-08T15:00:00Z",
+   "end": "2026-11-08T21:25:00Z",
+   "minutes": 385,
+   "pulls": 39,
+   "chained": true,
+   "odds_api_credits": 2926,
+   "kickoffs": [
+    "2026-11-08T18:00Z",
+    "2026-11-08T21:05Z",
+    "2026-11-08T21:25Z"
+   ],
+   "games": [
+    "DEN@CAR",
+    "DAL@IND",
+    "NYJ@KC",
+    "DET@MIA",
+    "CLE@NO",
+    "NYG@PHI",
+    "LA@WAS",
+    "HOU@LAC",
+    "LV@SF",
+    "GB@NE",
+    "ARI@SEA"
+   ]
+  },
+  {
+   "start": "2026-11-08T22:20:00Z",
+   "end": "2026-11-09T01:20:00Z",
+   "minutes": 180,
+   "pulls": 19,
+   "chained": false,
+   "odds_api_credits": 334,
+   "kickoffs": [
+    "2026-11-09T01:20Z"
+   ],
+   "games": [
+    "TB@CHI"
+   ]
+  },
+  {
+   "start": "2026-11-09T22:15:00Z",
+   "end": "2026-11-10T01:15:00Z",
+   "minutes": 180,
+   "pulls": 19,
+   "chained": false,
+   "odds_api_credits": 182,
+   "kickoffs": [
+    "2026-11-10T01:15Z"
+   ],
+   "games": [
+    "BUF@MIN"
+   ]
+  }
+ ]
+}

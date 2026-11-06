@@ -1,0 +1,131 @@
+"""Reconciliation smoke check for results.json: the headline, its breakdown and the week table must agree.
+
+    python test_reconcile.py            # after python results.py; the workflow runs it after both grading steps
+
+Checks, for the live and since-current-rules scopes:
+  1. record.<scope>.singles  == sum of by_market[*] == main + bench == sum of by_role[*]   (headline = its market and role breakdowns)
+  2. record.<scope>.<group>   == sum over bets_by_week rows in scope       (headline = week table cumulative), for main, bench, parlay
+  3. record.<scope>.main/bench == an independent recount of results.json `bets` (singles) by role group; parlay == parlays.by_week
+  4. the same for the shorter-than-+1000 split
+  5. record_current_rules.cum == sum of its own week rows
+  6. longshot_gate (anytime TD at +1000 or longer, live weeks) == recount of `bets` overall / main / bench, and == its own week rows
+Fails loudly (exit 1) with the numbers that disagree. Units and expected compare to 0.01u plus 0.005u per additional rounded part summed
+(each stored part is rounded to 0.01, so a sum of k parts can sit up to 0.005 x k from the rounded total: 2026-10-26..29 every scheduled
+run failed on 62.78 vs 62.8 over five markets).
+"""
+import json, sys
+
+TOL = 0.011
+
+
+def close(a, b, tol=TOL):
+    return abs(float(a) - float(b)) <= tol
+
+
+def same(label, a, b, keys=("n", "won", "units", "expected")):
+    tol = TOL + 0.005 * max(0, int(b.get("_parts", 1)) - 1, int(a.get("_parts", 1)) - 1)
+    bad = [(k, a.get(k), b.get(k)) for k in keys if not close(a.get(k) or 0, b.get(k) or 0, tol)]
+    if bad:
+        raise AssertionError(f"{label}: {bad}")
+
+
+def add(acc, v):
+    for k in ("n", "won", "units", "expected", "staked", "var"):
+        acc[k] = acc.get(k, 0) + (v.get(k) or 0)
+    acc["_parts"] = acc.get("_parts", 0) + 1
+    return acc
+
+
+def zero():
+    return dict(n=0, won=0, units=0.0, expected=0.0, staked=0.0, var=0.0)
+
+
+def recount(bets, pred):
+    acc = zero()
+    for b in bets:
+        if not pred(b): continue
+        stake = float(b.get("stake") or 1.0)
+        add(acc, dict(n=1, won=int(bool(b["won"])), units=float(b["profit"]), expected=stake * float(b.get("ev") or 0.0), staked=stake))
+    return acc
+
+
+def main():
+    R = json.load(open("results.json"))
+    rec = R.get("record") or {}
+    scopes = R.get("record_scopes") or {}
+    bf = set(scopes.get("backfill_weeks") or [])
+    live_from, rules_from = scopes.get("live_from"), scopes.get("rules_from", 4)
+    checks = 0
+    for sc, rows_ok in (("live", lambda w: w not in bf), ("rules", lambda w: w not in bf and w >= rules_from)):
+        S = rec.get(sc)
+        if not S:
+            continue
+        rows = [r for r in R["bets_by_week"] if rows_ok(r["week"])]
+        for split in ("all", "short"):
+            # 1. headline (singles = Starter + Rotational + Bench at actual stakes) == sum of its market breakdown == main + bench == sum of roles
+            bm = zero()
+            for v in S["by_market"].values(): add(bm, v[split])
+            same(f"{sc}/{split}: singles vs by_market", S["singles"][split], bm); checks += 1
+            mm = zero()
+            for v in S["main_by_market"].values(): add(mm, v[split])
+            same(f"{sc}/{split}: main vs main_by_market", S["main"][split], mm); checks += 1
+            same(f"{sc}/{split}: singles vs main + bench", S["singles"][split], add(add(zero(), S["main"][split]), S["bench"][split])); checks += 1
+            br = zero()
+            for v in S["by_role"].values(): add(br, v[split])
+            same(f"{sc}/{split}: singles vs by_role rows", S["singles"][split], br); checks += 1
+            assert "Unknown" not in S["by_role"] or S["by_role"]["Unknown"][split]["n"] == 0, f"{sc}/{split}: bets without a role in the record"
+            checks += 1
+            bb = zero()
+            for v in S["bench_by_market"].values(): add(bb, v[split])
+            same(f"{sc}/{split}: bench vs bench_by_market", S["bench"][split], bb); checks += 1
+            # 2. headline == week-table cumulative, per group and per market
+            for g in ("singles", "main", "bench", "parlay"):
+                acc = zero()
+                for r in rows: add(acc, r[g][split])
+                same(f"{sc}/{split}: {g} vs week rows", S[g][split], acc); checks += 1
+            for m, v in S["by_market"].items():
+                acc = zero()
+                for r in rows: add(acc, (r["by_market"].get(m) or {}).get(split) or zero())
+                same(f"{sc}/{split}: market {m} vs week rows", v[split], acc); checks += 1
+        # 3. independent recount from the bet list (singles) and the parlay log
+        in_scope = lambda b: rows_ok(int(b["week"]))
+        same(f"{sc}: singles vs recount of bets", S["singles"]["all"], recount(R["bets"], in_scope)); checks += 1
+        same(f"{sc}: main vs recount of bets", S["main"]["all"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") != "Bench")); checks += 1
+        same(f"{sc}: bench vs recount of bets", S["bench"]["all"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") == "Bench")); checks += 1
+        same(f"{sc}: short main vs recount", S["main"]["short"], recount(R["bets"], lambda b: in_scope(b) and b.get("role") != "Bench" and not b.get("longshot"))); checks += 1
+        pw = [w for w in ((R.get("parlays") or {}).get("by_week") or []) if rows_ok(w["week"])]
+        par = zero()
+        for w in pw:
+            for c in w["parlays"]:
+                if c.get("dec"): add(par, dict(n=1, won=int(bool(c["won"])), units=float(c["profit"]), expected=float(c.get("ev") or 0)))
+        same(f"{sc}: parlays vs parlay log", S["parlay"]["all"], par); checks += 1
+        # the singles headline must not contain parlays
+        assert S["singles"]["all"]["n"] == recount(R["bets"], in_scope)["n"], f"{sc}: singles count differs from the bet list"
+        checks += 1
+    LG = R.get("longshot_gate")
+    if LG and LG.get("all"):
+        live = lambda b: int(b["week"]) not in bf
+        anyls = lambda b: live(b) and b["market"] == "any" and bool(b.get("longshot"))
+        same("longshot gate: all vs recount of bets", LG["all"], recount(R["bets"], anyls)); checks += 1
+        same("longshot gate: main vs recount of bets", LG["main"], recount(R["bets"], lambda b: anyls(b) and b.get("role") != "Bench")); checks += 1
+        same("longshot gate: bench vs recount of bets", LG["bench"], recount(R["bets"], lambda b: anyls(b) and b.get("role") == "Bench")); checks += 1
+        acc = zero()
+        for w in LG["by_week"]: add(acc, w)
+        same("longshot gate: all vs its week rows", LG["all"], acc); checks += 1
+    CR = R.get("record_current_rules")
+    if CR and CR.get("cum"):
+        for g in ("main", "bench", "parlay"):
+            for split in ("all", "short"):
+                acc = zero()
+                for r in CR["weeks"]: add(acc, r[g][split])
+                same(f"current rules/{split}: {g} vs its week rows", CR["cum"][g][split], acc); checks += 1
+    H = rec["live"]["singles"]["all"] if rec.get("live") else None
+    print(f"PASS test_reconcile: {checks} checks, headline singles (Starter + Rotational + Bench) {H['won']}-{H['n'] - H['won']} {H['units']:+.2f}u "
+          f"(exp {H['expected']:+.2f}u) | main {rec['live']['main']['all']['n']} + bench {rec['live']['bench']['all']['n']} | parlays {rec['live']['parlay']['all']['n']}" if H else "PASS test_reconcile: no live record yet")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except AssertionError as e:
+        print("FAIL test_reconcile:", e); sys.exit(1)
