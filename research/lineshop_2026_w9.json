@@ -1,0 +1,24 @@
+{
+"00-0039893|yds_alt|rec|29.5": {
+"pid": "00-0039893",
+"bet": "Brian Thomas Jr. Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"kind": "rec",
+"line": 29.5,
+"team": "JAX",
+"role": "Rotational",
+"stake": 0.25,
+"book": "BetRivers",
+"best": 230,
+"bet_down_to": 213,
+"venue": "Novig",
+"venue_price": 239,
+"venue_net": 239,
+"cents": 9,
+"size_label": "size unknown, confirm in app",
+"fee_confirmed": false,
+"ev": 0.1079,
+"flagged": "20261106T0037Z",
+"kick_utc": "2026-11-06T01:15Z"
+}
+}
