@@ -4976,5 +4976,263 @@
 "ok": true
 }
 ]
+},
+"00-0036900|first": {
+"pid": "00-0036900",
+"bet": "Ja'Marr Chase First TD",
+"market": "first",
+"team": "CIN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261107T2057Z",
+"best": 803,
+"book": "Kalshi",
+"med": 752,
+"mkt_p": 0.103,
+"blend_p": 0.1331,
+"model_p": 0.09876666666666667,
+"ev": 0.2022,
+"ev_med": 0.1343,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.96,
+"bet_down_to": 689,
+"best_venue": {
+"venue": "Kalshi",
+"price": 803,
+"net": 803,
+"size_label": "$15,839 at the ask",
+"captured": "2026-11-07T20:59:43Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 803,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 700,
+"ok": true
+}
+]
+},
+"00-0039165|first": {
+"pid": "00-0039165",
+"bet": "Zach Charbonnet First TD",
+"market": "first",
+"team": "SEA",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261107T2057Z",
+"best": 750,
+"book": "DraftKings",
+"med": 706,
+"mkt_p": 0.1104,
+"blend_p": 0.1654,
+"model_p": 0.12921666666666667,
+"ev": 0.4059,
+"ev_med": 0.3331,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.17,
+"bet_down_to": 535,
+"best_venue": {
+"venue": "DraftKings",
+"price": 750,
+"net": 750,
+"size_label": "",
+"captured": "2026-11-07T20:59:04.595322293Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 750,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 663,
+"ok": true
+}
+]
+},
+"00-0031236|yds|rec|16.5": {
+"pid": "00-0031236",
+"bet": "Brandin Cooks Over 16.5 rec yds",
+"market": "yds",
+"team": "SF",
+"role": "Bench",
+"kind": "rec",
+"line": 16.5,
+"flagged": "20261107T2057Z",
+"best": -113,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.5011,
+"blend_p": 0.6367,
+"model_p": 0.7723,
+"ev": 0.2001,
+"ev_med": 0.2001,
+"rule": "main line",
+"stake": 0.25,
+"ratio": 1.54,
+"bet_down_to": -154,
+"best_venue": {
+"venue": "DraftKings",
+"price": -113,
+"net": -113,
+"size_label": "",
+"captured": "2026-11-07T20:59:04.595322293Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -113,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+}
+]
+},
+"00-0041042|yds|rec|23.5": {
+"pid": "00-0041042",
+"bet": "Malachi Fields Over 23.5 rec yds",
+"market": "yds",
+"team": "NYG",
+"role": "Starter",
+"kind": "rec",
+"line": 23.5,
+"flagged": "20261107T2057Z",
+"best": -109,
+"book": "DraftKings",
+"med": -111,
+"mkt_p": 0.4968,
+"blend_p": 0.5575,
+"model_p": 0.6182,
+"ev": 0.069,
+"ev_med": 0.0598,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": -113,
+"best_venue": {
+"venue": "DraftKings",
+"price": -109,
+"net": -109,
+"size_label": "",
+"captured": "2026-11-07T20:58:56.787405414Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -109,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0031588|yds|rec|46.5": {
+"pid": "00-0031588",
+"bet": "Stefon Diggs Over 46.5 rec yds",
+"market": "yds",
+"team": "WAS",
+"role": "Starter",
+"kind": "rec",
+"line": 46.5,
+"flagged": "20261107T2057Z",
+"best": -110,
+"book": "DraftKings",
+"med": -111,
+"mkt_p": 0.4979,
+"blend_p": 0.5572,
+"model_p": 0.6164,
+"ev": 0.0637,
+"ev_med": 0.0591,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": -113,
+"best_venue": {
+"venue": "DraftKings",
+"price": -110,
+"net": -110,
+"size_label": "",
+"captured": "2026-11-07T20:58:33.204075174Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -110,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0037248|first": {
+"pid": "00-0037248",
+"bet": "James Cook III First TD",
+"market": "first",
+"team": "BUF",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261107T2057Z",
+"best": 550,
+"book": "DraftKings",
+"med": 516,
+"mkt_p": 0.1445,
+"blend_p": 0.18,
+"model_p": 0.10826666666666666,
+"ev": 0.1701,
+"ev_med": 0.1088,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.75,
+"bet_down_to": 484,
+"best_venue": {
+"venue": "DraftKings",
+"price": 550,
+"net": 550,
+"size_label": "",
+"captured": "2026-11-07T20:59:24.76172764Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 482,
+"ok": true
+}
+]
 }
 }
