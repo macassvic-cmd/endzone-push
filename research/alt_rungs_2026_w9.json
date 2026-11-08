@@ -39982,5 +39982,42 @@
 "price"
 ],
 "flagged": "20261108T2101Z"
+},
+"00-0037263|rush|79.5": {
+"bet": "Tyler Allgeier Over 79.5 rush yds (alt)",
+"pid": "00-0037263",
+"market": "yds_alt",
+"kind": "rush",
+"line": 79.5,
+"team": "ARI",
+"model_p": 0.2129,
+"mkt_p": 0.209,
+"blend_p": 0.211,
+"best": 403,
+"book": "DraftKings",
+"ev": 0.0612,
+"med": 403,
+"ev_med": 0.0612,
+"nbooks": 2,
+"curve_rungs": 15,
+"games": 24,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.1882,
+"captured": "2026-11-08T21:25:17.409431183Z",
+"kick_utc": "2026-11-08T21:25Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261108T2126Z"
 }
 }

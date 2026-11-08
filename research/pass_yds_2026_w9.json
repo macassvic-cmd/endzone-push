@@ -719,5 +719,44 @@
 "pass-yds hidden"
 ],
 "flagged": "20261108T2045Z"
+},
+"00-0035704|yds|pass|198.5": {
+"bet": "Drew Lock Over 198.5 pass yds",
+"pid": "00-0035704",
+"market": "yds",
+"kind": "pass",
+"line": 198.5,
+"team": "SEA",
+"model_p": 0.7497,
+"mkt_p": 0.5011,
+"blend_p": 0.6254,
+"best": -113,
+"book": "DraftKings",
+"ev": 0.1788,
+"med": -113,
+"ev_med": 0.1788,
+"nbooks": 2,
+"games": 3,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": false,
+"rule": "main line",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"captured": "2026-11-08T21:25:17.409431183Z",
+"kick_utc": "2026-11-08T21:25Z",
+"stake": 1.0,
+"group": "main",
+"routed": null,
+"ratio": 1.5,
+"bet_down_to": -147,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261108T2124Z"
 }
 }
