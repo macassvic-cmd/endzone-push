@@ -6838,5 +6838,397 @@
 "ok": true
 }
 ]
+},
+"00-0036875|first": {
+"pid": "00-0036875",
+"bet": "Rhamondre Stevenson First TD",
+"market": "first",
+"team": "NE",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 608,
+"book": "Kalshi",
+"med": 579,
+"mkt_p": 0.1307,
+"blend_p": 0.1743,
+"model_p": 0.11576666666666667,
+"ev": 0.2342,
+"ev_med": 0.1837,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.89,
+"bet_down_to": 503,
+"best_venue": {
+"venue": "Kalshi",
+"price": 608,
+"net": 608,
+"size_label": "$1,115 at the ask",
+"captured": "2026-11-08T20:46:55Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 608,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+}
+]
+},
+"00-0040563|yds|rec|29.5": {
+"pid": "00-0040563",
+"bet": "Efton Chism III Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Starter",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261108T2045Z",
+"best": 182,
+"book": "FanDuel",
+"med": 182,
+"mkt_p": 0.3405,
+"blend_p": 0.3986,
+"model_p": 0.4567,
+"ev": 0.124,
+"ev_med": 0.124,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.34,
+"bet_down_to": 164,
+"best_venue": {
+"venue": "FanDuel",
+"price": 182,
+"net": 182,
+"size_label": "",
+"captured": "2026-11-08T20:46:32.543046253Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 182,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 173,
+"ok": true
+}
+]
+},
+"00-0035700|first": {
+"pid": "00-0035700",
+"bet": "Josh Jacobs First TD",
+"market": "first",
+"team": "GB",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 663,
+"book": "Kalshi",
+"med": 632,
+"mkt_p": 0.1213,
+"blend_p": 0.1532,
+"model_p": 0.10223333333333333,
+"ev": 0.1686,
+"ev_med": 0.1211,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.84,
+"bet_down_to": 586,
+"best_venue": {
+"venue": "Kalshi",
+"price": 663,
+"net": 663,
+"size_label": "$830 at the ask",
+"captured": "2026-11-08T20:46:55Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 663,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 600,
+"ok": true
+}
+]
+},
+"00-0041395|any": {
+"pid": "00-0041395",
+"bet": "Eli Raridon Anytime TD",
+"market": "any",
+"team": "NE",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 450,
+"book": "DraftKings",
+"med": 450,
+"mkt_p": 0.1638,
+"blend_p": 0.2003,
+"model_p": 0.23678333333333335,
+"ev": 0.1016,
+"ev_med": 0.1016,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.45,
+"bet_down_to": 425,
+"best_venue": {
+"venue": "DraftKings",
+"price": 450,
+"net": 450,
+"size_label": "",
+"captured": "2026-11-08T20:46:32.543308386Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 450,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 450,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 450,
+"ok": true
+}
+]
+},
+"00-0037744|yds|rec|79.5": {
+"pid": "00-0037744",
+"bet": "Trey McBride Over 79.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Starter",
+"kind": "rec",
+"line": 79.5,
+"flagged": "20261108T2045Z",
+"best": 220,
+"book": "FanDuel",
+"med": 220,
+"mkt_p": 0.3213,
+"blend_p": 0.3384,
+"model_p": 0.3555,
+"ev": 0.0829,
+"ev_med": 0.0829,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.11,
+"bet_down_to": 211,
+"best_venue": {
+"venue": "FanDuel",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-11-08T20:46:26.769367433Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 220,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 172,
+"ok": true
+}
+]
+},
+"00-0040563|first": {
+"pid": "00-0040563",
+"bet": "Efton Chism III First TD",
+"market": "first",
+"team": "NE",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 2500,
+"book": "DraftKings",
+"med": 2196,
+"mkt_p": 0.0401,
+"blend_p": 0.0463,
+"model_p": 0.05661666666666667,
+"ev": 0.203,
+"ev_med": 0.0624,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.41,
+"bet_down_to": 2168,
+"best_venue": {
+"venue": "DraftKings",
+"price": 2500,
+"net": 2500,
+"size_label": "",
+"captured": "2026-11-08T20:46:32.543308386Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 2500,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1893,
+"ok": true
+}
+]
+},
+"00-0038543|first": {
+"pid": "00-0038543",
+"bet": "Jaxon Smith-Njigba First TD",
+"market": "first",
+"team": "SEA",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 482,
+"book": "Kalshi",
+"med": 454,
+"mkt_p": 0.1603,
+"blend_p": 0.1899,
+"model_p": 0.10443333333333334,
+"ev": 0.1052,
+"ev_med": 0.052,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.65,
+"bet_down_to": 453,
+"best_venue": {
+"venue": "Kalshi",
+"price": 482,
+"net": 482,
+"size_label": "$57,365 at the ask",
+"captured": "2026-11-08T20:46:55Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 482,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 425,
+"ok": true
+}
+]
+},
+"00-0036275|first": {
+"pid": "00-0036275",
+"bet": "D'Andre Swift First TD",
+"market": "first",
+"team": "CHI",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2045Z",
+"best": 394,
+"book": "Kalshi",
+"med": 382,
+"mkt_p": 0.1843,
+"blend_p": 0.2365,
+"model_p": 0.12845,
+"ev": 0.1685,
+"ev_med": 0.1401,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.7,
+"bet_down_to": 344,
+"best_venue": {
+"venue": "Kalshi",
+"price": 394,
+"net": 394,
+"size_label": "$35,184 at the ask",
+"captured": "2026-11-08T20:46:55Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 394,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 370,
+"ok": true
+}
+]
+},
+"00-0037261|yds|rec|59.5": {
+"pid": "00-0037261",
+"bet": "Khalil Shakir Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "BUF",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261108T2045Z",
+"best": 270,
+"book": "FanDuel",
+"med": 270,
+"mkt_p": 0.2653,
+"blend_p": 0.284,
+"model_p": 0.3028,
+"ev": 0.051,
+"ev_med": 0.051,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.14,
+"bet_down_to": 270,
+"best_venue": {
+"venue": "FanDuel",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-11-08T20:46:40.372429509Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 243,
+"ok": true
+}
+]
 }
 }

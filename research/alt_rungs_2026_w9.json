@@ -39873,5 +39873,42 @@
 "ratio"
 ],
 "flagged": "20261108T2002Z"
+},
+"00-0040563|rec|39.5": {
+"bet": "Efton Chism III Over 39.5 rec yds (alt)",
+"pid": "00-0040563",
+"market": "yds_alt",
+"kind": "rec",
+"line": 39.5,
+"team": "NE",
+"model_p": 0.343,
+"mkt_p": 0.2241,
+"blend_p": 0.2835,
+"best": 323,
+"book": "DraftKings",
+"ev": 0.1994,
+"med": 323,
+"ev_med": 0.1994,
+"nbooks": 2,
+"curve_rungs": 12,
+"games": 9,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.2238,
+"captured": "2026-11-08T20:46:32.543308386Z",
+"kick_utc": "2026-11-08T21:25Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261108T2047Z"
 }
 }
