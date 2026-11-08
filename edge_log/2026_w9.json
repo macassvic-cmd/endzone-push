@@ -7230,5 +7230,48 @@
 "ok": true
 }
 ]
+},
+"00-0039361|first": {
+"pid": "00-0039361",
+"bet": "Bucky Irving First TD",
+"market": "first",
+"team": "TB",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261108T2116Z",
+"best": 750,
+"book": "DraftKings",
+"med": 738,
+"mkt_p": 0.1064,
+"blend_p": 0.1271,
+"model_p": 0.0882,
+"ev": 0.0802,
+"ev_med": 0.065,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.83,
+"bet_down_to": 727,
+"best_venue": {
+"venue": "DraftKings",
+"price": 750,
+"net": 750,
+"size_label": "",
+"captured": "2026-11-08T21:17:18.764012967Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 750,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 727,
+"ok": true
+}
+]
 }
 }
