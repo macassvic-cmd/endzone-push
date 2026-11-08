@@ -5234,5 +5234,283 @@
 "ok": true
 }
 ]
+},
+"00-0040590|yds|rec|24.5": {
+"pid": "00-0040590",
+"bet": "Konata Mumpfield Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261108T1317Z",
+"best": 210,
+"book": "FanDuel",
+"med": 210,
+"mkt_p": 0.3169,
+"blend_p": 0.452,
+"model_p": 0.587,
+"ev": 0.4011,
+"ev_med": 0.4011,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.85,
+"bet_down_to": 133,
+"best_venue": {
+"venue": "FanDuel",
+"price": 210,
+"net": 210,
+"size_label": "",
+"captured": "2026-11-08T13:17:23Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 210,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 187,
+"ok": true
+}
+]
+},
+"00-0033699|yds|rush|29.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 29.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Bench",
+"kind": "rush",
+"line": 29.5,
+"flagged": "20261108T1317Z",
+"best": 138,
+"book": "BetRivers",
+"med": 138,
+"mkt_p": 0.4033,
+"blend_p": 0.5411,
+"model_p": 0.6788,
+"ev": 0.2877,
+"ev_med": 0.2877,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": -106,
+"best_venue": {
+"venue": "BetRivers",
+"price": 138,
+"net": 138,
+"size_label": "",
+"captured": "2026-11-08T13:17:04Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 138,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 132,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 130,
+"ok": true
+}
+]
+},
+"00-0037614|yds|rec|24.5": {
+"pid": "00-0037614",
+"bet": "John Metchie III Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CAR",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261108T1317Z",
+"best": 225,
+"book": "FanDuel",
+"med": 225,
+"mkt_p": 0.3134,
+"blend_p": 0.3821,
+"model_p": 0.4509,
+"ev": 0.242,
+"ev_med": 0.242,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.44,
+"bet_down_to": 175,
+"best_venue": {
+"venue": "FanDuel",
+"price": 225,
+"net": 225,
+"size_label": "",
+"captured": "2026-11-08T13:17:17Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 205,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 175,
+"ok": true
+}
+]
+},
+"00-0040590|yds|rec|13.5": {
+"pid": "00-0040590",
+"bet": "Konata Mumpfield Over 13.5 rec yds",
+"market": "yds",
+"team": "LA",
+"role": "Rotational",
+"kind": "rec",
+"line": 13.5,
+"flagged": "20261108T1317Z",
+"best": -113,
+"book": "FanDuel",
+"med": -117,
+"mkt_p": 0.505,
+"blend_p": 0.6252,
+"model_p": 0.7454,
+"ev": 0.1785,
+"ev_med": 0.1596,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.48,
+"bet_down_to": -147,
+"best_venue": {
+"venue": "FanDuel",
+"price": -113,
+"net": -113,
+"size_label": "",
+"captured": "2026-11-08T13:17:23Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -117,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -118,
+"ok": true
+}
+]
+},
+"00-0032950|yds|rush|14.5": {
+"pid": "00-0032950",
+"bet": "Carson Wentz Over 14.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "MIN",
+"role": "Starter",
+"kind": "rush",
+"line": 14.5,
+"flagged": "20261108T1317Z",
+"best": 225,
+"book": "FanDuel",
+"med": 225,
+"mkt_p": 0.2972,
+"blend_p": 0.3735,
+"model_p": 0.4497,
+"ev": 0.2138,
+"ev_med": 0.2138,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.51,
+"bet_down_to": 182,
+"best_venue": {
+"venue": "FanDuel",
+"price": 225,
+"net": 225,
+"size_label": "",
+"captured": "2026-11-08T13:17:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 211,
+"ok": true
+}
+]
+},
+"00-0036407|yds|rec|24.5": {
+"pid": "00-0036407",
+"bet": "Jerry Jeudy Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CLE",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261108T1427Z",
+"best": 220,
+"book": "FanDuel",
+"med": 220,
+"mkt_p": 0.2992,
+"blend_p": 0.3865,
+"model_p": 0.4739,
+"ev": 0.2369,
+"ev_med": 0.2369,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.58,
+"bet_down_to": 172,
+"best_venue": {
+"venue": "FanDuel",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-11-08T14:27:21Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 220,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 214,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 210,
+"ok": true
+}
+]
 }
 }
