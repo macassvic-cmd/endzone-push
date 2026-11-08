@@ -39910,5 +39910,77 @@
 "price"
 ],
 "flagged": "20261108T2047Z"
+},
+"00-0039851|rush|89.5": {
+"bet": "Drake Maye Over 89.5 rush yds (alt)",
+"pid": "00-0039851",
+"market": "yds_alt",
+"kind": "rush",
+"line": 89.5,
+"team": "NE",
+"model_p": 0.0308,
+"mkt_p": 0.0383,
+"blend_p": 0.0346,
+"best": 4000,
+"book": "DraftKings",
+"ev": 0.4176,
+"med": 4000,
+"ev_med": 0.4176,
+"nbooks": 4,
+"curve_rungs": 16,
+"games": 25,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-11-08T20:10:25Z",
+"kick_utc": "2026-11-08T21:25Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261108T2011Z"
+},
+"00-0039391|rush|89.5": {
+"bet": "Kimani Vidal Over 89.5 rush yds (alt)",
+"pid": "00-0039391",
+"market": "yds_alt",
+"kind": "rush",
+"line": 89.5,
+"team": "LAC",
+"model_p": 0.0279,
+"mkt_p": 0.0374,
+"blend_p": 0.0327,
+"best": 3600,
+"book": "DraftKings",
+"ev": 0.209,
+"med": 3600,
+"ev_med": 0.209,
+"nbooks": 4,
+"curve_rungs": 17,
+"games": 17,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0256,
+"captured": "2026-11-08T21:00:37Z",
+"kick_utc": "2026-11-08T21:05Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261108T2101Z"
 }
 }

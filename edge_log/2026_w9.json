@@ -7273,5 +7273,182 @@
 "ok": true
 }
 ]
+},
+"00-0038621|yds|rec|41.5": {
+"pid": "00-0038621",
+"bet": "DeMario Douglas Over 41.5 rec yds",
+"market": "yds",
+"team": "NE",
+"role": "Starter",
+"kind": "rec",
+"line": 41.5,
+"flagged": "20261108T2011Z",
+"best": -110,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.4994,
+"blend_p": 0.6493,
+"model_p": 0.7993,
+"ev": 0.2397,
+"ev_med": 0.224,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.6,
+"bet_down_to": -162,
+"best_venue": {
+"venue": "DraftKings",
+"price": -110,
+"net": -110,
+"size_label": "",
+"captured": "2026-11-08T20:10:25Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -110,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -117,
+"ok": true
+}
+]
+},
+"00-0038559|yds|rec|74.5": {
+"pid": "00-0038559",
+"bet": "Michael Wilson Over 74.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Starter",
+"kind": "rec",
+"line": 74.5,
+"flagged": "20261108T2031Z",
+"best": 260,
+"book": "Fanatics",
+"med": 260,
+"mkt_p": 0.2716,
+"blend_p": 0.3376,
+"model_p": 0.4036,
+"ev": 0.2154,
+"ev_med": 0.2154,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.49,
+"bet_down_to": 212,
+"best_venue": {
+"venue": "Fanatics",
+"price": 260,
+"net": 260,
+"size_label": "",
+"captured": "2026-11-08T20:31:04Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 260,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 230,
+"ok": true
+}
+]
+},
+"00-0036875|yds|rush|74.5": {
+"pid": "00-0036875",
+"bet": "Rhamondre Stevenson Over 74.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Starter",
+"kind": "rush",
+"line": 74.5,
+"flagged": "20261108T2041Z",
+"best": 240,
+"book": "Fanatics",
+"med": 240,
+"mkt_p": 0.3015,
+"blend_p": 0.3256,
+"model_p": 0.3498,
+"ev": 0.1072,
+"ev_med": 0.1072,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.16,
+"bet_down_to": 223,
+"best_venue": {
+"venue": "Fanatics",
+"price": 240,
+"net": 240,
+"size_label": "",
+"captured": "2026-11-08T20:39:13Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 240,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 185,
+"ok": true
+}
+]
+},
+"00-0033908|yds|rec|39.5": {
+"pid": "00-0033908",
+"bet": "Cooper Kupp Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "SEA",
+"role": "Starter",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261108T2041Z",
+"best": 268,
+"book": "DraftKings",
+"med": 268,
+"mkt_p": 0.2878,
+"blend_p": 0.2908,
+"model_p": 0.2937,
+"ev": 0.07,
+"ev_med": 0.07,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.02,
+"bet_down_to": 262,
+"best_venue": {
+"venue": "DraftKings",
+"price": 268,
+"net": 268,
+"size_label": "",
+"captured": "2026-11-08T20:41:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 268,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 195,
+"ok": true
+}
+]
 }
 }
