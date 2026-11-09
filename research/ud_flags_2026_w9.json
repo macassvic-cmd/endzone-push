@@ -4814,5 +4814,33 @@
 "ud_price": -112.0,
 "flagged": "20261108T2047Z",
 "kick_utc": "2026-11-09T01:20Z"
+},
+"00-0039021|Rush Yards|15.5|lower": {
+"pid": "00-0039021",
+"name": "Roschon Johnson",
+"team": "CHI",
+"bet": "Roschon Johnson Rush Yards lower 15.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 15.5,
+"side": "lower",
+"blend": 0.6171,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0397,
+"3-pick": 0.0668,
+"5-pick flex": 0.0891
+},
+"margin": 0.0668,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261109T0055Z",
+"kick_utc": "2026-11-09T01:20Z"
 }
 }

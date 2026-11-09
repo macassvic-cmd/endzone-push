@@ -7450,5 +7450,48 @@
 "ok": true
 }
 ]
+},
+"00-0034827|first": {
+"pid": "00-0034827",
+"bet": "DJ Moore First TD",
+"market": "first",
+"team": "BUF",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261109T0055Z",
+"best": 1322,
+"book": "Kalshi",
+"med": 1311,
+"mkt_p": 0.063,
+"blend_p": 0.0776,
+"model_p": 0.0747,
+"ev": 0.1036,
+"ev_med": 0.0951,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.19,
+"bet_down_to": 1254,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1322,
+"net": 1322,
+"size_label": "$10,469 at the ask",
+"captured": "2026-11-09T00:55:44Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1322,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1300,
+"ok": true
+}
+]
 }
 }
