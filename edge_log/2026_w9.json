@@ -7493,5 +7493,48 @@
 "ok": true
 }
 ]
+},
+"00-0041443|any": {
+"pid": "00-0041443",
+"bet": "Skyler Bell Anytime TD",
+"market": "any",
+"team": "BUF",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261109T2346Z",
+"best": 1700,
+"book": "DraftKings",
+"med": 1630,
+"mkt_p": 0.0494,
+"blend_p": 0.0609,
+"model_p": 0.07243333333333334,
+"ev": 0.0963,
+"ev_med": 0.0536,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.47,
+"bet_down_to": 1625,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1700,
+"net": 1700,
+"size_label": "",
+"captured": "2026-11-09T23:47:17.947188267Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1700,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": true
+}
+]
 }
 }
