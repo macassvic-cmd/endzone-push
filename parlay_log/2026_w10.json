@@ -1,0 +1,49 @@
+{
+"likely": {
+"flagged": "20261113T0103Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_10_SF_DAL",
+"prob": 0.2522,
+"model_p": 0.2522,
+"mkt_p": 0.2685,
+"price": 198,
+"book": "Kalshi",
+"dec": 2.98,
+"ev": -0.2484,
+"fair": 297
+},
+{
+"pid": "00-0038134",
+"name": "Kenneth Walker III",
+"team": "KC",
+"game_id": "2026_10_KC_ATL",
+"prob": 0.1909,
+"model_p": 0.1909,
+"mkt_p": 0.2273,
+"price": 252,
+"book": "Kalshi",
+"dec": 3.52,
+"ev": -0.328,
+"fair": 424
+}
+],
+"n": 2,
+"prob": 0.04814,
+"fair": 1977,
+"offered": 949,
+"dec": 10.49,
+"ev": -0.495,
+"stake": 0.0,
+"hits_every": 21,
+"paper": true
+}
+]
+}
+}
