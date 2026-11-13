@@ -45,5 +45,220 @@
 "paper": true
 }
 ]
+},
+"value": {
+"flagged": "20261112T2353Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_10_NE_DET",
+"prob": 0.0281,
+"model_p": 0.0387,
+"mkt_p": 0.0174,
+"price": 5500,
+"book": "FanDuel",
+"dec": 56.0,
+"ev": 0.5736,
+"fair": 3459
+},
+{
+"pid": "00-0035689",
+"name": "Dawson Knox",
+"team": "BUF",
+"game_id": "2026_10_BUF_NYJ",
+"prob": 0.0206,
+"model_p": 0.0266,
+"mkt_p": 0.0146,
+"price": 7000,
+"book": "BetRivers",
+"dec": 71.0,
+"ev": 0.4626,
+"fair": 4754
+},
+{
+"pid": "00-0038618",
+"name": "Xavier Hutchinson",
+"team": "HOU",
+"game_id": "2026_10_HOU_CLE",
+"prob": 0.0308,
+"model_p": 0.0406,
+"mkt_p": 0.021,
+"price": 4500,
+"book": "BetRivers",
+"dec": 46.0,
+"ev": 0.4168,
+"fair": 3147
+},
+{
+"pid": "00-0039793",
+"name": "AJ Barner",
+"team": "SEA",
+"game_id": "2026_10_SEA_LV",
+"prob": 0.0452,
+"model_p": 0.0604,
+"mkt_p": 0.03,
+"price": 3000,
+"book": "FanDuel",
+"dec": 31.0,
+"ev": 0.4012,
+"fair": 2112
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 124090050,
+"offered": 566977500,
+"dec": 5669776.0,
+"ev": 3.5691,
+"stake": 0.0,
+"hits_every": 1240901,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_10_NE_DET",
+"prob": 0.0281,
+"model_p": 0.0387,
+"mkt_p": 0.0174,
+"price": 5500,
+"book": "FanDuel",
+"dec": 56.0,
+"ev": 0.5736,
+"fair": 3459
+},
+{
+"pid": "00-0035689",
+"name": "Dawson Knox",
+"team": "BUF",
+"game_id": "2026_10_BUF_NYJ",
+"prob": 0.0206,
+"model_p": 0.0266,
+"mkt_p": 0.0146,
+"price": 7000,
+"book": "BetRivers",
+"dec": 71.0,
+"ev": 0.4626,
+"fair": 4754
+},
+{
+"pid": "00-0038618",
+"name": "Xavier Hutchinson",
+"team": "HOU",
+"game_id": "2026_10_HOU_CLE",
+"prob": 0.0308,
+"model_p": 0.0406,
+"mkt_p": 0.021,
+"price": 4500,
+"book": "BetRivers",
+"dec": 46.0,
+"ev": 0.4168,
+"fair": 3147
+},
+{
+"pid": "00-0037005",
+"name": "Tommy Tremble",
+"team": "CAR",
+"game_id": "2026_10_CAR_NO",
+"prob": 0.0221,
+"model_p": 0.0273,
+"mkt_p": 0.0169,
+"price": 6000,
+"book": "FanDuel",
+"dec": 61.0,
+"ev": 0.3481,
+"fair": 4425
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 253795138,
+"offered": 1115665500,
+"dec": 11156656.0,
+"ev": 3.3959,
+"stake": 0.0,
+"hits_every": 2537952,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0040563",
+"name": "Efton Chism III",
+"team": "NE",
+"game_id": "2026_10_NE_DET",
+"prob": 0.0281,
+"model_p": 0.0387,
+"mkt_p": 0.0174,
+"price": 5500,
+"book": "FanDuel",
+"dec": 56.0,
+"ev": 0.5736,
+"fair": 3459
+},
+{
+"pid": "00-0035689",
+"name": "Dawson Knox",
+"team": "BUF",
+"game_id": "2026_10_BUF_NYJ",
+"prob": 0.0206,
+"model_p": 0.0266,
+"mkt_p": 0.0146,
+"price": 7000,
+"book": "BetRivers",
+"dec": 71.0,
+"ev": 0.4626,
+"fair": 4754
+},
+{
+"pid": "00-0038618",
+"name": "Xavier Hutchinson",
+"team": "HOU",
+"game_id": "2026_10_HOU_CLE",
+"prob": 0.0308,
+"model_p": 0.0406,
+"mkt_p": 0.021,
+"price": 4500,
+"book": "BetRivers",
+"dec": 46.0,
+"ev": 0.4168,
+"fair": 3147
+},
+{
+"pid": "00-0037742",
+"name": "Treylon Burks",
+"team": "WAS",
+"game_id": "2026_10_WAS_NYG",
+"prob": 0.0292,
+"model_p": 0.0351,
+"mkt_p": 0.0234,
+"price": 4500,
+"book": "DraftKings",
+"dec": 46.0,
+"ev": 0.3432,
+"fair": 3325
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 192084652,
+"offered": 841321500,
+"dec": 8413216.0,
+"ev": 3.3799,
+"stake": 0.0,
+"hits_every": 1920848,
+"paper": true
+}
+]
 }
 }
