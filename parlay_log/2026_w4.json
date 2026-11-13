@@ -1,0 +1,336 @@
+{
+"likely": {
+"flagged": "20261001T2307Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_04_DET_CAR",
+"prob": 0.2646,
+"model_p": 0.2646,
+"mkt_p": 0.3722,
+"price": 166,
+"book": "Kalshi",
+"dec": 2.66,
+"ev": -0.2962,
+"fair": 278
+},
+{
+"pid": "00-0032764",
+"name": "Derrick Henry",
+"team": "BAL",
+"game_id": "2026_04_TEN_BAL",
+"prob": 0.2158,
+"model_p": 0.2158,
+"mkt_p": 0.2612,
+"price": 279,
+"book": "Kalshi",
+"dec": 3.79,
+"ev": -0.1821,
+"fair": 363
+}
+],
+"n": 2,
+"prob": 0.0571,
+"fair": 1651,
+"offered": 908,
+"dec": 10.08,
+"ev": -0.4243,
+"stake": 0.0,
+"hits_every": 18,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_04_DET_CAR",
+"prob": 0.2646,
+"model_p": 0.2646,
+"mkt_p": 0.3722,
+"price": 166,
+"book": "Kalshi",
+"dec": 2.66,
+"ev": -0.2962,
+"fair": 278
+},
+{
+"pid": "00-0038134",
+"name": "Kenneth Walker III",
+"team": "KC",
+"game_id": "2026_04_KC_LV",
+"prob": 0.2025,
+"model_p": 0.2025,
+"mkt_p": 0.2308,
+"price": 329,
+"book": "Kalshi",
+"dec": 4.29,
+"ev": -0.1313,
+"fair": 394
+}
+],
+"n": 2,
+"prob": 0.05358,
+"fair": 1766,
+"offered": 1041,
+"dec": 11.41,
+"ev": -0.3886,
+"stake": 0.0,
+"hits_every": 19,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_04_DET_CAR",
+"prob": 0.2646,
+"model_p": 0.2646,
+"mkt_p": 0.3722,
+"price": 166,
+"book": "Kalshi",
+"dec": 2.66,
+"ev": -0.2962,
+"fair": 278
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_04_DEN_SF",
+"prob": 0.1907,
+"model_p": 0.1907,
+"mkt_p": 0.2308,
+"price": 329,
+"book": "Kalshi",
+"dec": 4.29,
+"ev": -0.1819,
+"fair": 424
+}
+],
+"n": 2,
+"prob": 0.05046,
+"fair": 1882,
+"offered": 1041,
+"dec": 11.41,
+"ev": -0.4242,
+"stake": 0.0,
+"hits_every": 20,
+"paper": true
+}
+],
+"source": "git 32cdf4d 2026-10-01T23:07:56Z"
+},
+"value": {
+"flagged": "20261001T2307Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0041037",
+"name": "Denzel Boston",
+"team": "CLE",
+"game_id": "2026_04_PIT_CLE",
+"prob": 0.04,
+"model_p": 0.0503,
+"mkt_p": 0.0298,
+"price": 3227,
+"book": "Kalshi",
+"dec": 33.27,
+"ev": 0.3308,
+"fair": 2400
+},
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_04_JAX_CIN",
+"prob": 0.0478,
+"model_p": 0.0559,
+"mkt_p": 0.0397,
+"price": 2393,
+"book": "Kalshi",
+"dec": 24.93,
+"ev": 0.1917,
+"fair": 1992
+},
+{
+"pid": "00-0030279",
+"name": "Keenan Allen",
+"team": "IND",
+"game_id": "2026_04_IND_WAS",
+"prob": 0.0463,
+"model_p": 0.0528,
+"mkt_p": 0.0397,
+"price": 2393,
+"book": "Kalshi",
+"dec": 24.93,
+"ev": 0.1543,
+"fair": 2060
+}
+],
+"n": 3,
+"prob": 9e-05,
+"fair": 1129517,
+"offered": 2067647,
+"dec": 20677.47,
+"ev": 0.8305,
+"stake": 1e-05,
+"hits_every": 11296,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0041037",
+"name": "Denzel Boston",
+"team": "CLE",
+"game_id": "2026_04_PIT_CLE",
+"prob": 0.04,
+"model_p": 0.0503,
+"mkt_p": 0.0298,
+"price": 3227,
+"book": "Kalshi",
+"dec": 33.27,
+"ev": 0.3308,
+"fair": 2400
+},
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_04_JAX_CIN",
+"prob": 0.0478,
+"model_p": 0.0559,
+"mkt_p": 0.0397,
+"price": 2393,
+"book": "Kalshi",
+"dec": 24.93,
+"ev": 0.1917,
+"fair": 1992
+},
+{
+"pid": "00-0030279",
+"name": "Keenan Allen",
+"team": "IND",
+"game_id": "2026_04_IND_WAS",
+"prob": 0.0463,
+"model_p": 0.0528,
+"mkt_p": 0.0397,
+"price": 2393,
+"book": "Kalshi",
+"dec": 24.93,
+"ev": 0.1543,
+"fair": 2060
+},
+{
+"pid": "00-0039067",
+"name": "Rashee Rice",
+"team": "KC",
+"game_id": "2026_04_KC_LV",
+"prob": 0.0907,
+"model_p": 0.1018,
+"mkt_p": 0.0796,
+"price": 1144,
+"book": "Kalshi",
+"dec": 12.44,
+"ev": 0.1283,
+"fair": 1003
+}
+],
+"n": 4,
+"prob": 1e-05,
+"fair": 12454329,
+"offered": 25722670,
+"dec": 257227.7,
+"ev": 1.0654,
+"stake": 0.0,
+"hits_every": 124544,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0041037",
+"name": "Denzel Boston",
+"team": "CLE",
+"game_id": "2026_04_PIT_CLE",
+"prob": 0.04,
+"model_p": 0.0503,
+"mkt_p": 0.0298,
+"price": 3227,
+"book": "Kalshi",
+"dec": 33.27,
+"ev": 0.3308,
+"fair": 2400
+},
+{
+"pid": "00-0034829",
+"name": "Mike Gesicki",
+"team": "CIN",
+"game_id": "2026_04_JAX_CIN",
+"prob": 0.0478,
+"model_p": 0.0559,
+"mkt_p": 0.0397,
+"price": 2393,
+"book": "Kalshi",
+"dec": 24.93,
+"ev": 0.1917,
+"fair": 1992
+},
+{
+"pid": "00-0039067",
+"name": "Rashee Rice",
+"team": "KC",
+"game_id": "2026_04_KC_LV",
+"prob": 0.0907,
+"model_p": 0.1018,
+"mkt_p": 0.0796,
+"price": 1144,
+"book": "Kalshi",
+"dec": 12.44,
+"ev": 0.1283,
+"fair": 1003
+},
+{
+"pid": "00-0040128",
+"name": "Tyler Warren",
+"team": "IND",
+"game_id": "2026_04_IND_WAS",
+"prob": 0.0793,
+"model_p": 0.089,
+"mkt_p": 0.0696,
+"price": 1322,
+"book": "Kalshi",
+"dec": 14.22,
+"ev": 0.1276,
+"fair": 1161
+}
+],
+"n": 4,
+"prob": 1e-05,
+"fair": 7271528,
+"offered": 14672094,
+"dec": 146721.94,
+"ev": 1.0177,
+"stake": 0.0,
+"hits_every": 72716,
+"paper": true
+}
+],
+"source": "git 32cdf4d 2026-10-01T23:07:56Z"
+}
+}

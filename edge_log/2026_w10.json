@@ -1,0 +1,584 @@
+{
+"00-0039847|yds|rec|14.5": {
+"pid": "00-0039847",
+"bet": "Theo Johnson Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261110T2118Z",
+"best": 255,
+"book": "DraftKings",
+"med": 255,
+"mkt_p": 0.2713,
+"blend_p": 0.3799,
+"model_p": 0.4884,
+"ev": 0.3485,
+"ev_med": 0.3485,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.8,
+"bet_down_to": 177,
+"best_venue": {
+"venue": "DraftKings",
+"price": 255,
+"net": 255,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383410435Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 255,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 240,
+"ok": true
+}
+]
+},
+"00-0039847|any": {
+"pid": "00-0039847",
+"bet": "Theo Johnson Anytime TD",
+"market": "any",
+"team": "NYG",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261110T2118Z",
+"best": 900,
+"book": "DraftKings",
+"med": 894,
+"mkt_p": 0.086,
+"blend_p": 0.1151,
+"model_p": 0.14423333333333332,
+"ev": 0.1513,
+"ev_med": 0.1444,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": 813,
+"best_venue": {
+"venue": "DraftKings",
+"price": 900,
+"net": 900,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383410435Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 900,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 894,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 850,
+"ok": true
+}
+]
+},
+"00-0037742|any": {
+"pid": "00-0037742",
+"bet": "Treylon Burks Anytime TD",
+"market": "any",
+"team": "WAS",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261110T2118Z",
+"best": 480,
+"book": "FanDuel",
+"med": 478,
+"mkt_p": 0.1427,
+"blend_p": 0.1938,
+"model_p": 0.2449,
+"ev": 0.1239,
+"ev_med": 0.1201,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.72,
+"bet_down_to": 442,
+"best_venue": {
+"venue": "FanDuel",
+"price": 480,
+"net": 480,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383392632Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 480,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 475,
+"ok": true
+}
+]
+},
+"00-0041042|yds|rec|39.5": {
+"pid": "00-0041042",
+"bet": "Malachi Fields Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Starter",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261110T2118Z",
+"best": 200,
+"book": "FanDuel",
+"med": 200,
+"mkt_p": 0.3231,
+"blend_p": 0.368,
+"model_p": 0.413,
+"ev": 0.1041,
+"ev_med": 0.1041,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.28,
+"bet_down_to": 186,
+"best_venue": {
+"venue": "FanDuel",
+"price": 200,
+"net": 200,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383392632Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 200,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 184,
+"ok": true
+}
+]
+},
+"00-0040715|yds|rec|14.5": {
+"pid": "00-0040715",
+"bet": "Cam Skattebo Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Starter",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261110T2118Z",
+"best": 200,
+"book": "FanDuel",
+"med": 200,
+"mkt_p": 0.3129,
+"blend_p": 0.3672,
+"model_p": 0.4214,
+"ev": 0.1015,
+"ev_med": 0.1015,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.35,
+"bet_down_to": 186,
+"best_venue": {
+"venue": "FanDuel",
+"price": 200,
+"net": 200,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383392632Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 200,
+"ok": true
+}
+]
+},
+"00-0036309|yds|rec|29.5": {
+"pid": "00-0036309",
+"bet": "Darnell Mooney Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Rotational",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261110T2118Z",
+"best": 236,
+"book": "DraftKings",
+"med": 236,
+"mkt_p": 0.2831,
+"blend_p": 0.3208,
+"model_p": 0.3585,
+"ev": 0.078,
+"ev_med": 0.078,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.27,
+"bet_down_to": 228,
+"best_venue": {
+"venue": "DraftKings",
+"price": 236,
+"net": 236,
+"size_label": "",
+"captured": "2026-11-10T21:18:53.383410435Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 236,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+}
+]
+},
+"00-0040208|any": {
+"pid": "00-0040208",
+"bet": "Tahj Brooks Anytime TD",
+"market": "any",
+"team": "CIN",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261110T2118Z",
+"best": 5000,
+"book": "FanDuel",
+"med": 4250,
+"mkt_p": 0.0195,
+"blend_p": 0.036,
+"model_p": 0.0524,
+"ev": 0.8346,
+"ev_med": 0.5648,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.69,
+"bet_down_to": 2817,
+"best_venue": {
+"venue": "FanDuel",
+"price": 5000,
+"net": 5000,
+"size_label": "",
+"captured": "2026-11-10T21:19:15.963956429Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 5000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 3500,
+"ok": true
+}
+]
+},
+"00-0023459|any": {
+"pid": "00-0023459",
+"bet": "Aaron Rodgers Anytime TD",
+"market": "any",
+"team": "PIT",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261110T2118Z",
+"best": 1400,
+"book": "DraftKings",
+"med": 1400,
+"mkt_p": 0.0549,
+"blend_p": 0.0747,
+"model_p": 0.09453333333333333,
+"ev": 0.1209,
+"ev_med": 0.1209,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.72,
+"bet_down_to": 1306,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1400,
+"net": 1400,
+"size_label": "",
+"captured": "2026-11-10T21:19:15.963957802Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1400,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1400,
+"ok": true
+}
+]
+},
+"00-0036442|any": {
+"pid": "00-0036442",
+"bet": "Joe Burrow Anytime TD",
+"market": "any",
+"team": "CIN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261110T2118Z",
+"best": 700,
+"book": "FanDuel",
+"med": 625,
+"mkt_p": 0.115,
+"blend_p": 0.1495,
+"model_p": 0.18401666666666666,
+"ev": 0.1959,
+"ev_med": 0.0838,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.6,
+"bet_down_to": 603,
+"best_venue": {
+"venue": "FanDuel",
+"price": 700,
+"net": 700,
+"size_label": "",
+"captured": "2026-11-10T21:19:15.963956429Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 700,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+}
+]
+},
+"00-0034829|yds|rec|39.5": {
+"pid": "00-0034829",
+"bet": "Mike Gesicki Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CIN",
+"role": "Starter",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261110T2118Z",
+"best": 279,
+"book": "DraftKings",
+"med": 279,
+"mkt_p": 0.2497,
+"blend_p": 0.2807,
+"model_p": 0.3118,
+"ev": 0.064,
+"ev_med": 0.064,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.25,
+"bet_down_to": 275,
+"best_venue": {
+"venue": "DraftKings",
+"price": 279,
+"net": 279,
+"size_label": "",
+"captured": "2026-11-10T21:19:15.963957802Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 279,
+"ok": true
+}
+]
+},
+"00-0037291|yds|rec|24.5": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261110T2118Z",
+"best": 240,
+"book": "FanDuel",
+"med": 240,
+"mkt_p": 0.2761,
+"blend_p": 0.3496,
+"model_p": 0.4232,
+"ev": 0.1888,
+"ev_med": 0.1888,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.53,
+"bet_down_to": 201,
+"best_venue": {
+"venue": "FanDuel",
+"price": 240,
+"net": 240,
+"size_label": "",
+"captured": "2026-11-10T21:19:05.145267877Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 240,
+"ok": true
+}
+]
+},
+"00-0038563|yds|rec|39.5": {
+"pid": "00-0038563",
+"bet": "Tre Tucker Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Starter",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261110T2313Z",
+"best": 194,
+"book": "DraftKings",
+"med": 194,
+"mkt_p": 0.3219,
+"blend_p": 0.3975,
+"model_p": 0.4731,
+"ev": 0.1686,
+"ev_med": 0.1686,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.47,
+"bet_down_to": 165,
+"best_venue": {
+"venue": "DraftKings",
+"price": 194,
+"net": 194,
+"size_label": "",
+"captured": "2026-11-10T23:14:22.510783827Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 194,
+"ok": true
+}
+]
+},
+"00-0036997|yds|rush|89.5": {
+"pid": "00-0036997",
+"bet": "Javonte Williams Over 89.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "DAL",
+"role": "Starter",
+"kind": "rush",
+"line": 89.5,
+"flagged": "20261110T2313Z",
+"best": 274,
+"book": "DraftKings",
+"med": 274,
+"mkt_p": 0.2531,
+"blend_p": 0.2901,
+"model_p": 0.3271,
+"ev": 0.085,
+"ev_med": 0.085,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.29,
+"bet_down_to": 262,
+"best_venue": {
+"venue": "DraftKings",
+"price": 274,
+"net": 274,
+"size_label": "",
+"captured": "2026-11-10T23:14:28.998298422Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 274,
+"ok": true
+}
+]
+},
+"00-0037291|yds|rec|11.5": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Over 11.5 rec yds",
+"market": "yds",
+"team": "LV",
+"role": "Starter",
+"kind": "rec",
+"line": 11.5,
+"flagged": "20261110T2313Z",
+"best": -114,
+"book": "FanDuel",
+"med": -114,
+"mkt_p": 0.5032,
+"blend_p": 0.5661,
+"model_p": 0.6291,
+"ev": 0.0627,
+"ev_med": 0.0627,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.25,
+"bet_down_to": -116,
+"best_venue": {
+"venue": "FanDuel",
+"price": -114,
+"net": -114,
+"size_label": "",
+"captured": "2026-11-10T23:14:22.553352584Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -115,
+"ok": true
+}
+]
+}
+}

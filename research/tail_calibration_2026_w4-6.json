@@ -1,0 +1,156 @@
+{
+ "weeks": [
+  4,
+  5,
+  6
+ ],
+ "question": "does the model overstate P(over) more as the rung moves further above the median?",
+ "buckets": [
+  {
+   "kind": "rush",
+   "bucket": "<=0 (at/below median)",
+   "n": 446,
+   "model_p": 0.7361,
+   "market_p": 0.6843,
+   "hit_rate": 0.7691,
+   "model_minus_actual": -0.033,
+   "market_minus_actual": -0.0848,
+   "flagged": 130,
+   "players": 83
+  },
+  {
+   "kind": "rush",
+   "bucket": "<0.5",
+   "n": 271,
+   "model_p": 0.4031,
+   "market_p": 0.4538,
+   "hit_rate": 0.4059,
+   "model_minus_actual": -0.0028,
+   "market_minus_actual": 0.0478,
+   "flagged": 43,
+   "players": 83
+  },
+  {
+   "kind": "rush",
+   "bucket": "0.5-1",
+   "n": 194,
+   "model_p": 0.2514,
+   "market_p": 0.3207,
+   "hit_rate": 0.2629,
+   "model_minus_actual": -0.0115,
+   "market_minus_actual": 0.0579,
+   "flagged": 43,
+   "players": 79
+  },
+  {
+   "kind": "rush",
+   "bucket": "1-1.5",
+   "n": 135,
+   "model_p": 0.1451,
+   "market_p": 0.2006,
+   "hit_rate": 0.163,
+   "model_minus_actual": -0.0179,
+   "market_minus_actual": 0.0376,
+   "flagged": 30,
+   "players": 75
+  },
+  {
+   "kind": "rush",
+   "bucket": "1.5-2",
+   "n": 108,
+   "model_p": 0.0834,
+   "market_p": 0.1375,
+   "hit_rate": 0.0741,
+   "model_minus_actual": 0.0094,
+   "market_minus_actual": 0.0634,
+   "flagged": 11,
+   "players": 62
+  },
+  {
+   "kind": "rush",
+   "bucket": ">2",
+   "n": 152,
+   "model_p": 0.0298,
+   "market_p": 0.1153,
+   "hit_rate": 0.1053,
+   "model_minus_actual": -0.0754,
+   "market_minus_actual": 0.01,
+   "flagged": 0,
+   "players": 55
+  },
+  {
+   "kind": "rec",
+   "bucket": "<=0 (at/below median)",
+   "n": 847,
+   "model_p": 0.6648,
+   "market_p": 0.6959,
+   "hit_rate": 0.7273,
+   "model_minus_actual": -0.0625,
+   "market_minus_actual": -0.0313,
+   "flagged": 54,
+   "players": 176
+  },
+  {
+   "kind": "rec",
+   "bucket": "<0.5",
+   "n": 645,
+   "model_p": 0.4074,
+   "market_p": 0.4557,
+   "hit_rate": 0.5116,
+   "model_minus_actual": -0.1042,
+   "market_minus_actual": -0.0559,
+   "flagged": 68,
+   "players": 184
+  },
+  {
+   "kind": "rec",
+   "bucket": "0.5-1",
+   "n": 449,
+   "model_p": 0.2525,
+   "market_p": 0.2937,
+   "hit_rate": 0.3363,
+   "model_minus_actual": -0.0838,
+   "market_minus_actual": -0.0426,
+   "flagged": 92,
+   "players": 181
+  },
+  {
+   "kind": "rec",
+   "bucket": "1-1.5",
+   "n": 348,
+   "model_p": 0.1497,
+   "market_p": 0.1786,
+   "hit_rate": 0.2011,
+   "model_minus_actual": -0.0515,
+   "market_minus_actual": -0.0226,
+   "flagged": 73,
+   "players": 177
+  },
+  {
+   "kind": "rec",
+   "bucket": "1.5-2",
+   "n": 260,
+   "model_p": 0.087,
+   "market_p": 0.122,
+   "hit_rate": 0.1308,
+   "model_minus_actual": -0.0438,
+   "market_minus_actual": -0.0088,
+   "flagged": 29,
+   "players": 156
+  },
+  {
+   "kind": "rec",
+   "bucket": ">2",
+   "n": 267,
+   "model_p": 0.0399,
+   "market_p": 0.0947,
+   "hit_rate": 0.0899,
+   "model_minus_actual": -0.05,
+   "market_minus_actual": 0.0048,
+   "flagged": 0,
+   "players": 112
+  }
+ ],
+ "n_rungs": 4122,
+ "note": "priced rungs only (book two-sided price or pooled DK+FD curve), pushes and no-touch games skipped; research only"
+}

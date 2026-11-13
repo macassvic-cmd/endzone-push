@@ -1,0 +1,64 @@
+odds api credits remaining: 199
+odds api credits remaining: 192
+odds api credits remaining: 185
+odds api credits remaining: 178
+odds api credits remaining: 171
+odds api credits remaining: 164
+odds api credits remaining: 157
+odds api credits remaining: 150
+odds api credits remaining: 143
+odds api credits remaining: 136
+odds api credits remaining: 129
+odds api credits remaining: 122
+odds api credits remaining: 115
+odds api credits remaining: 108
+odds api credits remaining: 101
+odds api credits remaining: 94
+Pickem scan 2026-09-27T19:14:22Z  {'ud_legs': 836, 'players_priced': 138, 'legs_priced': 674, 'positive_legs': 42, 'skipped_markets': 6}
+
+Top legs (model vs Underdog price):
+  +18.5%  Matthew Stafford       under  17.45 Fantasy Points   model 62.6%  UD -112 x1.0  [LAR @ DEN]
+  +17.9%  Kirk Cousins           under  14.95 Fantasy Points   model 62.3%  UD -112 x1.0  [LV @ NO]
+  +14.2%  Colby Parkinson        under   4.45 Fantasy Points   model 60.3%  UD -112 x1.0  [LAR @ DEN]
+  +13.9%  Kenny Gainwell         under   5.05 Fantasy Points   model 60.2%  UD -112 x1.0  [MIN @ TB]
+  +13.0%  Alvin Kamara           under   7.25 Fantasy Points   model 59.7%  UD -112 x1.0  [LV @ NO]
+  +11.8%  RJ Harvey              under   6.95 Fantasy Points   model 59.1%  UD -112 x1.0  [LAR @ DEN]
+  +9.2%  CeeDee Lamb            under    0.5 Rush + Rec TDs   model 63.5%  UD -139 x0.87  [BAL @ DAL]
+  +8.1%  Makai Lemon            under   5.05 Fantasy Points   model 57.1%  UD -112 x1.0  [PHI @ CHI]
+  +7.4%  Christian McCaffrey    over   17.15 Fantasy Points   model 56.8%  UD -112 x1.0  [ARI @ SF]
+  +6.9%  Colston Loveland       over    5.35 Fantasy Points   model 56.5%  UD -112 x1.0  [PHI @ CHI]
+  +6.7%  Kameron Johnson        over     0.5 Rush + Rec TDs   model 7.0%  UD +1420 x11.5  [MIN @ TB]
+  +6.5%  Javonte Williams       under    0.5 Rush + Rec TDs   model 47.1%  UD +126 x1.13  [BAL @ DAL]
+  +4.8%  Evan Engram            under   4.35 Fantasy Points   model 55.4%  UD -112 x1.0  [LAR @ DEN]
+  +4.7%  Kendrick Bourne        under   4.45 Fantasy Points   model 55.3%  UD -112 x1.0  [ARI @ SF]
+  +4.5%  Brock Purdy            under  20.35 Fantasy Points   model 55.2%  UD -112 x1.0  [ARI @ SF]
+
+Best 2-pick: EV +54.7%  hit 4.5%  pays 34.5x
+    Kirk Cousins Lower 14.95 Fantasy Points
+    Kameron Johnson Higher 0.5 Rush + Rec TDs
+
+Best 3-pick: EV +100.1%  hit 2.9%  pays 69.0x  (same game - confirm payout in app)
+    Matthew Stafford Lower 17.45 Fantasy Points
+    Colby Parkinson Lower 4.45 Fantasy Points
+    Kameron Johnson Higher 0.5 Rush + Rec TDs
+
+Best 4-pick: EV +107.2%  hit 1.8%  pays 115.0x  (same game - confirm payout in app)
+    Matthew Stafford Lower 17.45 Fantasy Points
+    Kirk Cousins Lower 14.95 Fantasy Points
+    Colby Parkinson Lower 4.45 Fantasy Points
+    Kameron Johnson Higher 0.5 Rush + Rec TDs
+
+Best 5-pick: EV +159.9%  hit 1.1%  pays 230.0x  (same game - confirm payout in app)
+    Matthew Stafford Lower 17.45 Fantasy Points
+    Kirk Cousins Lower 14.95 Fantasy Points
+    Colby Parkinson Lower 4.45 Fantasy Points
+    RJ Harvey Lower 6.95 Fantasy Points
+    Kameron Johnson Higher 0.5 Rush + Rec TDs
+
+Best 6-pick: EV +138.0%  hit 0.7%  pays 337.99x  (same game - confirm payout in app)
+    Matthew Stafford Lower 17.45 Fantasy Points
+    Kirk Cousins Lower 14.95 Fantasy Points
+    Colby Parkinson Lower 4.45 Fantasy Points
+    Alvin Kamara Lower 7.25 Fantasy Points
+    RJ Harvey Lower 6.95 Fantasy Points
+    Kameron Johnson Higher 0.5 Rush + Rec TDs
