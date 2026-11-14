@@ -3057,5 +3057,814 @@
 "ok": true
 }
 ]
+},
+"00-0040669|any": {
+"pid": "00-0040669",
+"bet": "Isaac TeSlaa Anytime TD",
+"market": "any",
+"team": "DET",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261114T2054Z",
+"best": 550,
+"book": "DraftKings",
+"med": 519,
+"mkt_p": 0.1401,
+"blend_p": 0.173,
+"model_p": 0.20583333333333334,
+"ev": 0.1242,
+"ev_med": 0.0706,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.47,
+"bet_down_to": 507,
+"best_venue": {
+"venue": "DraftKings",
+"price": 550,
+"net": 550,
+"size_label": "",
+"captured": "2026-11-14T20:54:23Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 549,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 525,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 525,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 525,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 519,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 475,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 450,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 430,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 406,
+"ok": true
+}
+]
+},
+"00-0036849|yds|rec|39.5": {
+"pid": "00-0036849",
+"bet": "Tutu Atwell Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LA",
+"role": "Rotational",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261114T2054Z",
+"best": 166,
+"book": "DraftKings",
+"med": 166,
+"mkt_p": 0.3634,
+"blend_p": 0.5232,
+"model_p": 0.6829,
+"ev": 0.3916,
+"ev_med": 0.3916,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.88,
+"bet_down_to": 101,
+"best_venue": {
+"venue": "DraftKings",
+"price": 166,
+"net": 166,
+"size_label": "",
+"captured": "2026-11-14T20:54:23Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 166,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 163,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 154,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 137,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 135,
+"ok": true
+}
+]
+},
+"00-0036997|yds|rush|79.5": {
+"pid": "00-0036997",
+"bet": "Javonte Williams Over 79.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "DAL",
+"role": "Starter",
+"kind": "rush",
+"line": 79.5,
+"flagged": "20261114T2054Z",
+"best": 245,
+"book": "DraftKings",
+"med": 245,
+"mkt_p": 0.3045,
+"blend_p": 0.3929,
+"model_p": 0.4813,
+"ev": 0.3555,
+"ev_med": 0.3555,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.58,
+"bet_down_to": 168,
+"best_venue": {
+"venue": "DraftKings",
+"price": 245,
+"net": 245,
+"size_label": "",
+"captured": "2026-11-14T20:53:32Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 245,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 210,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 190,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 178,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 174,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 169,
+"ok": true
+}
+]
+},
+"00-0039811|yds|rush|10.5": {
+"pid": "00-0039811",
+"bet": "MarShawn Lloyd Over 10.5 rush yds",
+"market": "yds",
+"team": "GB",
+"role": "Rotational",
+"kind": "rush",
+"line": 10.5,
+"flagged": "20261114T2054Z",
+"best": -113,
+"book": "FanDuel",
+"med": -117,
+"mkt_p": 0.5065,
+"blend_p": 0.7089,
+"model_p": 0.9113,
+"ev": 0.3362,
+"ev_med": 0.3148,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.8,
+"bet_down_to": -207,
+"best_venue": {
+"venue": "ProphetX",
+"price": -104,
+"net": -106,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-14T20:55:57Z",
+"fee": "2% of net winnings",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "ProphetX",
+"net": -106,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "Novig",
+"net": -115,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -122,
+"ok": true
+}
+]
+},
+"00-0036646|yds|rec|24.5": {
+"pid": "00-0036646",
+"bet": "Simi Fehoko Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261114T2054Z",
+"best": 195,
+"book": "BetMGM",
+"med": 195,
+"mkt_p": 0.3287,
+"blend_p": 0.4409,
+"model_p": 0.553,
+"ev": 0.3005,
+"ev_med": 0.3005,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": 139,
+"best_venue": {
+"venue": "BetMGM",
+"price": 195,
+"net": 195,
+"size_label": "",
+"captured": "2026-11-14T20:53:09Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 195,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 178,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 170,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 151,
+"ok": true
+}
+]
+},
+"00-0037614|yds|rec|19.5": {
+"pid": "00-0037614",
+"bet": "John Metchie III Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CAR",
+"role": "Bench",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261114T2054Z",
+"best": 290,
+"book": "DraftKings",
+"med": 290,
+"mkt_p": 0.2454,
+"blend_p": 0.3324,
+"model_p": 0.4194,
+"ev": 0.2964,
+"ev_med": 0.2964,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.71,
+"bet_down_to": 216,
+"best_venue": {
+"venue": "DraftKings",
+"price": 290,
+"net": 290,
+"size_label": "",
+"captured": "2026-11-14T20:53:50Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 290,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 284,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 280,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 257,
+"ok": true
+}
+]
+},
+"00-0033375|any": {
+"pid": "00-0033375",
+"bet": "Tim Patrick Anytime TD",
+"market": "any",
+"team": "NYJ",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261114T2054Z",
+"best": 3000,
+"book": "Fanatics",
+"med": 2700,
+"mkt_p": 0.0281,
+"blend_p": 0.0458,
+"model_p": 0.06356666666666666,
+"ev": 0.4205,
+"ev_med": 0.2831,
+"rule": null,
+"stake": 0.25,
+"ratio": 2.26,
+"bet_down_to": 2193,
+"best_venue": {
+"venue": "Fanatics",
+"price": 3000,
+"net": 3000,
+"size_label": "",
+"captured": "2026-11-14T20:53:36Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Fanatics",
+"net": 3000,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 2800,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 2700,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 2678,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 2450,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2400,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1400,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 2393,
+"ok": false
+}
+]
+},
+"00-0036849|yds|rec|29.5": {
+"pid": "00-0036849",
+"bet": "Tutu Atwell Over 29.5 rec yds",
+"market": "yds",
+"team": "LA",
+"role": "Rotational",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261114T2054Z",
+"best": 100,
+"book": "BetRivers",
+"med": -108,
+"mkt_p": 0.4901,
+"blend_p": 0.6353,
+"model_p": 0.7805,
+"ev": 0.2707,
+"ev_med": 0.2236,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.59,
+"bet_down_to": -153,
+"best_venue": {
+"venue": "Novig",
+"price": 104,
+"net": 104,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-14T20:56:00Z",
+"fee": "none on pregame straight trades",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "Novig",
+"net": 104,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 100,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -103,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": -107,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": -114,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+}
+]
+},
+"00-0032951|yds|rec|29.5": {
+"pid": "00-0032951",
+"bet": "Laquon Treadwell Over 29.5 rec yds",
+"market": "yds",
+"team": "IND",
+"role": "Starter",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261114T2054Z",
+"best": -103,
+"book": "BetRivers",
+"med": -108,
+"mkt_p": 0.4915,
+"blend_p": 0.5578,
+"model_p": 0.6241,
+"ev": 0.0994,
+"ev_med": 0.0743,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.27,
+"bet_down_to": -113,
+"best_venue": {
+"venue": "Novig",
+"price": 102,
+"net": 102,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-14T20:55:56Z",
+"fee": "none on pregame straight trades",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "Novig",
+"net": 102,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -103,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": -104,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": -105,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -108,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -109,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+}
+]
+},
+"00-0037005|yds|rec|15.5": {
+"pid": "00-0037005",
+"bet": "Tommy Tremble Over 15.5 rec yds",
+"market": "yds",
+"team": "CAR",
+"role": "Starter",
+"kind": "rec",
+"line": 15.5,
+"flagged": "20261114T2054Z",
+"best": -107,
+"book": "DraftKings",
+"med": -111,
+"mkt_p": 0.4947,
+"blend_p": 0.5646,
+"model_p": 0.6344,
+"ev": 0.0922,
+"ev_med": 0.0732,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.28,
+"bet_down_to": -116,
+"best_venue": {
+"venue": "DraftKings",
+"price": -107,
+"net": -107,
+"size_label": "",
+"captured": "2026-11-14T20:53:50Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -107,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+},
+{
+"v": "Novig",
+"net": -115,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": -123,
+"ok": true
+}
+]
+},
+"00-0040590|yds|rec|29.5": {
+"pid": "00-0040590",
+"bet": "Konata Mumpfield Over 29.5 rec yds",
+"market": "yds",
+"team": "LA",
+"role": "Starter",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261114T2054Z",
+"best": 105,
+"book": "BetRivers",
+"med": -110,
+"mkt_p": 0.4958,
+"blend_p": 0.5561,
+"model_p": 0.6164,
+"ev": 0.14,
+"ev_med": 0.0616,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": -112,
+"best_venue": {
+"venue": "BetRivers",
+"price": 105,
+"net": 105,
+"size_label": "",
+"captured": "2026-11-14T20:53:45Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 105,
+"ok": true
+},
+{
+"v": "Novig",
+"net": -106,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -110,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": -112,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": -114,
+"ok": true
+}
+]
+},
+"00-0033293|yds|rush|27.5": {
+"pid": "00-0033293",
+"bet": "Aaron Jones Sr. Over 27.5 rush yds",
+"market": "yds",
+"team": "MIN",
+"role": "Rotational",
+"kind": "rush",
+"line": 27.5,
+"flagged": "20261114T2054Z",
+"best": -108,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.497,
+"blend_p": 0.5582,
+"model_p": 0.6193,
+"ev": 0.075,
+"ev_med": 0.0521,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.25,
+"bet_down_to": -113,
+"best_venue": {
+"venue": "DraftKings",
+"price": -108,
+"net": -108,
+"size_label": "",
+"captured": "2026-11-14T20:53:43Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -108,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": -110,
+"ok": true
+},
+{
+"v": "Novig",
+"net": -111,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -114,
+"ok": true
+}
+]
+},
+"00-0034975|yds|rush|19.5": {
+"pid": "00-0034975",
+"bet": "Justice Hill Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "BAL",
+"role": "Rotational",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261114T2054Z",
+"best": 200,
+"book": "BetRivers",
+"med": 200,
+"mkt_p": 0.3316,
+"blend_p": 0.3665,
+"model_p": 0.4013,
+"ev": 0.0994,
+"ev_med": 0.0994,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.21,
+"bet_down_to": 187,
+"best_venue": {
+"venue": "BetRivers",
+"price": 200,
+"net": 200,
+"size_label": "",
+"captured": "2026-11-14T20:54:25Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 200,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+},
+{
+"v": "Novig",
+"net": 186,
+"ok": true
+},
+{
+"v": "ProphetX",
+"net": 174,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 160,
+"ok": true
+},
+{
+"v": "Polymarket",
+"net": 116,
+"ok": false
+}
+]
 }
 }
