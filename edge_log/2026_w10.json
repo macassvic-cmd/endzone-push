@@ -3866,5 +3866,306 @@
 "ok": false
 }
 ]
+},
+"00-0041523|yds|rec|59.5": {
+"pid": "00-0041523",
+"bet": "Caleb Douglas Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "MIA",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261114T2133Z",
+"best": 232,
+"book": "DraftKings",
+"med": 232,
+"mkt_p": 0.3028,
+"blend_p": 0.4048,
+"model_p": 0.5068,
+"ev": 0.3439,
+"ev_med": 0.3439,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.67,
+"bet_down_to": 160,
+"best_venue": {
+"venue": "DraftKings",
+"price": 232,
+"net": 232,
+"size_label": "",
+"captured": "2026-11-14T21:35:29.537988679Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 232,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+}
+]
+},
+"00-0036997|first": {
+"pid": "00-0036997",
+"bet": "Javonte Williams First TD",
+"market": "first",
+"team": "DAL",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261114T2133Z",
+"best": 561,
+"book": "Kalshi",
+"med": 556,
+"mkt_p": 0.1337,
+"blend_p": 0.1991,
+"model_p": 0.1403,
+"ev": 0.3157,
+"ev_med": 0.3058,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.05,
+"bet_down_to": 428,
+"best_venue": {
+"venue": "Kalshi",
+"price": 561,
+"net": 561,
+"size_label": "$525 at the ask",
+"captured": "2026-11-14T21:36:00Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 561,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+}
+]
+},
+"00-0041070|yds|rec|24.5": {
+"pid": "00-0041070",
+"bet": "Reggie Virgil Over 24.5 rec yds",
+"market": "yds",
+"team": "ARI",
+"role": "Starter",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261114T2133Z",
+"best": -112,
+"book": "DraftKings",
+"med": -112,
+"mkt_p": 0.5,
+"blend_p": 0.579,
+"model_p": 0.658,
+"ev": 0.0959,
+"ev_med": 0.0959,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.32,
+"bet_down_to": -122,
+"best_venue": {
+"venue": "DraftKings",
+"price": -112,
+"net": -112,
+"size_label": "",
+"captured": "2026-11-14T21:35:01.496073979Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -112,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0037263|yds|rush|34.5": {
+"pid": "00-0037263",
+"bet": "Tyler Allgeier Over 34.5 rush yds",
+"market": "yds",
+"team": "ARI",
+"role": "Starter",
+"kind": "rush",
+"line": 34.5,
+"flagged": "20261114T2133Z",
+"best": -112,
+"book": "DraftKings",
+"med": -112,
+"mkt_p": 0.5,
+"blend_p": 0.5608,
+"model_p": 0.6217,
+"ev": 0.0616,
+"ev_med": 0.0616,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": -114,
+"best_venue": {
+"venue": "DraftKings",
+"price": -112,
+"net": -112,
+"size_label": "",
+"captured": "2026-11-14T21:35:01.496073979Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -112,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0030279|yds|rec|24.5": {
+"pid": "00-0030279",
+"bet": "Keenan Allen Over 24.5 rec yds",
+"market": "yds",
+"team": "SF",
+"role": "Rotational",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261114T2133Z",
+"best": 100,
+"book": "FanDuel",
+"med": -106,
+"mkt_p": 0.4867,
+"blend_p": 0.5419,
+"model_p": 0.5971,
+"ev": 0.0838,
+"ev_med": 0.0531,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.23,
+"bet_down_to": -106,
+"best_venue": {
+"venue": "FanDuel",
+"price": 100,
+"net": 100,
+"size_label": "",
+"captured": "2026-11-14T21:35:14.858036227Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 100,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0035640|first": {
+"pid": "00-0035640",
+"bet": "DK Metcalf First TD",
+"market": "first",
+"team": "PIT",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261114T2133Z",
+"best": 1322,
+"book": "Kalshi",
+"med": 1261,
+"mkt_p": 0.0642,
+"blend_p": 0.082,
+"model_p": 0.07951666666666667,
+"ev": 0.1656,
+"ev_med": 0.1156,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.24,
+"bet_down_to": 1181,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1322,
+"net": 1322,
+"size_label": "$367 at the ask",
+"captured": "2026-11-14T21:36:00Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1322,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1200,
+"ok": true
+}
+]
+},
+"00-0036900|first": {
+"pid": "00-0036900",
+"bet": "Ja'Marr Chase First TD",
+"market": "first",
+"team": "CIN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261114T2133Z",
+"best": 663,
+"book": "Kalshi",
+"med": 656,
+"mkt_p": 0.1159,
+"blend_p": 0.145,
+"model_p": 0.09871666666666666,
+"ev": 0.1063,
+"ev_med": 0.0961,
+"rule": null,
+"stake": 1.0,
+"ratio": 0.85,
+"bet_down_to": 625,
+"best_venue": {
+"venue": "Kalshi",
+"price": 663,
+"net": 663,
+"size_label": "$20,221 at the ask",
+"captured": "2026-11-14T21:36:00Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 663,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 650,
+"ok": true
+}
+]
 }
 }
