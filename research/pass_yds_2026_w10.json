@@ -640,5 +640,46 @@
 "pass-yds hidden"
 ],
 "flagged": "20261114T2133Z"
+},
+"00-0036971|yds_alt|pass|299.5": {
+"bet": "Trevor Lawrence Over 299.5 pass yds (alt)",
+"pid": "00-0036971",
+"market": "yds_alt",
+"kind": "pass",
+"line": 299.5,
+"team": "JAX",
+"model_p": 0.2983,
+"mkt_p": 0.2435,
+"blend_p": 0.2709,
+"best": 296,
+"book": "DraftKings",
+"ev": 0.0727,
+"med": 296,
+"ev_med": 0.0727,
+"nbooks": 2,
+"curve_rungs": 33,
+"games": 24,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.239,
+"captured": "2026-11-14T21:43:14.16033245Z",
+"kick_utc": "2026-11-15T18:00Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.23,
+"bet_down_to": 288,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261114T2142Z"
 }
 }
