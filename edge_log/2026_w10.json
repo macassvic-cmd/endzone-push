@@ -6332,5 +6332,96 @@
 "ok": true
 }
 ]
+},
+"00-0036331|yds|rec|24.5": {
+"pid": "00-0036331",
+"bet": "Devin Duvernay Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Bench",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261115T2031Z",
+"best": 232,
+"book": "DraftKings",
+"med": 232,
+"mkt_p": 0.2842,
+"blend_p": 0.374,
+"model_p": 0.4638,
+"ev": 0.2418,
+"ev_med": 0.2418,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.63,
+"bet_down_to": 181,
+"best_venue": {
+"venue": "ProphetX",
+"price": 275,
+"net": 270,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-15T20:31:08Z",
+"fee": "2% of net winnings",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "ProphetX",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 232,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 230,
+"ok": true
+}
+]
+},
+"00-0033077|yds|rush|14.5": {
+"pid": "00-0033077",
+"bet": "Dak Prescott Over 14.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "DAL",
+"role": "Starter",
+"kind": "rush",
+"line": 14.5,
+"flagged": "20261115T2041Z",
+"best": 178,
+"book": "DraftKings",
+"med": 178,
+"mkt_p": 0.3435,
+"blend_p": 0.38,
+"model_p": 0.4166,
+"ev": 0.0565,
+"ev_med": 0.0565,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.21,
+"bet_down_to": 177,
+"best_venue": {
+"venue": "DraftKings",
+"price": 178,
+"net": 178,
+"size_label": "",
+"captured": "2026-11-15T20:41:03Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 178,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 172,
+"ok": true
+}
+]
 }
 }

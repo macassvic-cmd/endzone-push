@@ -4534,5 +4534,33 @@
 "ud_price": -112.0,
 "flagged": "20261115T2115Z",
 "kick_utc": "2026-11-16T01:20Z"
+},
+"00-0036900|Anytime TD|0.5|lower": {
+"pid": "00-0036900",
+"name": "Ja'Marr Chase",
+"team": "CIN",
+"bet": "Ja'Marr Chase Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.5822,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0048,
+"3-pick": 0.0319,
+"5-pick flex": 0.0542
+},
+"margin": 0.0319,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -113.0,
+"flagged": "20261115T2111Z",
+"kick_utc": "2026-11-16T01:20Z"
 }
 }

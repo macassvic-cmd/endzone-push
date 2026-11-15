@@ -37693,5 +37693,80 @@
 "price"
 ],
 "flagged": "20261115T2115Z"
+},
+"00-0036849|rec|119.5": {
+"bet": "Tutu Atwell Over 119.5 rec yds (alt)",
+"pid": "00-0036849",
+"market": "yds_alt",
+"kind": "rec",
+"line": 119.5,
+"team": "LA",
+"model_p": 0.1368,
+"mkt_p": 0.0343,
+"blend_p": 0.0856,
+"best": 4000,
+"book": "DraftKings",
+"ev": 2.5086,
+"med": 4000,
+"ev_med": 2.5086,
+"nbooks": 4,
+"curve_rungs": 19,
+"games": 13,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.0231,
+"captured": "2026-11-15T20:50:43Z",
+"kick_utc": "2026-11-15T21:05Z",
+"stake": 0.25,
+"reasons": [
+"price",
+"ratio"
+],
+"flagged": "20261115T2051Z"
+},
+"00-0041052|rush|79.5": {
+"bet": "Kaelon Black Over 79.5 rush yds (alt)",
+"pid": "00-0041052",
+"market": "yds_alt",
+"kind": "rush",
+"line": 79.5,
+"team": "SF",
+"model_p": 0.0701,
+"mkt_p": 0.1105,
+"blend_p": 0.0903,
+"best": 1100,
+"book": "Fanatics",
+"ev": 0.0836,
+"med": 1100,
+"ev_med": 0.0836,
+"nbooks": 5,
+"curve_rungs": 21,
+"games": 8,
+"w": 0.5,
+"role": "Rotational",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel",
+"Fanatics"
+],
+"listed_p": 0.0779,
+"captured": "2026-11-15T21:20:27Z",
+"kick_utc": "2026-11-15T21:25Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261115T2121Z"
 }
 }
