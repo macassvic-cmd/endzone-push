@@ -641,7 +641,7 @@
 "rule": "final",
 "decision_at": null,
 "status": "pending",
-"as_of": "20261115T2155Z",
+"as_of": "20261115T2208Z",
 "edges": [
 {
 "bet": "Omarion Hampton Over 39.5 rush yds (alt)",
@@ -666,7 +666,7 @@
 "ev_med": 0.143,
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
 "bet_down_to": 139,
-"captured": "2026-11-15T21:56:09.582737547Z",
+"captured": "2026-11-15T22:08:49.869790433Z",
 "cap_rank": 1,
 "window": "2026-11-16T22:15:00Z..2026-11-17T01:15:00Z",
 "quota": null,
@@ -681,7 +681,7 @@
 "price": 160,
 "net": 160,
 "size_label": "",
-"captured": "2026-11-15T21:56:09.582737547Z",
+"captured": "2026-11-15T22:08:49.869790433Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
@@ -709,7 +709,7 @@
 "ev_med": 0.1265,
 "rule": null,
 "bet_down_to": 334,
-"captured": "2026-11-15T21:56:24Z",
+"captured": "2026-11-15T22:09:05Z",
 "cap_rank": 2,
 "window": "2026-11-16T22:15:00Z..2026-11-17T01:15:00Z",
 "quota": null,
@@ -721,7 +721,7 @@
 "price": 371,
 "net": 371,
 "size_label": "$13,705 at the ask",
-"captured": "2026-11-15T21:56:24Z",
+"captured": "2026-11-15T22:09:05Z",
 "fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
 "fee_confirmed": true
 }
@@ -749,7 +749,7 @@
 "ev_med": 0.1225,
 "rule": null,
 "bet_down_to": 563,
-"captured": "2026-11-15T21:56:09.582737547Z",
+"captured": "2026-11-15T22:08:49.869790433Z",
 "cap_rank": 3,
 "window": "2026-11-16T22:15:00Z..2026-11-17T01:15:00Z",
 "quota": null,
@@ -761,7 +761,7 @@
 "price": 650,
 "net": 650,
 "size_label": "",
-"captured": "2026-11-15T21:56:09.582737547Z",
+"captured": "2026-11-15T22:08:49.869790433Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
@@ -789,7 +789,7 @@
 "ev_med": 0.09,
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
 "bet_down_to": 163,
-"captured": "2026-11-15T21:56:09.586029345Z",
+"captured": "2026-11-15T22:08:49.860210232Z",
 "cap_rank": 4,
 "window": "2026-11-16T22:15:00Z..2026-11-17T01:15:00Z",
 "quota": null,
@@ -804,7 +804,7 @@
 "price": 172,
 "net": 172,
 "size_label": "",
-"captured": "2026-11-15T21:56:09.586029345Z",
+"captured": "2026-11-15T22:08:49.860210232Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
@@ -832,7 +832,7 @@
 "ev_med": 0.09,
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
 "bet_down_to": 184,
-"captured": "2026-11-15T21:56:09.586029345Z",
+"captured": "2026-11-15T22:08:49.860210232Z",
 "cap_rank": 5,
 "window": "2026-11-16T22:15:00Z..2026-11-17T01:15:00Z",
 "quota": null,
@@ -847,15 +847,15 @@
 "price": 194,
 "net": 194,
 "size_label": "",
-"captured": "2026-11-15T21:56:09.586029345Z",
+"captured": "2026-11-15T22:08:49.860210232Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
 }
 ],
 "n": 5,
-"seen_at": "2026-11-15T21:55:51Z",
-"kick_min": 1639.1
+"seen_at": "2026-11-15T22:08:31Z",
+"kick_min": 1626.5
 },
 "2026_10_LA_ARI": {
 "game_id": "2026_10_LA_ARI",
@@ -1591,7 +1591,7 @@
 "rule": "final",
 "decision_at": null,
 "status": "pending",
-"as_of": "20261115T2155Z",
+"as_of": "20261115T2208Z",
 "edges": [
 {
 "bet": "Tahj Brooks Anytime TD",
@@ -1616,7 +1616,7 @@
 "ev_med": 0.9191,
 "rule": null,
 "bet_down_to": 2962,
-"captured": "2026-11-15T21:56:04.325955785Z",
+"captured": "2026-11-15T22:08:43.913349802Z",
 "cap_rank": 1,
 "window": "2026-11-15T22:20:00Z..2026-11-16T01:20:00Z",
 "quota": null,
@@ -1628,7 +1628,7 @@
 "price": 6000,
 "net": 6000,
 "size_label": "",
-"captured": "2026-11-15T21:56:04.325955785Z",
+"captured": "2026-11-15T22:08:43.913349802Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
@@ -1656,7 +1656,7 @@
 "ev_med": 0.1901,
 "rule": null,
 "bet_down_to": 1312,
-"captured": "2026-11-15T21:56:24Z",
+"captured": "2026-11-15T22:09:05Z",
 "cap_rank": 2,
 "window": "2026-11-15T22:20:00Z..2026-11-16T01:20:00Z",
 "quota": null,
@@ -1667,8 +1667,8 @@
 "venue": "Kalshi",
 "price": 1560,
 "net": 1560,
-"size_label": "$14,503 at the ask",
-"captured": "2026-11-15T21:56:24Z",
+"size_label": "$14,520 at the ask",
+"captured": "2026-11-15T22:09:05Z",
 "fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
 "fee_confirmed": true
 }
@@ -1696,7 +1696,7 @@
 "ev_med": 0.1343,
 "rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
 "bet_down_to": 252,
-"captured": "2026-11-15T21:56:04.326114534Z",
+"captured": "2026-11-15T22:08:43.877122918Z",
 "cap_rank": 3,
 "window": "2026-11-15T22:20:00Z..2026-11-16T01:20:00Z",
 "quota": null,
@@ -1711,15 +1711,15 @@
 "price": 280,
 "net": 280,
 "size_label": "",
-"captured": "2026-11-15T21:56:04.326114534Z",
+"captured": "2026-11-15T22:08:43.877122918Z",
 "fee": "none (vig in the price)",
 "fee_confirmed": true
 }
 }
 ],
 "n": 3,
-"seen_at": "2026-11-15T21:55:51Z",
-"kick_min": 204.1
+"seen_at": "2026-11-15T22:08:31Z",
+"kick_min": 191.5
 },
 "2026_10_SEA_LV": {
 "game_id": "2026_10_SEA_LV",
