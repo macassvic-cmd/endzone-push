@@ -4450,5 +4450,89 @@
 "ud_price": -108.0,
 "flagged": "20261115T1650Z",
 "kick_utc": "2026-11-15T21:05Z"
+},
+"00-0036358|Anytime TD|0.5|lower": {
+"pid": "00-0036358",
+"name": "CeeDee Lamb",
+"team": "DAL",
+"bet": "CeeDee Lamb Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.5833,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0059,
+"3-pick": 0.033,
+"5-pick flex": 0.0553
+},
+"margin": 0.033,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261115T2115Z",
+"kick_utc": "2026-11-15T21:25Z"
+},
+"00-0038597|Anytime TD|0.5|lower": {
+"pid": "00-0038597",
+"name": "Chase Brown",
+"team": "CIN",
+"bet": "Chase Brown Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.6076,
+"breakeven": {
+"2-pick": 0.612,
+"3-pick": 0.5721,
+"5-pick flex": 0.546
+},
+"margins": {
+"2-pick": -0.0044,
+"3-pick": 0.0355,
+"5-pick flex": 0.0616
+},
+"margin": 0.0355,
+"ref": "3-pick",
+"mult": 0.89,
+"ud_price": -134.0,
+"flagged": "20261115T2115Z",
+"kick_utc": "2026-11-16T01:20Z"
+},
+"00-0040785|Receiving Yards|21.5|lower": {
+"pid": "00-0040785",
+"name": "Dohnte Meyers",
+"team": "CIN",
+"bet": "Dohnte Meyers Receiving Yards lower 21.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 21.5,
+"side": "lower",
+"blend": 0.5894,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.012,
+"3-pick": 0.0391,
+"5-pick flex": 0.0614
+},
+"margin": 0.0391,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261115T2115Z",
+"kick_utc": "2026-11-16T01:20Z"
 }
 }
