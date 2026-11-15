@@ -4310,5 +4310,145 @@
 "ud_price": -112.0,
 "flagged": "20261115T0712Z",
 "kick_utc": "2026-11-15T21:25Z"
+},
+"00-0035261|Receiving Yards|10.5|lower": {
+"pid": "00-0035261",
+"name": "Tony Pollard",
+"team": "TEN",
+"bet": "Tony Pollard Receiving Yards lower 10.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 10.5,
+"side": "lower",
+"blend": 0.5867,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0093,
+"3-pick": 0.0364,
+"5-pick flex": 0.0587
+},
+"margin": 0.0364,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261115T1500Z",
+"kick_utc": "2026-11-15T18:00Z"
+},
+"00-0039032|Receiving Yards|14.5|lower": {
+"pid": "00-0039032",
+"name": "Tyjae Spears",
+"team": "TEN",
+"bet": "Tyjae Spears Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.5808,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0034,
+"3-pick": 0.0305,
+"5-pick flex": 0.0528
+},
+"margin": 0.0305,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -107.0,
+"flagged": "20261115T1500Z",
+"kick_utc": "2026-11-15T18:00Z"
+},
+"00-0036331|Receiving Yards|14.5|lower": {
+"pid": "00-0036331",
+"name": "Devin Duvernay",
+"team": "ARI",
+"bet": "Devin Duvernay Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.6813,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.1039,
+"3-pick": 0.131,
+"5-pick flex": 0.1533
+},
+"margin": 0.131,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -114.0,
+"flagged": "20261115T1500Z",
+"kick_utc": "2026-11-15T21:05Z"
+},
+"00-0039373|Rush Yards|23.5|lower": {
+"pid": "00-0039373",
+"name": "Audric Estime",
+"team": "NO",
+"bet": "Audric Estime Rush Yards lower 23.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 23.5,
+"side": "lower",
+"blend": 0.5915,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0141,
+"3-pick": 0.0412,
+"5-pick flex": 0.0635
+},
+"margin": 0.0412,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261115T1640Z",
+"kick_utc": "2026-11-15T18:00Z"
+},
+"00-0037744|Receiving Yards|60.5|lower": {
+"pid": "00-0037744",
+"name": "Trey McBride",
+"team": "ARI",
+"bet": "Trey McBride Receiving Yards lower 60.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 60.5,
+"side": "lower",
+"blend": 0.5916,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0142,
+"3-pick": 0.0413,
+"5-pick flex": 0.0636
+},
+"margin": 0.0413,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -108.0,
+"flagged": "20261115T1650Z",
+"kick_utc": "2026-11-15T21:05Z"
 }
 }
