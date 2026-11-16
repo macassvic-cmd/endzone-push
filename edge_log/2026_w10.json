@@ -6423,5 +6423,73 @@
 "ok": true
 }
 ]
+},
+"00-0036775|any": {
+"pid": "00-0036775",
+"bet": "Brandon Smith Anytime TD",
+"market": "any",
+"team": "PIT",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261116T0020Z",
+"best": 1700,
+"book": "FanDuel",
+"med": 1400,
+"mkt_p": 0.0597,
+"blend_p": 0.0703,
+"model_p": 0.08078333333333333,
+"ev": 0.2647,
+"ev_med": 0.0539,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.35,
+"bet_down_to": 1394,
+"best_venue": {
+"venue": "FanDuel",
+"price": 1700,
+"net": 1700,
+"size_label": "",
+"captured": "2026-11-16T00:19:40Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 1700,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1500,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1400,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 1400,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1300,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 1150,
+"ok": true
+}
+]
 }
 }
