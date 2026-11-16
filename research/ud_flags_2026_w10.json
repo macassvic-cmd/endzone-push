@@ -4590,5 +4590,117 @@
 "ud_price": -112.0,
 "flagged": "20261116T0101Z",
 "kick_utc": "2026-11-16T01:20Z"
+},
+"00-0032764|Rush Yards|79.5|lower": {
+"pid": "00-0032764",
+"name": "Derrick Henry",
+"team": "BAL",
+"bet": "Derrick Henry Rush Yards lower 79.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 79.5,
+"side": "lower",
+"blend": 0.5863,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0089,
+"3-pick": 0.036,
+"5-pick flex": 0.0583
+},
+"margin": 0.036,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261116T2345Z",
+"kick_utc": "2026-11-17T01:15Z"
+},
+"00-0040184|Receiving Yards|18.5|lower": {
+"pid": "00-0040184",
+"name": "KeAndre Lambert-Smith",
+"team": "LAC",
+"bet": "KeAndre Lambert-Smith Receiving Yards lower 18.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 18.5,
+"side": "lower",
+"blend": 0.5817,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0043,
+"3-pick": 0.0314,
+"5-pick flex": 0.0537
+},
+"margin": 0.0314,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261116T2345Z",
+"kick_utc": "2026-11-17T01:15Z"
+},
+"00-0033119|Rush Yards|7.5|higher": {
+"pid": "00-0033119",
+"name": "Jacoby Brissett",
+"team": "BAL",
+"bet": "Jacoby Brissett Rush Yards higher 7.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 7.5,
+"side": "higher",
+"blend": 0.6462,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0688,
+"3-pick": 0.0959,
+"5-pick flex": 0.1182
+},
+"margin": 0.0959,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261116T2345Z",
+"kick_utc": "2026-11-17T01:15Z"
+},
+"00-0040727|Receiving Yards|42.5|lower": {
+"pid": "00-0040727",
+"name": "Tre' Harris",
+"team": "LAC",
+"bet": "Tre' Harris Receiving Yards lower 42.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 42.5,
+"side": "lower",
+"blend": 0.5951,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0177,
+"3-pick": 0.0448,
+"5-pick flex": 0.0671
+},
+"margin": 0.0448,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261116T2345Z",
+"kick_utc": "2026-11-17T01:15Z"
 }
 }

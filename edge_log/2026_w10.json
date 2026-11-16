@@ -6491,5 +6491,268 @@
 "ok": true
 }
 ]
+},
+"00-0040666|yds|rec|14.5": {
+"pid": "00-0040666",
+"bet": "Omarion Hampton Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LAC",
+"role": "Starter",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261116T2344Z",
+"best": 294,
+"book": "DraftKings",
+"med": 294,
+"mkt_p": 0.2629,
+"blend_p": 0.3096,
+"model_p": 0.3564,
+"ev": 0.22,
+"ev_med": 0.22,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.36,
+"bet_down_to": 240,
+"best_venue": {
+"venue": "DraftKings",
+"price": 294,
+"net": 294,
+"size_label": "",
+"captured": "2026-11-16T23:44:41.591593751Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 294,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+}
+]
+},
+"00-0038046|yds|rec|29.5": {
+"pid": "00-0038046",
+"bet": "Charlie Kolar Over 29.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LAC",
+"role": "Starter",
+"kind": "rec",
+"line": 29.5,
+"flagged": "20261116T2344Z",
+"best": 270,
+"book": "FanDuel",
+"med": 270,
+"mkt_p": 0.256,
+"blend_p": 0.3165,
+"model_p": 0.3769,
+"ev": 0.1709,
+"ev_med": 0.1709,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.47,
+"bet_down_to": 232,
+"best_venue": {
+"venue": "FanDuel",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-11-16T23:44:41.590521467Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 268,
+"ok": true
+}
+]
+},
+"00-0040189|yds|rec|24.5": {
+"pid": "00-0040189",
+"bet": "Oronde Gadsden Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LAC",
+"role": "Bench",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261116T2344Z",
+"best": 280,
+"book": "FanDuel",
+"med": 280,
+"mkt_p": 0.2519,
+"blend_p": 0.2967,
+"model_p": 0.3415,
+"ev": 0.1275,
+"ev_med": 0.1275,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.36,
+"bet_down_to": 254,
+"best_venue": {
+"venue": "FanDuel",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-11-16T23:44:41.590521467Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 280,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 270,
+"ok": true
+}
+]
+},
+"00-0034753|yds|rec|39.5": {
+"pid": "00-0034753",
+"bet": "Mark Andrews Over 39.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "BAL",
+"role": "Starter",
+"kind": "rec",
+"line": 39.5,
+"flagged": "20261116T2344Z",
+"best": 290,
+"book": "FanDuel",
+"med": 290,
+"mkt_p": 0.2621,
+"blend_p": 0.2886,
+"model_p": 0.315,
+"ev": 0.1254,
+"ev_med": 0.1254,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.2,
+"bet_down_to": 264,
+"best_venue": {
+"venue": "FanDuel",
+"price": 290,
+"net": 290,
+"size_label": "",
+"captured": "2026-11-16T23:44:41.590521467Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 290,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 235,
+"ok": true
+}
+]
+},
+"00-0040870|any": {
+"pid": "00-0040870",
+"bet": "Ja'Kobi Lane Anytime TD",
+"market": "any",
+"team": "BAL",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261116T2344Z",
+"best": 482,
+"book": "Kalshi",
+"med": 450,
+"mkt_p": 0.1779,
+"blend_p": 0.1938,
+"model_p": 0.20963333333333334,
+"ev": 0.1278,
+"ev_med": 0.0658,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.18,
+"bet_down_to": 442,
+"best_venue": {
+"venue": "Kalshi",
+"price": 482,
+"net": 482,
+"size_label": "$9,099 at the ask",
+"captured": "2026-11-16T23:45:49Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 482,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 450,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 440,
+"ok": true
+}
+]
+},
+"00-0038046|yds|rec|15.5": {
+"pid": "00-0038046",
+"bet": "Charlie Kolar Over 15.5 rec yds",
+"market": "yds",
+"team": "LAC",
+"role": "Starter",
+"kind": "rec",
+"line": 15.5,
+"flagged": "20261116T2344Z",
+"best": -110,
+"book": "DraftKings",
+"med": -111,
+"mkt_p": 0.4979,
+"blend_p": 0.5526,
+"model_p": 0.6074,
+"ev": 0.055,
+"ev_med": 0.0505,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.22,
+"bet_down_to": -111,
+"best_venue": {
+"venue": "DraftKings",
+"price": -110,
+"net": -110,
+"size_label": "",
+"captured": "2026-11-16T23:44:41.591593751Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -110,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
 }
 }
