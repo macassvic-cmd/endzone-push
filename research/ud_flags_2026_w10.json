@@ -4562,5 +4562,33 @@
 "ud_price": -113.0,
 "flagged": "20261115T2111Z",
 "kick_utc": "2026-11-16T01:20Z"
+},
+"00-0036894|Receiving Yards|26.5|lower": {
+"pid": "00-0036894",
+"name": "Pat Freiermuth",
+"team": "PIT",
+"bet": "Pat Freiermuth Receiving Yards lower 26.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 26.5,
+"side": "lower",
+"blend": 0.589,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0116,
+"3-pick": 0.0387,
+"5-pick flex": 0.061
+},
+"margin": 0.0387,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261116T0101Z",
+"kick_utc": "2026-11-16T01:20Z"
 }
 }
