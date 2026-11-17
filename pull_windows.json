@@ -1,108 +1,94 @@
 {
  "season": 2026,
- "week": 10,
+ "week": 11,
  "lead_h": 3.0,
  "step_min": 10,
  "max_job_min": 340,
- "odds_api_credits": 7294,
+ "odds_api_credits": 5152,
  "early": {
   "slots": 28,
-  "credits": 3192
+  "credits": 2968
  },
  "scheduled": {
   "pulls": 4,
-  "credits": 456
+  "credits": 424
  },
  "pickem": {
-  "credits": 98
+  "credits": 91
  },
  "exchange": {
   "markets_per_game": 6,
-  "credits": 420,
+  "credits": 390,
   "note": "us_ex (Novig, ProphetX, Polymarket, Kalshi): games with an edge, 4 scheduled pulls + 1 final pre-kickoff pull per game; <= 6 credits per game per pull"
  },
  "credits_note": "2 for lines + 8 markets per game not yet kicked off, per pull (PROPS_SOURCE=oddsapi, region us)",
- "generated": "2026-11-16T23:43:59Z",
+ "generated": "2026-11-17T22:53:09Z",
  "clusters": [
   {
-   "start": "2026-11-12T22:15:00Z",
-   "end": "2026-11-13T01:15:00Z",
-   "minutes": 180,
-   "pulls": 19,
-   "chained": false,
-   "odds_api_credits": 2158,
-   "kickoffs": [
-    "2026-11-13T01:15Z"
-   ],
-   "games": [
-    "WAS@NYG"
-   ]
-  },
-  {
-   "start": "2026-11-15T11:30:00Z",
-   "end": "2026-11-15T14:30:00Z",
+   "start": "2026-11-19T22:15:00Z",
+   "end": "2026-11-20T01:15:00Z",
    "minutes": 180,
    "pulls": 19,
    "chained": false,
    "odds_api_credits": 2006,
    "kickoffs": [
-    "2026-11-15T14:30Z"
+    "2026-11-20T01:15Z"
    ],
    "games": [
-    "NE@DET"
+    "IND@HOU"
    ]
   },
   {
-   "start": "2026-11-15T15:00:00Z",
-   "end": "2026-11-15T21:25:00Z",
+   "start": "2026-11-22T15:00:00Z",
+   "end": "2026-11-22T21:25:00Z",
    "minutes": 385,
    "pulls": 39,
    "chained": true,
-   "odds_api_credits": 2614,
+   "odds_api_credits": 2630,
    "kickoffs": [
-    "2026-11-15T18:00Z",
-    "2026-11-15T21:05Z",
-    "2026-11-15T21:25Z"
+    "2026-11-22T18:00Z",
+    "2026-11-22T21:05Z",
+    "2026-11-22T21:25Z"
    ],
    "games": [
-    "KC@ATL",
-    "HOU@CLE",
-    "MIN@GB",
-    "MIA@IND",
-    "CAR@NO",
-    "BUF@NYJ",
-    "JAX@TEN",
-    "LA@ARI",
-    "SEA@LV",
-    "SF@DAL"
+    "MIA@BUF",
+    "BAL@CAR",
+    "NO@CHI",
+    "TEN@DAL",
+    "TB@DET",
+    "ARI@KC",
+    "JAX@NYG",
+    "NYJ@LAC",
+    "LV@DEN",
+    "PIT@PHI"
    ]
   },
   {
-   "start": "2026-11-15T22:20:00Z",
-   "end": "2026-11-16T01:20:00Z",
+   "start": "2026-11-22T22:20:00Z",
+   "end": "2026-11-23T01:20:00Z",
    "minutes": 180,
    "pulls": 19,
    "chained": false,
    "odds_api_credits": 334,
    "kickoffs": [
-    "2026-11-16T01:20Z"
+    "2026-11-23T01:20Z"
    ],
    "games": [
-    "PIT@CIN"
+    "MIN@SF"
    ]
   },
   {
-   "start": "2026-11-16T22:15:00Z",
-   "end": "2026-11-17T01:15:00Z",
+   "start": "2026-11-23T22:15:00Z",
+   "end": "2026-11-24T01:15:00Z",
    "minutes": 180,
    "pulls": 19,
    "chained": false,
    "odds_api_credits": 182,
    "kickoffs": [
-    "2026-11-17T01:15Z"
+    "2026-11-24T01:15Z"
    ],
    "games": [
-    "LAC@BAL"
+    "CIN@WAS"
    ]
   }
  ]
