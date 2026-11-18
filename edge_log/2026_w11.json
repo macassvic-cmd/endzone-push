@@ -1131,5 +1131,301 @@
 "ok": true
 }
 ]
+},
+"00-0035891|any": {
+"pid": "00-0035891",
+"bet": "Cody White Anytime TD",
+"market": "any",
+"team": "LV",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261118T0055Z",
+"best": 2200,
+"book": "DraftKings",
+"med": 2100,
+"mkt_p": 0.0374,
+"blend_p": 0.0551,
+"model_p": 0.07276666666666666,
+"ev": 0.2665,
+"ev_med": 0.2115,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.95,
+"bet_down_to": 1806,
+"best_venue": {
+"venue": "DraftKings",
+"price": 2200,
+"net": 2200,
+"size_label": "",
+"captured": "2026-11-18T00:56:24.575384307Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 2200,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 2000,
+"ok": true
+}
+]
+},
+"00-0038783|any": {
+"pid": "00-0038783",
+"bet": "Nate Adkins Anytime TD",
+"market": "any",
+"team": "DEN",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261118T0055Z",
+"best": 1100,
+"book": "DraftKings",
+"med": 825,
+"mkt_p": 0.0972,
+"blend_p": 0.1247,
+"model_p": 0.1521,
+"ev": 0.4961,
+"ev_med": 0.1532,
+"rule": null,
+"stake": 0.25,
+"ratio": 1.56,
+"bet_down_to": 743,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1100,
+"net": 1100,
+"size_label": "",
+"captured": "2026-11-18T00:56:24.575384307Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1100,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 550,
+"ok": true
+}
+]
+},
+"00-0036613|yds|rec|59.5": {
+"pid": "00-0036613",
+"bet": "Jaylen Waddle Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "DEN",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261118T0055Z",
+"best": 221,
+"book": "DraftKings",
+"med": 221,
+"mkt_p": 0.2949,
+"blend_p": 0.3425,
+"model_p": 0.3901,
+"ev": 0.0995,
+"ev_med": 0.0995,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.32,
+"bet_down_to": 207,
+"best_venue": {
+"venue": "DraftKings",
+"price": 221,
+"net": 221,
+"size_label": "",
+"captured": "2026-11-18T00:56:24.575384307Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 221,
+"ok": true
+}
+]
+},
+"00-0040878|yds|rush|39.5": {
+"pid": "00-0040878",
+"bet": "Mike Washington Jr. Over 39.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Rotational",
+"kind": "rush",
+"line": 39.5,
+"flagged": "20261118T0055Z",
+"best": 293,
+"book": "DraftKings",
+"med": 293,
+"mkt_p": 0.2473,
+"blend_p": 0.2761,
+"model_p": 0.3049,
+"ev": 0.0851,
+"ev_med": 0.0851,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.23,
+"bet_down_to": 281,
+"best_venue": {
+"venue": "DraftKings",
+"price": 293,
+"net": 293,
+"size_label": "",
+"captured": "2026-11-18T00:56:24.575384307Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 293,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+}
+]
+},
+"00-0035685|yds|rec|14.5": {
+"pid": "00-0035685",
+"bet": "David Montgomery Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "HOU",
+"role": "Starter",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261118T0055Z",
+"best": 232,
+"book": "DraftKings",
+"med": 232,
+"mkt_p": 0.299,
+"blend_p": 0.3281,
+"model_p": 0.3572,
+"ev": 0.0893,
+"ev_med": 0.0893,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.19,
+"bet_down_to": 221,
+"best_venue": {
+"venue": "DraftKings",
+"price": 232,
+"net": 232,
+"size_label": "",
+"captured": "2026-11-18T00:55:37.339485491Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 232,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 200,
+"ok": true
+}
+]
+},
+"00-0037834|yds|rush|24.5": {
+"pid": "00-0037834",
+"bet": "Brock Purdy Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SF",
+"role": "Starter",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261118T0055Z",
+"best": 288,
+"book": "DraftKings",
+"med": 288,
+"mkt_p": 0.2795,
+"blend_p": 0.3164,
+"model_p": 0.3533,
+"ev": 0.2276,
+"ev_med": 0.2276,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.26,
+"bet_down_to": 232,
+"best_venue": {
+"venue": "DraftKings",
+"price": 288,
+"net": 288,
+"size_label": "",
+"captured": "2026-11-18T00:56:35.116008995Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 288,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 198,
+"ok": true
+}
+]
+},
+"00-0033280|yds|rush|69.5": {
+"pid": "00-0033280",
+"bet": "Christian McCaffrey Over 69.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "SF",
+"role": "Starter",
+"kind": "rush",
+"line": 69.5,
+"flagged": "20261118T0055Z",
+"best": 246,
+"book": "DraftKings",
+"med": 246,
+"mkt_p": 0.2769,
+"blend_p": 0.3082,
+"model_p": 0.3394,
+"ev": 0.0663,
+"ev_med": 0.0663,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.23,
+"bet_down_to": 241,
+"best_venue": {
+"venue": "DraftKings",
+"price": 246,
+"net": 246,
+"size_label": "",
+"captured": "2026-11-18T00:56:35.116008995Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 246,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 235,
+"ok": true
+}
+]
 }
 }
