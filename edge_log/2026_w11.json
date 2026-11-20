@@ -4159,5 +4159,230 @@
 "ok": true
 }
 ]
+},
+"00-0041529|yds|rec|14.5": {
+"pid": "00-0041529",
+"bet": "Kevin Coleman Jr. Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "MIA",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261120T2240Z",
+"best": 247,
+"book": "DraftKings",
+"med": 247,
+"mkt_p": 0.2808,
+"blend_p": 0.3436,
+"model_p": 0.4063,
+"ev": 0.1922,
+"ev_med": 0.1922,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.45,
+"bet_down_to": 206,
+"best_venue": {
+"venue": "DraftKings",
+"price": 247,
+"net": 247,
+"size_label": "",
+"captured": "2026-11-20T22:39:52Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 247,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+}
+]
+},
+"00-0035250|yds|rush|11.5": {
+"pid": "00-0035250",
+"bet": "Devin Singletary Over 11.5 rush yds",
+"market": "yds",
+"team": "NYG",
+"role": "Rotational",
+"kind": "rush",
+"line": 11.5,
+"flagged": "20261120T2240Z",
+"best": -107,
+"book": "DraftKings",
+"med": -109,
+"mkt_p": 0.4902,
+"blend_p": 0.6038,
+"model_p": 0.7174,
+"ev": 0.1681,
+"ev_med": 0.1577,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.46,
+"bet_down_to": -135,
+"best_venue": {
+"venue": "DraftKings",
+"price": -107,
+"net": -107,
+"size_label": "",
+"captured": "2026-11-20T22:39:53Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -107,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -112,
+"ok": true
+}
+]
+},
+"00-0038558|yds|rec|19.5": {
+"pid": "00-0038558",
+"bet": "Darnell Washington Over 19.5 rec yds",
+"market": "yds",
+"team": "PIT",
+"role": "Starter",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261120T2240Z",
+"best": 102,
+"book": "DraftKings",
+"med": 102,
+"mkt_p": 0.4685,
+"blend_p": 0.5487,
+"model_p": 0.6289,
+"ev": 0.1084,
+"ev_med": 0.1084,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.34,
+"bet_down_to": -109,
+"best_venue": {
+"venue": "DraftKings",
+"price": 102,
+"net": 102,
+"size_label": "",
+"captured": "2026-11-20T22:39:51Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 102,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 102,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -110,
+"ok": true
+}
+]
+},
+"00-0041070|yds|rec|14.5": {
+"pid": "00-0041070",
+"bet": "Reggie Virgil Over 14.5 rec yds",
+"market": "yds",
+"team": "ARI",
+"role": "Rotational",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261120T2240Z",
+"best": -102,
+"book": "DraftKings",
+"med": -104,
+"mkt_p": 0.4785,
+"blend_p": 0.5492,
+"model_p": 0.6199,
+"ev": 0.0876,
+"ev_med": 0.0773,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.3,
+"bet_down_to": -109,
+"best_venue": {
+"venue": "DraftKings",
+"price": -102,
+"net": -102,
+"size_label": "",
+"captured": "2026-11-20T22:39:54Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -102,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -104,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -112,
+"ok": true
+}
+]
+},
+"00-0033526|yds|rec|14.5": {
+"pid": "00-0033526",
+"bet": "Samaje Perine Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "CIN",
+"role": "Rotational",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261120T2240Z",
+"best": 290,
+"book": "FanDuel",
+"med": 290,
+"mkt_p": 0.2629,
+"blend_p": 0.2773,
+"model_p": 0.2918,
+"ev": 0.0816,
+"ev_med": 0.0816,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.11,
+"bet_down_to": 279,
+"best_venue": {
+"venue": "FanDuel",
+"price": 290,
+"net": 290,
+"size_label": "",
+"captured": "2026-11-20T22:39:58Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 290,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 232,
+"ok": true
+}
+]
 }
 }
