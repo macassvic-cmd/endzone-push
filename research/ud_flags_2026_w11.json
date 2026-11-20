@@ -2630,5 +2630,201 @@
 "ud_price": -189.0,
 "flagged": "20261120T0148Z",
 "kick_utc": "2026-11-23T01:20Z"
+},
+"00-0041029|Receiving Yards|56.5|lower": {
+"pid": "00-0041029",
+"name": "Jordyn Tyson",
+"team": "NO",
+"bet": "Jordyn Tyson Receiving Yards lower 56.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 56.5,
+"side": "lower",
+"blend": 0.5961,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0187,
+"3-pick": 0.0458,
+"5-pick flex": 0.0681
+},
+"margin": 0.0458,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0039880|Receiving Yards|33.5|lower": {
+"pid": "00-0039880",
+"name": "Malik Washington",
+"team": "MIA",
+"bet": "Malik Washington Receiving Yards lower 33.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 33.5,
+"side": "lower",
+"blend": 0.5812,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0038,
+"3-pick": 0.0309,
+"5-pick flex": 0.0532
+},
+"margin": 0.0309,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0036331|Receiving Yards|13.5|higher": {
+"pid": "00-0036331",
+"name": "Devin Duvernay",
+"team": "ARI",
+"bet": "Devin Duvernay Receiving Yards higher 13.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 13.5,
+"side": "higher",
+"blend": 0.592,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0146,
+"3-pick": 0.0417,
+"5-pick flex": 0.064
+},
+"margin": 0.0417,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0038558|Receiving Yards|17.5|higher": {
+"pid": "00-0038558",
+"name": "Darnell Washington",
+"team": "PIT",
+"bet": "Darnell Washington Receiving Yards higher 17.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 17.5,
+"side": "higher",
+"blend": 0.5827,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0053,
+"3-pick": 0.0324,
+"5-pick flex": 0.0547
+},
+"margin": 0.0324,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T21:25Z"
+},
+"00-0040705|Receiving Yards|29.5|lower": {
+"pid": "00-0040705",
+"name": "Chimere Dike",
+"team": "TEN",
+"bet": "Chimere Dike Receiving Yards lower 29.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 29.5,
+"side": "lower",
+"blend": 0.6596,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0822,
+"3-pick": 0.1093,
+"5-pick flex": 0.1316
+},
+"margin": 0.1093,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -108.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0038606|Receiving Yards|64.5|lower": {
+"pid": "00-0038606",
+"name": "Parker Washington",
+"team": "JAX",
+"bet": "Parker Washington Receiving Yards lower 64.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 64.5,
+"side": "lower",
+"blend": 0.6068,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0294,
+"3-pick": 0.0565,
+"5-pick flex": 0.0788
+},
+"margin": 0.0565,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0031408|Anytime TD|0.5|lower": {
+"pid": "00-0031408",
+"name": "Mike Evans",
+"team": "SF",
+"bet": "Mike Evans Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.73,
+"breakeven": {
+"2-pick": 0.6901,
+"3-pick": 0.6198,
+"5-pick flex": 0.5848
+},
+"margins": {
+"2-pick": 0.0399,
+"3-pick": 0.1102,
+"5-pick flex": 0.1452
+},
+"margin": 0.1102,
+"ref": "3-pick",
+"mult": 0.7,
+"ud_price": -257.0,
+"flagged": "20261120T0707Z",
+"kick_utc": "2026-11-23T01:20Z"
 }
 }

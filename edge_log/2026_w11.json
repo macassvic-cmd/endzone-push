@@ -3780,5 +3780,101 @@
 "ok": true
 }
 ]
+},
+"00-0036331|yds|rec|24.5": {
+"pid": "00-0036331",
+"bet": "Devin Duvernay Over 24.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Bench",
+"kind": "rec",
+"line": 24.5,
+"flagged": "20261120T0707Z",
+"best": 290,
+"book": "DraftKings",
+"med": 290,
+"mkt_p": 0.287,
+"blend_p": 0.4006,
+"model_p": 0.5143,
+"ev": 0.5625,
+"ev_med": 0.5625,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.79,
+"bet_down_to": 163,
+"best_venue": {
+"venue": "DraftKings",
+"price": 290,
+"net": 290,
+"size_label": "",
+"captured": "2026-11-20T07:05:51Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 290,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 230,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 180,
+"ok": true
+}
+]
+},
+"00-0035640|yds|rec|59.5": {
+"pid": "00-0035640",
+"bet": "DK Metcalf Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "PIT",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261120T0707Z",
+"best": 215,
+"book": "BetRivers",
+"med": 215,
+"mkt_p": 0.3117,
+"blend_p": 0.368,
+"model_p": 0.4244,
+"ev": 0.1593,
+"ev_med": 0.1593,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.36,
+"bet_down_to": 186,
+"best_venue": {
+"venue": "BetRivers",
+"price": 215,
+"net": 215,
+"size_label": "",
+"captured": "2026-11-20T07:05:56Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 215,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 196,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 194,
+"ok": true
+}
+]
 }
 }
