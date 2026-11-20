@@ -1,0 +1,348 @@
+{
+"likely": {
+"flagged": "20261015T2209Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_06_WAS_SF",
+"prob": 0.2503,
+"model_p": 0.2503,
+"mkt_p": 0.2685,
+"price": 198,
+"book": "Kalshi",
+"dec": 2.98,
+"ev": -0.2541,
+"fair": 300
+}
+],
+"n": 2,
+"prob": 0.08155,
+"fair": 1126,
+"offered": 1077,
+"dec": 11.77,
+"ev": -0.0401,
+"stake": 0.0,
+"hits_every": 12,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0038542",
+"name": "Bijan Robinson",
+"team": "ATL",
+"game_id": "2026_06_CHI_ATL",
+"prob": 0.2218,
+"model_p": 0.2218,
+"mkt_p": 0.2516,
+"price": 218,
+"book": "Kalshi",
+"dec": 3.18,
+"ev": -0.2947,
+"fair": 351
+}
+],
+"n": 2,
+"prob": 0.07226,
+"fair": 1284,
+"offered": 1156,
+"dec": 12.56,
+"ev": -0.0923,
+"stake": 0.0,
+"hits_every": 14,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0037840",
+"name": "Kyren Williams",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.3258,
+"model_p": 0.3258,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": 0.2869,
+"fair": 207
+},
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_06_DAL_GB",
+"prob": 0.2166,
+"model_p": 0.2166,
+"mkt_p": 0.2025,
+"price": 295,
+"book": "Kalshi",
+"dec": 3.95,
+"ev": -0.1444,
+"fair": 362
+}
+],
+"n": 2,
+"prob": 0.07057,
+"fair": 1317,
+"offered": 1460,
+"dec": 15.6,
+"ev": 0.101,
+"stake": 0.00086,
+"hits_every": 14,
+"paper": true
+}
+]
+},
+"value": {
+"flagged": "20261018T0239Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0036244",
+"name": "Colby Parkinson",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.039,
+"model_p": 0.0606,
+"mkt_p": 0.0173,
+"price": 5000,
+"book": "FanDuel",
+"dec": 51.0,
+"ev": 0.989,
+"fair": 2464
+},
+{
+"pid": "00-0040170",
+"name": "Elic Ayomanor",
+"team": "TEN",
+"game_id": "2026_06_TEN_IND",
+"prob": 0.0195,
+"model_p": 0.0277,
+"mkt_p": 0.0112,
+"price": 8000,
+"book": "FanDuel",
+"dec": 81.0,
+"ev": 0.5795,
+"fair": 5028
+},
+{
+"pid": "00-0031503",
+"name": "Jameis Winston",
+"team": "NYG",
+"game_id": "2026_06_NO_NYG",
+"prob": 0.0128,
+"model_p": 0.0176,
+"mkt_p": 0.0079,
+"price": 11000,
+"book": "DraftKings",
+"dec": 111.0,
+"ev": 0.4208,
+"fair": 7712
+},
+{
+"pid": "00-0035689",
+"name": "Dawson Knox",
+"team": "BUF",
+"game_id": "2026_06_BUF_LV",
+"prob": 0.0198,
+"model_p": 0.0263,
+"mkt_p": 0.0132,
+"price": 7000,
+"book": "FanDuel",
+"dec": 71.0,
+"ev": 0.4058,
+"fair": 4951
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 518830547,
+"offered": 3255641000,
+"dec": 32556411.0,
+"ev": 5.275,
+"stake": 0.0,
+"hits_every": 5188306,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0036244",
+"name": "Colby Parkinson",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.039,
+"model_p": 0.0606,
+"mkt_p": 0.0173,
+"price": 5000,
+"book": "FanDuel",
+"dec": 51.0,
+"ev": 0.989,
+"fair": 2464
+},
+{
+"pid": "00-0032951",
+"name": "Laquon Treadwell",
+"team": "IND",
+"game_id": "2026_06_TEN_IND",
+"prob": 0.0219,
+"model_p": 0.03,
+"mkt_p": 0.0138,
+"price": 7000,
+"book": "FanDuel",
+"dec": 71.0,
+"ev": 0.5549,
+"fair": 4466
+},
+{
+"pid": "00-0031503",
+"name": "Jameis Winston",
+"team": "NYG",
+"game_id": "2026_06_NO_NYG",
+"prob": 0.0128,
+"model_p": 0.0176,
+"mkt_p": 0.0079,
+"price": 11000,
+"book": "DraftKings",
+"dec": 111.0,
+"ev": 0.4208,
+"fair": 7712
+},
+{
+"pid": "00-0035689",
+"name": "Dawson Knox",
+"team": "BUF",
+"game_id": "2026_06_BUF_LV",
+"prob": 0.0198,
+"model_p": 0.0263,
+"mkt_p": 0.0132,
+"price": 7000,
+"book": "FanDuel",
+"dec": 71.0,
+"ev": 0.4058,
+"fair": 4951
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 461972394,
+"offered": 2853710000,
+"dec": 28537101.0,
+"ev": 5.1772,
+"stake": 0.0,
+"hits_every": 4619725,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0036244",
+"name": "Colby Parkinson",
+"team": "LA",
+"game_id": "2026_06_ARI_LA",
+"prob": 0.039,
+"model_p": 0.0606,
+"mkt_p": 0.0173,
+"price": 5000,
+"book": "FanDuel",
+"dec": 51.0,
+"ev": 0.989,
+"fair": 2464
+},
+{
+"pid": "00-0040170",
+"name": "Elic Ayomanor",
+"team": "TEN",
+"game_id": "2026_06_TEN_IND",
+"prob": 0.0195,
+"model_p": 0.0277,
+"mkt_p": 0.0112,
+"price": 8000,
+"book": "FanDuel",
+"dec": 81.0,
+"ev": 0.5795,
+"fair": 5028
+},
+{
+"pid": "00-0031503",
+"name": "Jameis Winston",
+"team": "NYG",
+"game_id": "2026_06_NO_NYG",
+"prob": 0.0128,
+"model_p": 0.0176,
+"mkt_p": 0.0079,
+"price": 11000,
+"book": "DraftKings",
+"dec": 111.0,
+"ev": 0.4208,
+"fair": 7712
+},
+{
+"pid": "00-0037816",
+"name": "Romeo Doubs",
+"team": "NE",
+"game_id": "2026_06_NYJ_NE",
+"prob": 0.0506,
+"model_p": 0.0662,
+"mkt_p": 0.035,
+"price": 2500,
+"book": "FanDuel",
+"dec": 26.0,
+"ev": 0.3156,
+"fair": 1876
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 203020588,
+"offered": 1192206500,
+"dec": 11922066.0,
+"ev": 4.8723,
+"stake": 0.0,
+"hits_every": 2030207,
+"paper": true
+}
+]
+}
+}

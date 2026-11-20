@@ -1,0 +1,348 @@
+{
+"likely": {
+"flagged": "20261118T0119Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.2987,
+"model_p": 0.2987,
+"mkt_p": 0.1985,
+"price": 240,
+"book": "FanDuel",
+"dec": 3.4,
+"ev": 0.0156,
+"fair": 235
+},
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_11_TB_DET",
+"prob": 0.2427,
+"model_p": 0.2427,
+"mkt_p": 0.1861,
+"price": 220,
+"book": "Caesars",
+"dec": 3.2,
+"ev": -0.2234,
+"fair": 312
+}
+],
+"n": 2,
+"prob": 0.07249,
+"fair": 1279,
+"offered": 988,
+"dec": 10.88,
+"ev": -0.2113,
+"stake": 0.0,
+"hits_every": 14,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.2987,
+"model_p": 0.2987,
+"mkt_p": 0.1985,
+"price": 240,
+"book": "FanDuel",
+"dec": 3.4,
+"ev": 0.0156,
+"fair": 235
+},
+{
+"pid": "00-0038134",
+"name": "Kenneth Walker III",
+"team": "KC",
+"game_id": "2026_11_ARI_KC",
+"prob": 0.2421,
+"model_p": 0.2421,
+"mkt_p": 0.2056,
+"price": 180,
+"book": "Fanatics",
+"dec": 2.8,
+"ev": -0.3221,
+"fair": 313
+}
+],
+"n": 2,
+"prob": 0.07232,
+"fair": 1283,
+"offered": 852,
+"dec": 9.52,
+"ev": -0.3116,
+"stake": 0.0,
+"hits_every": 14,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.2987,
+"model_p": 0.2987,
+"mkt_p": 0.1985,
+"price": 240,
+"book": "FanDuel",
+"dec": 3.4,
+"ev": 0.0156,
+"fair": 235
+},
+{
+"pid": "00-0037248",
+"name": "James Cook III",
+"team": "BUF",
+"game_id": "2026_11_MIA_BUF",
+"prob": 0.2297,
+"model_p": 0.2297,
+"mkt_p": 0.1639,
+"price": 330,
+"book": "DraftKings",
+"dec": 4.3,
+"ev": -0.0123,
+"fair": 335
+}
+],
+"n": 2,
+"prob": 0.06861,
+"fair": 1357,
+"offered": 1362,
+"dec": 14.62,
+"ev": 0.0031,
+"stake": 3e-05,
+"hits_every": 15,
+"paper": true
+}
+]
+},
+"value": {
+"flagged": "20261118T0119Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.0211,
+"model_p": 0.03,
+"mkt_p": 0.0123,
+"price": 7500,
+"book": "FanDuel",
+"dec": 76.0,
+"ev": 0.6036,
+"fair": 4639
+},
+{
+"pid": "00-0040014",
+"name": "Kyle McCord",
+"team": "MIA",
+"game_id": "2026_11_MIA_BUF",
+"prob": 0.0074,
+"model_p": 0.0095,
+"mkt_p": 0.0053,
+"price": 17500,
+"book": "Caesars",
+"dec": 176.0,
+"ev": 0.3024,
+"fair": 13414
+},
+{
+"pid": "00-0034960",
+"name": "Jakobi Meyers",
+"team": "JAX",
+"game_id": "2026_11_JAX_NYG",
+"prob": 0.0465,
+"model_p": 0.0615,
+"mkt_p": 0.0315,
+"price": 2500,
+"book": "DraftKings",
+"dec": 26.0,
+"ev": 0.209,
+"fair": 2051
+},
+{
+"pid": "00-0033873",
+"name": "Patrick Mahomes",
+"team": "KC",
+"game_id": "2026_11_ARI_KC",
+"prob": 0.0234,
+"model_p": 0.032,
+"mkt_p": 0.0148,
+"price": 5000,
+"book": "DraftKings",
+"dec": 51.0,
+"ev": 0.1934,
+"fair": 4174
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 588595505,
+"offered": 1773657500,
+"dec": 17736576.0,
+"ev": 2.0134,
+"stake": 0.0,
+"hits_every": 5885956,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.0211,
+"model_p": 0.03,
+"mkt_p": 0.0123,
+"price": 7500,
+"book": "FanDuel",
+"dec": 76.0,
+"ev": 0.6036,
+"fair": 4639
+},
+{
+"pid": "00-0040014",
+"name": "Kyle McCord",
+"team": "MIA",
+"game_id": "2026_11_MIA_BUF",
+"prob": 0.0074,
+"model_p": 0.0095,
+"mkt_p": 0.0053,
+"price": 17500,
+"book": "Caesars",
+"dec": 176.0,
+"ev": 0.3024,
+"fair": 13414
+},
+{
+"pid": "00-0034960",
+"name": "Jakobi Meyers",
+"team": "JAX",
+"game_id": "2026_11_JAX_NYG",
+"prob": 0.0465,
+"model_p": 0.0615,
+"mkt_p": 0.0315,
+"price": 2500,
+"book": "DraftKings",
+"dec": 26.0,
+"ev": 0.209,
+"fair": 2051
+},
+{
+"pid": "00-0037742",
+"name": "Treylon Burks",
+"team": "WAS",
+"game_id": "2026_11_CIN_WAS",
+"prob": 0.0358,
+"model_p": 0.0465,
+"mkt_p": 0.025,
+"price": 3000,
+"book": "FanDuel",
+"dec": 31.0,
+"ev": 0.1098,
+"fair": 2693
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 384724401,
+"offered": 1078105500,
+"dec": 10781056.0,
+"ev": 1.8023,
+"stake": 0.0,
+"hits_every": 3847245,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_11_TEN_DAL",
+"prob": 0.0211,
+"model_p": 0.03,
+"mkt_p": 0.0123,
+"price": 7500,
+"book": "FanDuel",
+"dec": 76.0,
+"ev": 0.6036,
+"fair": 4639
+},
+{
+"pid": "00-0040014",
+"name": "Kyle McCord",
+"team": "MIA",
+"game_id": "2026_11_MIA_BUF",
+"prob": 0.0074,
+"model_p": 0.0095,
+"mkt_p": 0.0053,
+"price": 17500,
+"book": "Caesars",
+"dec": 176.0,
+"ev": 0.3024,
+"fair": 13414
+},
+{
+"pid": "00-0033873",
+"name": "Patrick Mahomes",
+"team": "KC",
+"game_id": "2026_11_ARI_KC",
+"prob": 0.0234,
+"model_p": 0.032,
+"mkt_p": 0.0148,
+"price": 5000,
+"book": "DraftKings",
+"dec": 51.0,
+"ev": 0.1934,
+"fair": 4174
+},
+{
+"pid": "00-0037742",
+"name": "Treylon Burks",
+"team": "WAS",
+"game_id": "2026_11_CIN_WAS",
+"prob": 0.0358,
+"model_p": 0.0465,
+"mkt_p": 0.025,
+"price": 3000,
+"book": "FanDuel",
+"dec": 31.0,
+"ev": 0.1098,
+"fair": 2693
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 764516537,
+"offered": 2114745500,
+"dec": 21147456.0,
+"ev": 1.7661,
+"stake": 0.0,
+"hits_every": 7645166,
+"paper": true
+}
+]
+}
+}
