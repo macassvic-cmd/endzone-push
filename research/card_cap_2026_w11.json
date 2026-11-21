@@ -10089,5 +10089,98 @@
 "over card cap (rank 69 of 69, cap 25; 3 slot(s) held by main-line yard edges under the yard floor of 10)"
 ],
 "flagged": "20261121T2213Z"
+},
+"00-0039847|yds_alt|rec|14.5": {
+"bet": "Theo Johnson Over 14.5 rec yds (alt)",
+"pid": "00-0039847",
+"market": "yds_alt",
+"kind": "rec",
+"line": 14.5,
+"team": "NYG",
+"model_p": 0.4412,
+"mkt_p": 0.3347,
+"blend_p": 0.388,
+"best": 203,
+"book": "DraftKings",
+"ev": 0.1755,
+"med": 203,
+"ev_med": 0.1755,
+"nbooks": 2,
+"curve_rungs": 11,
+"games": 20,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.3124,
+"captured": "2026-11-21T22:30:26.151681103Z",
+"kick_utc": "2026-11-22T18:00Z",
+"stake": 0.25,
+"group": "bench",
+"routed": null,
+"ratio": 1.32,
+"bet_down_to": 171,
+"venues": [
+{
+"venue": "DraftKings",
+"kind": "sportsbook",
+"price": 203,
+"net": 203,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-11-21T22:30:26.151681103Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": true
+},
+{
+"venue": "FanDuel",
+"kind": "sportsbook",
+"price": 164,
+"net": 164,
+"fee": "none (vig in the price)",
+"fee_confirmed": true,
+"size": null,
+"size_label": "",
+"captured": "2026-11-21T22:30:13.484922273Z",
+"liquid": true,
+"verified": true,
+"outlier": false,
+"regular": true,
+"eligible": true,
+"best": false
+}
+],
+"best_venue": {
+"venue": "DraftKings",
+"price": 203,
+"net": 203,
+"size_label": "",
+"captured": "2026-11-21T22:30:26.151681103Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"kick_min": 1171.0,
+"age_min": -1.5,
+"game_id": "2026_11_JAX_NYG",
+"window": "2026-11-22T15:00:00Z..2026-11-22T21:25:00Z",
+"cap_rank": 31,
+"quota": null,
+"cap": "card",
+"reasons": [
+"over card cap (rank 31 of 66, cap 25; 3 slot(s) held by main-line yard edges under the yard floor of 10)"
+],
+"flagged": "20261121T2228Z"
 }
 }

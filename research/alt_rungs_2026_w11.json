@@ -34082,5 +34082,42 @@
 "price"
 ],
 "flagged": "20261121T2217Z"
+},
+"00-0039847|rec|19.5": {
+"bet": "Theo Johnson Over 19.5 rec yds (alt)",
+"pid": "00-0039847",
+"market": "yds_alt",
+"kind": "rec",
+"line": 19.5,
+"team": "NYG",
+"model_p": 0.3522,
+"mkt_p": 0.2588,
+"blend_p": 0.3055,
+"best": 308,
+"book": "DraftKings",
+"ev": 0.2465,
+"med": 308,
+"ev_med": 0.2465,
+"nbooks": 2,
+"curve_rungs": 11,
+"games": 20,
+"w": 0.5,
+"role": "Bench",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings",
+"FanDuel"
+],
+"listed_p": 0.232,
+"captured": "2026-11-21T22:30:26.151681103Z",
+"kick_utc": "2026-11-22T18:00Z",
+"stake": 0.25,
+"reasons": [
+"price"
+],
+"flagged": "20261121T2231Z"
 }
 }

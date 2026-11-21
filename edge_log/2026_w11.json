@@ -5288,5 +5288,53 @@
 "ok": false
 }
 ]
+},
+"00-0033873|any": {
+"pid": "00-0033873",
+"bet": "Patrick Mahomes Anytime TD",
+"market": "any",
+"team": "KC",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261121T2228Z",
+"best": 550,
+"book": "DraftKings",
+"med": 519,
+"mkt_p": 0.1342,
+"blend_p": 0.1957,
+"model_p": 0.25725,
+"ev": 0.2721,
+"ev_med": 0.2115,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.92,
+"bet_down_to": 437,
+"best_venue": {
+"venue": "DraftKings",
+"price": 550,
+"net": 550,
+"size_label": "",
+"captured": "2026-11-21T22:29:38.860614393Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 550,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 519,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 500,
+"ok": true
+}
+]
 }
 }
