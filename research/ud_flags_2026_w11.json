@@ -2938,5 +2938,845 @@
 "ud_price": -112.0,
 "flagged": "20261120T2240Z",
 "kick_utc": "2026-11-23T01:20Z"
+},
+"00-0036963|Anytime TD|0.5|lower": {
+"pid": "00-0036963",
+"name": "Amon-Ra St. Brown",
+"team": "DET",
+"bet": "Amon-Ra St. Brown Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.5906,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0132,
+"3-pick": 0.0403,
+"5-pick flex": 0.0626
+},
+"margin": 0.0403,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0034855|Rush Yards|8.5|higher": {
+"pid": "00-0034855",
+"name": "Baker Mayfield",
+"team": "TB",
+"bet": "Baker Mayfield Rush Yards higher 8.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 8.5,
+"side": "higher",
+"blend": 0.5771,
+"breakeven": {
+"2-pick": 0.553,
+"3-pick": 0.5347,
+"5-pick flex": 0.515
+},
+"margins": {
+"2-pick": 0.0241,
+"3-pick": 0.0424,
+"5-pick flex": 0.0621
+},
+"margin": 0.0424,
+"ref": "3-pick",
+"mult": 1.09,
+"ud_price": 112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040237|Receiving Yards|21.5|lower": {
+"pid": "00-0040237",
+"name": "Tez Johnson",
+"team": "TB",
+"bet": "Tez Johnson Receiving Yards lower 21.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 21.5,
+"side": "lower",
+"blend": 0.6077,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0303,
+"3-pick": 0.0574,
+"5-pick flex": 0.0797
+},
+"margin": 0.0574,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -113.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0036275|Rush Yards|64.5|lower": {
+"pid": "00-0036275",
+"name": "D'Andre Swift",
+"team": "CHI",
+"bet": "D'Andre Swift Rush Yards lower 64.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 64.5,
+"side": "lower",
+"blend": 0.6187,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0413,
+"3-pick": 0.0684,
+"5-pick flex": 0.0907
+},
+"margin": 0.0684,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040236|Rush Yards|45.5|lower": {
+"pid": "00-0040236",
+"name": "Kyle Monangai",
+"team": "CHI",
+"bet": "Kyle Monangai Rush Yards lower 45.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 45.5,
+"side": "lower",
+"blend": 0.5908,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0134,
+"3-pick": 0.0405,
+"5-pick flex": 0.0628
+},
+"margin": 0.0405,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040198|Receiving Yards|14.5|lower": {
+"pid": "00-0040198",
+"name": "Ollie Gordon II",
+"team": "MIA",
+"bet": "Ollie Gordon II Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.5893,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0119,
+"3-pick": 0.039,
+"5-pick flex": 0.0613
+},
+"margin": 0.039,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0035537|Receiving Yards|14.5|lower": {
+"pid": "00-0035537",
+"name": "Ty Johnson",
+"team": "BUF",
+"bet": "Ty Johnson Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.7068,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.1294,
+"3-pick": 0.1565,
+"5-pick flex": 0.1788
+},
+"margin": 0.1565,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040014|Rush Yards|6.5|higher": {
+"pid": "00-0040014",
+"name": "Kyle McCord",
+"team": "MIA",
+"bet": "Kyle McCord Rush Yards higher 6.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 6.5,
+"side": "higher",
+"blend": 0.6257,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0483,
+"3-pick": 0.0754,
+"5-pick flex": 0.0977
+},
+"margin": 0.0754,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -105.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0037263|Rush Yards|27.5|higher": {
+"pid": "00-0037263",
+"name": "Tyler Allgeier",
+"team": "ARI",
+"bet": "Tyler Allgeier Rush Yards higher 27.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 27.5,
+"side": "higher",
+"blend": 0.5866,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0092,
+"3-pick": 0.0363,
+"5-pick flex": 0.0586
+},
+"margin": 0.0363,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0039041|Receiving Yards|14.5|lower": {
+"pid": "00-0039041",
+"name": "Elijah Higgins",
+"team": "ARI",
+"bet": "Elijah Higgins Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.6032,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0258,
+"3-pick": 0.0529,
+"5-pick flex": 0.0752
+},
+"margin": 0.0529,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0036331|Receiving Yards|8.5|higher": {
+"pid": "00-0036331",
+"name": "Devin Duvernay",
+"team": "ARI",
+"bet": "Devin Duvernay Receiving Yards higher 8.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 8.5,
+"side": "higher",
+"blend": 0.6348,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0574,
+"3-pick": 0.0845,
+"5-pick flex": 0.1068
+},
+"margin": 0.0845,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0026300|Rush Yards|17.5|lower": {
+"pid": "00-0026300",
+"name": "Josh Johnson",
+"team": "ARI",
+"bet": "Josh Johnson Rush Yards lower 17.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 17.5,
+"side": "lower",
+"blend": 0.6701,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0927,
+"3-pick": 0.1198,
+"5-pick flex": 0.1421
+},
+"margin": 0.1198,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0041013|Rush Yards|87.5|lower": {
+"pid": "00-0041013",
+"name": "Emmett Johnson",
+"team": "KC",
+"bet": "Emmett Johnson Rush Yards lower 87.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 87.5,
+"side": "lower",
+"blend": 0.7448,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.1674,
+"3-pick": 0.1945,
+"5-pick flex": 0.2168
+},
+"margin": 0.1945,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0036646|Receiving Yards|13.5|higher": {
+"pid": "00-0036646",
+"name": "Simi Fehoko",
+"team": "ARI",
+"bet": "Simi Fehoko Receiving Yards higher 13.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 13.5,
+"side": "higher",
+"blend": 0.6057,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0283,
+"3-pick": 0.0554,
+"5-pick flex": 0.0777
+},
+"margin": 0.0554,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0041013|Receiving Yards|26.5|lower": {
+"pid": "00-0041013",
+"name": "Emmett Johnson",
+"team": "KC",
+"bet": "Emmett Johnson Receiving Yards lower 26.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 26.5,
+"side": "lower",
+"blend": 0.6114,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.034,
+"3-pick": 0.0611,
+"5-pick flex": 0.0834
+},
+"margin": 0.0611,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0034844|Rush Yards|55.5|lower": {
+"pid": "00-0034844",
+"name": "Saquon Barkley",
+"team": "PHI",
+"bet": "Saquon Barkley Rush Yards lower 55.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 55.5,
+"side": "lower",
+"blend": 0.6132,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0358,
+"3-pick": 0.0629,
+"5-pick flex": 0.0852
+},
+"margin": 0.0629,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:25Z"
+},
+"00-0036139|Rush Yards|40.5|lower": {
+"pid": "00-0036139",
+"name": "Rico Dowdle",
+"team": "PIT",
+"bet": "Rico Dowdle Rush Yards lower 40.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 40.5,
+"side": "lower",
+"blend": 0.5881,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0107,
+"3-pick": 0.0378,
+"5-pick flex": 0.0601
+},
+"margin": 0.0378,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:25Z"
+},
+"00-0040170|Receiving Yards|42.5|lower": {
+"pid": "00-0040170",
+"name": "Elic Ayomanor",
+"team": "TEN",
+"bet": "Elic Ayomanor Receiving Yards lower 42.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 42.5,
+"side": "lower",
+"blend": 0.589,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0116,
+"3-pick": 0.0387,
+"5-pick flex": 0.061
+},
+"margin": 0.0387,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0039491|Receiving Yards|42.5|lower": {
+"pid": "00-0039491",
+"name": "Jalen Coker",
+"team": "CAR",
+"bet": "Jalen Coker Receiving Yards lower 42.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 42.5,
+"side": "lower",
+"blend": 0.5964,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.019,
+"3-pick": 0.0461,
+"5-pick flex": 0.0684
+},
+"margin": 0.0461,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -114.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040887|Receiving Yards|10.5|lower": {
+"pid": "00-0040887",
+"name": "Josh Cuevas",
+"team": "BAL",
+"bet": "Josh Cuevas Receiving Yards lower 10.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 10.5,
+"side": "lower",
+"blend": 0.6698,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0924,
+"3-pick": 0.1195,
+"5-pick flex": 0.1418
+},
+"margin": 0.1195,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040666|Rush Yards|62.5|lower": {
+"pid": "00-0040666",
+"name": "Omarion Hampton",
+"team": "LAC",
+"bet": "Omarion Hampton Rush Yards lower 62.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 62.5,
+"side": "lower",
+"blend": 0.6043,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0269,
+"3-pick": 0.054,
+"5-pick flex": 0.0763
+},
+"margin": 0.054,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:05Z"
+},
+"00-0041032|Receiving Yards|22.5|lower": {
+"pid": "00-0041032",
+"name": "Kenyon Sadiq",
+"team": "NYJ",
+"bet": "Kenyon Sadiq Receiving Yards lower 22.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 22.5,
+"side": "lower",
+"blend": 0.6111,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0337,
+"3-pick": 0.0608,
+"5-pick flex": 0.0831
+},
+"margin": 0.0608,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:05Z"
+},
+"00-0040719|Rush Yards|70.5|lower": {
+"pid": "00-0040719",
+"name": "Bhayshul Tuten",
+"team": "JAX",
+"bet": "Bhayshul Tuten Rush Yards lower 70.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 70.5,
+"side": "lower",
+"blend": 0.6281,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0507,
+"3-pick": 0.0778,
+"5-pick flex": 0.1001
+},
+"margin": 0.0778,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T18:00Z"
+},
+"00-0040122|Receiving Yards|28.5|lower": {
+"pid": "00-0040122",
+"name": "Ashton Jeanty",
+"team": "LV",
+"bet": "Ashton Jeanty Receiving Yards lower 28.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 28.5,
+"side": "lower",
+"blend": 0.5818,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0044,
+"3-pick": 0.0315,
+"5-pick flex": 0.0538
+},
+"margin": 0.0315,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:25Z"
+},
+"00-0041496|Rush Yards|71.5|lower": {
+"pid": "00-0041496",
+"name": "Jonah Coleman",
+"team": "DEN",
+"bet": "Jonah Coleman Rush Yards lower 71.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 71.5,
+"side": "lower",
+"blend": 0.6459,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0685,
+"3-pick": 0.0956,
+"5-pick flex": 0.1179
+},
+"margin": 0.0956,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-22T21:25Z"
+},
+"00-0036322|Receiving Yards|84.5|lower": {
+"pid": "00-0036322",
+"name": "Justin Jefferson",
+"team": "MIN",
+"bet": "Justin Jefferson Receiving Yards lower 84.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 84.5,
+"side": "lower",
+"blend": 0.6345,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0571,
+"3-pick": 0.0842,
+"5-pick flex": 0.1065
+},
+"margin": 0.0842,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-23T01:20Z"
+},
+"00-0035229|Receiving Yards|44.5|lower": {
+"pid": "00-0035229",
+"name": "T.J. Hockenson",
+"team": "MIN",
+"bet": "T.J. Hockenson Receiving Yards lower 44.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 44.5,
+"side": "lower",
+"blend": 0.5971,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0197,
+"3-pick": 0.0468,
+"5-pick flex": 0.0691
+},
+"margin": 0.0468,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-23T01:20Z"
+},
+"00-0040154|Receiving Yards|14.5|lower": {
+"pid": "00-0040154",
+"name": "Tai Felton",
+"team": "MIN",
+"bet": "Tai Felton Receiving Yards lower 14.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 14.5,
+"side": "lower",
+"blend": 0.6079,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0305,
+"3-pick": 0.0576,
+"5-pick flex": 0.0799
+},
+"margin": 0.0576,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-23T01:20Z"
+},
+"00-0037809|Receiving Yards|43.5|lower": {
+"pid": "00-0037809",
+"name": "Chig Okonkwo",
+"team": "WAS",
+"bet": "Chig Okonkwo Receiving Yards lower 43.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 43.5,
+"side": "lower",
+"blend": 0.6096,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0322,
+"3-pick": 0.0593,
+"5-pick flex": 0.0816
+},
+"margin": 0.0593,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-24T01:15Z"
+},
+"00-0040785|Anytime TD|0.5|lower": {
+"pid": "00-0040785",
+"name": "Dohnte Meyers",
+"team": "CIN",
+"bet": "Dohnte Meyers Anytime TD lower 0.5",
+"market": "any",
+"kind": null,
+"stat": "Anytime TD",
+"line": 0.5,
+"side": "lower",
+"blend": 0.8496,
+"breakeven": {
+"2-pick": 0.7332,
+"3-pick": 0.6454,
+"5-pick flex": 0.6053
+},
+"margins": {
+"2-pick": 0.1164,
+"3-pick": 0.2042,
+"5-pick flex": 0.2443
+},
+"margin": 0.2042,
+"ref": "3-pick",
+"mult": 0.62,
+"ud_price": -417.0,
+"flagged": "20261121T2151Z",
+"kick_utc": "2026-11-24T01:15Z"
 }
 }

@@ -4881,5 +4881,101 @@
 "ok": true
 }
 ]
+},
+"00-0038558|yds|rec|18.5": {
+"pid": "00-0038558",
+"bet": "Darnell Washington Over 18.5 rec yds",
+"market": "yds",
+"team": "PIT",
+"role": "Starter",
+"kind": "rec",
+"line": 18.5,
+"flagged": "20261121T2150Z",
+"best": -113,
+"book": "FanDuel",
+"med": -115,
+"mkt_p": 0.5015,
+"blend_p": 0.5734,
+"model_p": 0.6454,
+"ev": 0.0809,
+"ev_med": 0.0721,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.29,
+"bet_down_to": -120,
+"best_venue": {
+"venue": "ProphetX",
+"price": -109,
+"net": -111,
+"size_label": "size unknown, confirm in app",
+"captured": "2026-11-21T21:51:19Z",
+"fee": "2% of net winnings",
+"fee_confirmed": false
+},
+"venues": [
+{
+"v": "ProphetX",
+"net": -111,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+},
+{
+"v": "Novig",
+"net": -113,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": -117,
+"ok": true
+}
+]
+},
+"00-0039912|yds|rec|14.5": {
+"pid": "00-0039912",
+"bet": "Ben Sinnott Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261121T2150Z",
+"best": 280,
+"book": "FanDuel",
+"med": 280,
+"mkt_p": 0.267,
+"blend_p": 0.2804,
+"model_p": 0.2939,
+"ev": 0.0657,
+"ev_med": 0.0657,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.1,
+"bet_down_to": 275,
+"best_venue": {
+"venue": "FanDuel",
+"price": 280,
+"net": 280,
+"size_label": "",
+"captured": "2026-11-21T21:50:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 280,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 231,
+"ok": true
+}
+]
 }
 }
