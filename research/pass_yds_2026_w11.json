@@ -683,5 +683,85 @@
 "pass-yds hidden"
 ],
 "flagged": "20261121T2228Z"
+},
+"00-0033873|yds_alt|pass|289.5": {
+"bet": "Patrick Mahomes Over 289.5 pass yds (alt)",
+"pid": "00-0033873",
+"market": "yds_alt",
+"kind": "pass",
+"line": 289.5,
+"team": "KC",
+"model_p": 0.3799,
+"mkt_p": 0.2759,
+"blend_p": 0.3279,
+"best": 243,
+"book": "DraftKings",
+"ev": 0.1248,
+"med": 243,
+"ev_med": 0.1248,
+"nbooks": 2,
+"curve_rungs": 33,
+"games": 22,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.2759,
+"captured": "2026-11-22T15:01:17.283684776Z",
+"kick_utc": "2026-11-22T18:00Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.38,
+"bet_down_to": 221,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261122T1500Z"
+},
+"00-0041562|yds_alt|pass|219.5": {
+"bet": "Fernando Mendoza Over 219.5 pass yds (alt)",
+"pid": "00-0041562",
+"market": "yds_alt",
+"kind": "pass",
+"line": 219.5,
+"team": "LV",
+"model_p": 0.3172,
+"mkt_p": 0.239,
+"blend_p": 0.2781,
+"best": 296,
+"book": "DraftKings",
+"ev": 0.1013,
+"med": 296,
+"ev_med": 0.1013,
+"nbooks": 2,
+"curve_rungs": 26,
+"games": 2,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"DraftKings"
+],
+"listed_p": 0.239,
+"captured": "2026-11-22T20:00:50.058547933Z",
+"kick_utc": "2026-11-22T21:25Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.33,
+"bet_down_to": 278,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261122T2000Z"
 }
 }
