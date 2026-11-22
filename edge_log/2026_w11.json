@@ -7324,5 +7324,48 @@
 "ok": true
 }
 ]
+},
+"00-0033526|first": {
+"pid": "00-0033526",
+"bet": "Samaje Perine First TD",
+"market": "first",
+"team": "CIN",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261122T2159Z",
+"best": 1600,
+"book": "DraftKings",
+"med": 1580,
+"mkt_p": 0.0538,
+"blend_p": 0.0646,
+"model_p": 0.06748333333333334,
+"ev": 0.0981,
+"ev_med": 0.0852,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.25,
+"bet_down_to": 1526,
+"best_venue": {
+"venue": "DraftKings",
+"price": 1600,
+"net": 1600,
+"size_label": "",
+"captured": "2026-11-22T21:59:56.514938367Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 1600,
+"ok": true
+},
+{
+"v": "Kalshi",
+"net": 1560,
+"ok": true
+}
+]
 }
 }
