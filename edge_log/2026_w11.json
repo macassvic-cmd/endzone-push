@@ -7367,5 +7367,53 @@
 "ok": true
 }
 ]
+},
+"00-0029604|any": {
+"pid": "00-0029604",
+"bet": "Kirk Cousins Anytime TD",
+"market": "any",
+"team": "MIN",
+"role": "Starter",
+"kind": null,
+"line": null,
+"flagged": "20261122T2238Z",
+"best": 1322,
+"book": "Kalshi",
+"med": 1300,
+"mkt_p": 0.0643,
+"blend_p": 0.0768,
+"model_p": 0.08926666666666666,
+"ev": 0.092,
+"ev_med": 0.0751,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.39,
+"bet_down_to": 1268,
+"best_venue": {
+"venue": "Kalshi",
+"price": 1322,
+"net": 1322,
+"size_label": "$10,937 at the ask",
+"captured": "2026-11-22T22:39:15Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 1322,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 1300,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 1300,
+"ok": true
+}
+]
 }
 }
