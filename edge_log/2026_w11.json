@@ -7117,5 +7117,212 @@
 "ok": true
 }
 ]
+},
+"00-0039847|yds|rec|14.5": {
+"pid": "00-0039847",
+"bet": "Theo Johnson Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261122T2041Z",
+"best": 198,
+"book": "DraftKings",
+"med": 198,
+"mkt_p": 0.3373,
+"blend_p": 0.39,
+"model_p": 0.4428,
+"ev": 0.1623,
+"ev_med": 0.1623,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.31,
+"bet_down_to": 170,
+"best_venue": {
+"venue": "DraftKings",
+"price": 198,
+"net": 198,
+"size_label": "",
+"captured": "2026-11-22T20:40:32Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 198,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 164,
+"ok": true
+}
+]
+},
+"00-0035250|any": {
+"pid": "00-0035250",
+"bet": "Devin Singletary Anytime TD",
+"market": "any",
+"team": "NYG",
+"role": "Rotational",
+"kind": null,
+"line": null,
+"flagged": "20261122T2041Z",
+"best": 663,
+"book": "Kalshi",
+"med": 600,
+"mkt_p": 0.1188,
+"blend_p": 0.1549,
+"model_p": 0.19091666666666668,
+"ev": 0.1815,
+"ev_med": 0.084,
+"rule": null,
+"stake": 1.0,
+"ratio": 1.61,
+"bet_down_to": 578,
+"best_venue": {
+"venue": "Kalshi",
+"price": 663,
+"net": 663,
+"size_label": "$6,454 at the ask",
+"captured": "2026-11-22T20:41:29Z",
+"fee": "taker 0.07\u00b7P\u00b7(1\u2212P) per contract",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "Kalshi",
+"net": 663,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 650,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 600,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 600,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 600,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 575,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 550,
+"ok": true
+}
+]
+},
+"00-0036971|yds|rush|19.5": {
+"pid": "00-0036971",
+"bet": "Trevor Lawrence Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "JAX",
+"role": "Starter",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261122T2041Z",
+"best": 240,
+"book": "BetRivers",
+"med": 240,
+"mkt_p": 0.3098,
+"blend_p": 0.314,
+"model_p": 0.3182,
+"ev": 0.0677,
+"ev_med": 0.0677,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.03,
+"bet_down_to": 235,
+"best_venue": {
+"venue": "BetRivers",
+"price": 240,
+"net": 240,
+"size_label": "",
+"captured": "2026-11-22T20:41:25Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 240,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 198,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 179,
+"ok": true
+}
+]
+},
+"00-0039923|yds|rush|24.5": {
+"pid": "00-0039923",
+"bet": "J.J. McCarthy Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Starter",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261122T2041Z",
+"best": 225,
+"book": "FanDuel",
+"med": 225,
+"mkt_p": 0.3408,
+"blend_p": 0.324,
+"model_p": 0.3071,
+"ev": 0.0529,
+"ev_med": 0.0529,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 0.9,
+"bet_down_to": 225,
+"best_venue": {
+"venue": "FanDuel",
+"price": 225,
+"net": 225,
+"size_label": "",
+"captured": "2026-11-22T20:41:13Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 225,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 164,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 150,
+"ok": true
+}
+]
 }
 }

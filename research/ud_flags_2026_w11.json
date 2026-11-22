@@ -3974,5 +3974,33 @@
 "ud_price": -112.0,
 "flagged": "20261122T1733Z",
 "kick_utc": "2026-11-22T18:00Z"
+},
+"00-0039337|Receiving Yards|69.5|lower": {
+"pid": "00-0039337",
+"name": "Malik Nabers",
+"team": "NYG",
+"bet": "Malik Nabers Receiving Yards lower 69.5",
+"market": "yds",
+"kind": "rec",
+"stat": "Receiving Yards",
+"line": 69.5,
+"side": "lower",
+"blend": 0.5811,
+"breakeven": {
+"2-pick": 0.5774,
+"3-pick": 0.5503,
+"5-pick flex": 0.528
+},
+"margins": {
+"2-pick": 0.0037,
+"3-pick": 0.0308,
+"5-pick flex": 0.0531
+},
+"margin": 0.0308,
+"ref": "3-pick",
+"mult": 1.0,
+"ud_price": -112.0,
+"flagged": "20261122T2121Z",
+"kick_utc": "2026-11-22T21:25Z"
 }
 }
