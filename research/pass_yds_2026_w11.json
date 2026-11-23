@@ -763,5 +763,45 @@
 "pass-yds hidden"
 ],
 "flagged": "20261122T2000Z"
+},
+"00-0037834|yds_alt|pass|274.5": {
+"bet": "Brock Purdy Over 274.5 pass yds (alt)",
+"pid": "00-0037834",
+"market": "yds_alt",
+"kind": "pass",
+"line": 274.5,
+"team": "SF",
+"model_p": 0.4088,
+"mkt_p": 0.3156,
+"blend_p": 0.3622,
+"best": 198,
+"book": "FanDuel",
+"ev": 0.0794,
+"med": 198,
+"ev_med": 0.0794,
+"nbooks": 1,
+"curve_rungs": 9,
+"games": 18,
+"w": 0.5,
+"role": "Starter",
+"kalshi": null,
+"kalshi_liquid": false,
+"alt": true,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"listed": [
+"FanDuel"
+],
+"listed_p": 0.3156,
+"captured": "2026-11-23T01:00:51.403512121Z",
+"kick_utc": "2026-11-23T01:20Z",
+"stake": 0.25,
+"group": "main",
+"routed": null,
+"ratio": 1.3,
+"bet_down_to": 190,
+"reasons": [
+"pass-yds hidden"
+],
+"flagged": "20261123T0100Z"
 }
 }
