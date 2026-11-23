@@ -7415,5 +7415,91 @@
 "ok": true
 }
 ]
+},
+"00-0036415|yds|rec|19.5": {
+"pid": "00-0036415",
+"bet": "Van Jefferson Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Bench",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261123T1553Z",
+"best": 270,
+"book": "FanDuel",
+"med": 270,
+"mkt_p": 0.2681,
+"blend_p": 0.3082,
+"model_p": 0.3484,
+"ev": 0.1405,
+"ev_med": 0.1405,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.3,
+"bet_down_to": 241,
+"best_venue": {
+"venue": "FanDuel",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-11-23T15:53:14.549772897Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 235,
+"ok": true
+}
+]
+},
+"00-0041040|yds|rec|59.5": {
+"pid": "00-0041040",
+"bet": "Antonio Williams Over 59.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Starter",
+"kind": "rec",
+"line": 59.5,
+"flagged": "20261123T1553Z",
+"best": 290,
+"book": "FanDuel",
+"med": 290,
+"mkt_p": 0.2503,
+"blend_p": 0.2721,
+"model_p": 0.2939,
+"ev": 0.0613,
+"ev_med": 0.0613,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.17,
+"bet_down_to": 286,
+"best_venue": {
+"venue": "FanDuel",
+"price": 290,
+"net": 290,
+"size_label": "",
+"captured": "2026-11-23T15:53:14.549772897Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 290,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 264,
+"ok": true
+}
+]
 }
 }
