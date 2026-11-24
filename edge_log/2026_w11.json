@@ -7501,5 +7501,293 @@
 "ok": true
 }
 ]
+},
+"00-0033699|yds|rush|19.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Rotational",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261123T2215Z",
+"best": 235,
+"book": "BetRivers",
+"med": 235,
+"mkt_p": 0.3095,
+"blend_p": 0.4152,
+"model_p": 0.521,
+"ev": 0.3911,
+"ev_med": 0.3911,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": 153,
+"best_venue": {
+"venue": "BetRivers",
+"price": 235,
+"net": 235,
+"size_label": "",
+"captured": "2026-11-23T22:13:50Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 235,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 192,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 188,
+"ok": true
+}
+]
+},
+"00-0037256|yds|rush|24.5": {
+"pid": "00-0037256",
+"bet": "Rachaad White Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Starter",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261123T2215Z",
+"best": 154,
+"book": "FanDuel",
+"med": 154,
+"mkt_p": 0.3915,
+"blend_p": 0.5249,
+"model_p": 0.6583,
+"ev": 0.3333,
+"ev_med": 0.3333,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.68,
+"bet_down_to": 101,
+"best_venue": {
+"venue": "FanDuel",
+"price": 154,
+"net": 154,
+"size_label": "",
+"captured": "2026-11-23T22:14:36Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 154,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 143,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 125,
+"ok": true
+}
+]
+},
+"00-0037256|yds|rush|19.5": {
+"pid": "00-0037256",
+"bet": "Rachaad White Over 19.5 rush yds",
+"market": "yds",
+"team": "WAS",
+"role": "Starter",
+"kind": "rush",
+"line": 19.5,
+"flagged": "20261123T2215Z",
+"best": 107,
+"book": "BetRivers",
+"med": -105,
+"mkt_p": 0.4833,
+"blend_p": 0.6108,
+"model_p": 0.7383,
+"ev": 0.2644,
+"ev_med": 0.1926,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.53,
+"bet_down_to": -139,
+"best_venue": {
+"venue": "BetRivers",
+"price": 107,
+"net": 107,
+"size_label": "",
+"captured": "2026-11-23T22:13:50Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 107,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -102,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -109,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": -115,
+"ok": true
+}
+]
+},
+"00-0033699|yds|rush|12.5": {
+"pid": "00-0033699",
+"bet": "Austin Ekeler Over 12.5 rush yds",
+"market": "yds",
+"team": "WAS",
+"role": "Rotational",
+"kind": "rush",
+"line": 12.5,
+"flagged": "20261123T2215Z",
+"best": 100,
+"book": "BetMGM",
+"med": -109,
+"mkt_p": 0.4947,
+"blend_p": 0.5786,
+"model_p": 0.6624,
+"ev": 0.1571,
+"ev_med": 0.1093,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.34,
+"bet_down_to": -122,
+"best_venue": {
+"venue": "BetMGM",
+"price": 100,
+"net": 100,
+"size_label": "",
+"captured": "2026-11-23T22:13:45Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetMGM",
+"net": 100,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": -109,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -113,
+"ok": true
+}
+]
+},
+"00-0037256|yds|rush|29.5": {
+"pid": "00-0037256",
+"bet": "Rachaad White Over 29.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Starter",
+"kind": "rush",
+"line": 29.5,
+"flagged": "20261123T2255Z",
+"best": 270,
+"book": "BetRivers",
+"med": 270,
+"mkt_p": 0.2945,
+"blend_p": 0.4387,
+"model_p": 0.5829,
+"ev": 0.6233,
+"ev_med": 0.6233,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.98,
+"bet_down_to": 140,
+"best_venue": {
+"venue": "BetRivers",
+"price": 270,
+"net": 270,
+"size_label": "",
+"captured": "2026-11-23T22:54:13Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "BetRivers",
+"net": 270,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 220,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 180,
+"ok": true
+}
+]
+},
+"00-0036415|yds|rec|14.5": {
+"pid": "00-0036415",
+"bet": "Van Jefferson Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Bench",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261124T0025Z",
+"best": 210,
+"book": "FanDuel",
+"med": 210,
+"mkt_p": 0.3293,
+"blend_p": 0.3751,
+"model_p": 0.4209,
+"ev": 0.1628,
+"ev_med": 0.1628,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.28,
+"bet_down_to": 180,
+"best_venue": {
+"venue": "FanDuel",
+"price": 210,
+"net": 210,
+"size_label": "",
+"captured": "2026-11-24T00:24:25Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 210,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 166,
+"ok": true
+}
+]
 }
 }
