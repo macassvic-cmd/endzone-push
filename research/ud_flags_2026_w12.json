@@ -2826,5 +2826,33 @@
 "ud_price": -417.0,
 "flagged": "20261125T0137Z",
 "kick_utc": "2026-11-29T18:00Z"
+},
+"00-0035537|Rush Yards|1.5|higher": {
+"pid": "00-0035537",
+"name": "Ty Johnson",
+"team": "BUF",
+"bet": "Ty Johnson Rush Yards higher 1.5",
+"market": "yds",
+"kind": "rush",
+"stat": "Rush Yards",
+"line": 1.5,
+"side": "higher",
+"blend": 0.59,
+"breakeven": {
+"2-pick": 0.5608,
+"3-pick": 0.5397,
+"5-pick flex": 0.5192
+},
+"margins": {
+"2-pick": 0.0292,
+"3-pick": 0.0503,
+"5-pick flex": 0.0708
+},
+"margin": 0.0503,
+"ref": "3-pick",
+"mult": 1.06,
+"ud_price": 105.0,
+"flagged": "20261125T0223Z",
+"kick_utc": "2026-11-27T01:20Z"
 }
 }
