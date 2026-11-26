@@ -1932,3 +1932,32 @@ record grades 30 bets from 11 decided games + PHI@WAS on its 21:24Z snapshot, 5-
 the 8 am-window games and LAC@LA / KC@DEN / NE@MIA carry the 17:24Z pull stamp. Two decided-game bets have no stat line and are not graded
 (Jack Bech O24.5 rec alt, Xavier Restrepo Anytime TD: no yards / TD row for the player). Season headline after W8: 465 singles, 115-350,
 +109.2u against +83.0u expected. Screenshot of the served Results tab: `runs/results_tab_w8_2026-11-02.png`.
+
+## 2026-11-25 — Value finder: gate pre-registered (RESEARCH; written before any flag exists; model freeze in force)
+
+New research build: a sharp-consensus value finder for NFL player props (anytime TD, first TD, rush / rec yard mains + alts). It runs alongside
+the board and publishes nothing to the main board until it passes the gate below. The model freeze stays in force: no existing model, board,
+flag or grading behaviour changes, and the frozen model is never used to flag value here (its probability may ride along as a display / log
+column only).
+
+**The gate (registered 2026-11-25, before the finder code or any flag existed):**
+
+> Value finder gate: after >= 150 logged flags, if average CLV > +1.0 pt AND >= 55% of flags beat the close, the finder becomes a live board
+> section at 0.5u stakes. If average CLV <= 0 at 150 flags, the finder is killed. In between, keep collecting. CLV = closing sharp prob minus
+> flag-time sharp prob, in probability points.
+
+Operating definitions, fixed at the same time (they say how the sentence above is counted; none of them was chosen after seeing a flag):
+
+- **Flag** = the first sighting, per week, of one (game, player, market, line, side, book) whose offered price is worth >= 3% EV after that
+  book's fees against the sharp probability built WITHOUT that book (leave-one-out). One row per book, logged once at first-seen prices.
+- **Sharp probability** = no-vig probability from Pinnacle (if the feed ever carries it), Novig and ProphetX (two-sided mid) and FanDuel. A
+  reference exists only with (a) a two-sided Pinnacle / exchange quote, or (b) two or more sharp sources within 2 pts of each other. No
+  reference, no flag. A soft book is never substituted.
+- **CLV** of a flag = the sharp probability of the flagged side at the close minus the same at flag time, in probability points, with the
+  close built by the same rule and the same leave-one-out exclusion. **Close** = the last pull before kickoff that carries a valid reference
+  for that selection and is at least 60 minutes later than the flag pull (a flag first seen on a game's last sharp pull has had no time to
+  move and gets no CLV grade). "Beat the close" = CLV > 0.
+- **The 150** counts flags with a CLV grade. Flags without a close are logged and reported, but they cannot enter an average of CLV.
+- Units (1u flat per flag at the logged price, after fees) are graded second and are not part of the gate.
+- The gate is read once, at the first report where the CLV-graded count is >= 150; replayed flags from saved pulls (W11-W12 below) are
+  reported separately and do not count toward the 150.
