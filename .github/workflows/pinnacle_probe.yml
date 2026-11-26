@@ -1,0 +1,49 @@
+name: Pinnacle probe (value finder research)
+
+# ONE Odds API call: one event, one market, region eu. Answers whether Pinnacle is returned for NFL player props (ODDS_SOURCES.md).
+# Runs on a push to the research/pinnacle-probe branch (so the check never needs a push to main on a game day) or by hand.
+# Touches nothing else: no commit, no publish, no board. Cost is printed in the log (x-requests-last).
+on:
+  push:
+    branches: ["research/pinnacle-probe"]
+    paths: [".github/workflows/pinnacle_probe.yml"]
+  workflow_dispatch:
+    inputs:
+      event_id:
+        description: "Odds API event id"
+        type: string
+        required: true
+      market:
+        description: "one market key"
+        type: string
+        default: "player_reception_yds"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pinnacle-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: One eu-region call (one event, one market)
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          EVENT_ID: ${{ inputs.event_id || '9b825e6518156008da499be041975fdd' }}   # CHI @ DET, 2026-11-26 18:00Z (id from the saved 2026-11-25 01:37Z pull)
+          MARKET: ${{ inputs.market || 'player_reception_yds' }}
+        run: python pinnacle_probe.py "$EVENT_ID" "$MARKET"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinnacle-probe
+          path: pinnacle_probe.json
+          if-no-files-found: ignore
+          retention-days: 30
