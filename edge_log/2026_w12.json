@@ -5793,5 +5793,68 @@
 "ok": false
 }
 ]
+},
+"00-0036331|any": {
+"pid": "00-0036331",
+"bet": "Devin Duvernay Anytime TD",
+"market": "any",
+"team": "ARI",
+"role": "Bench",
+"kind": null,
+"line": null,
+"flagged": "20261127T0413Z",
+"best": 2500,
+"book": "DraftKings",
+"med": 1950,
+"mkt_p": 0.0434,
+"blend_p": 0.0977,
+"model_p": 0.15203333333333333,
+"ev": 1.5403,
+"ev_med": 1.0029,
+"rule": null,
+"stake": 0.25,
+"ratio": 3.5,
+"bet_down_to": 975,
+"best_venue": {
+"venue": "DraftKings",
+"price": 2500,
+"net": 2500,
+"size_label": "",
+"captured": "2026-11-27T04:13:42Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 2500,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 2200,
+"ok": true
+},
+{
+"v": "Caesars",
+"net": 2000,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 1900,
+"ok": true
+},
+{
+"v": "BetMGM",
+"net": 1600,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 1300,
+"ok": true
+}
+]
 }
 }
