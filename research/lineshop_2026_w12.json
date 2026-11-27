@@ -1,0 +1,24 @@
+{
+"00-0033873|yds_alt|rush|19.5": {
+"pid": "00-0033873",
+"bet": "Patrick Mahomes Over 19.5 rush yds (alt)",
+"market": "yds_alt",
+"kind": "rush",
+"line": 19.5,
+"team": "KC",
+"role": "Starter",
+"stake": 0.25,
+"book": "FanDuel",
+"best": 194,
+"bet_down_to": 159,
+"venue": "Novig",
+"venue_price": 203,
+"venue_net": 203,
+"cents": 9,
+"size_label": "size unknown, confirm in app",
+"fee_confirmed": false,
+"ev": 0.1935,
+"flagged": "20261127T0040Z",
+"kick_utc": "2026-11-27T01:20Z"
+}
+}
