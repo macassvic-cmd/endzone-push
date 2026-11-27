@@ -5856,5 +5856,182 @@
 "ok": true
 }
 ]
+},
+"00-0035250|yds|rush|24.5": {
+"pid": "00-0035250",
+"bet": "Devin Singletary Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "NYG",
+"role": "Rotational",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261127T2241Z",
+"best": 294,
+"book": "DraftKings",
+"med": 294,
+"mkt_p": 0.2452,
+"blend_p": 0.3151,
+"model_p": 0.3851,
+"ev": 0.2416,
+"ev_med": 0.2416,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.57,
+"bet_down_to": 234,
+"best_venue": {
+"venue": "DraftKings",
+"price": 294,
+"net": 294,
+"size_label": "",
+"captured": "2026-11-27T22:40:27Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 294,
+"ok": true
+},
+{
+"v": "Fanatics",
+"net": 285,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 270,
+"ok": true
+}
+]
+},
+"00-0035685|yds|rec|14.5": {
+"pid": "00-0035685",
+"bet": "David Montgomery Over 14.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "HOU",
+"role": "Starter",
+"kind": "rec",
+"line": 14.5,
+"flagged": "20261127T2241Z",
+"best": 240,
+"book": "FanDuel",
+"med": 240,
+"mkt_p": 0.3089,
+"blend_p": 0.3483,
+"model_p": 0.3877,
+"ev": 0.1843,
+"ev_med": 0.1843,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.26,
+"bet_down_to": 202,
+"best_venue": {
+"venue": "FanDuel",
+"price": 240,
+"net": 240,
+"size_label": "",
+"captured": "2026-11-27T22:40:25Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 240,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 177,
+"ok": true
+}
+]
+},
+"00-0037263|yds|rush|39.5": {
+"pid": "00-0037263",
+"bet": "Tyler Allgeier Over 39.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "ARI",
+"role": "Starter",
+"kind": "rush",
+"line": 39.5,
+"flagged": "20261127T2241Z",
+"best": 220,
+"book": "FanDuel",
+"med": 220,
+"mkt_p": 0.3269,
+"blend_p": 0.3635,
+"model_p": 0.4002,
+"ev": 0.1633,
+"ev_med": 0.1633,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.22,
+"bet_down_to": 189,
+"best_venue": {
+"venue": "FanDuel",
+"price": 220,
+"net": 220,
+"size_label": "",
+"captured": "2026-11-27T22:40:58Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 220,
+"ok": true
+},
+{
+"v": "DraftKings",
+"net": 203,
+"ok": true
+},
+{
+"v": "BetRivers",
+"net": 145,
+"ok": true
+}
+]
+},
+"00-0037291|yds|rec|19.5": {
+"pid": "00-0037291",
+"bet": "Jalen Nailor Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "LV",
+"role": "Starter",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261127T2241Z",
+"best": 158,
+"book": "FanDuel",
+"med": 158,
+"mkt_p": 0.3638,
+"blend_p": 0.4151,
+"model_p": 0.4664,
+"ev": 0.0709,
+"ev_med": 0.0709,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.28,
+"bet_down_to": 153,
+"best_venue": {
+"venue": "FanDuel",
+"price": 158,
+"net": 158,
+"size_label": "",
+"captured": "2026-11-27T22:41:01Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "FanDuel",
+"net": 158,
+"ok": true
+}
+]
 }
 }
