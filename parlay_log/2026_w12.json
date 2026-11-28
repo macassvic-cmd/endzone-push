@@ -1,0 +1,348 @@
+{
+"likely": {
+"flagged": "20261125T0137Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_12_CHI_DET",
+"prob": 0.273,
+"model_p": 0.273,
+"mkt_p": 0.2195,
+"price": 218,
+"book": "Kalshi",
+"dec": 3.18,
+"ev": -0.1319,
+"fair": 266
+},
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_12_PHI_DAL",
+"prob": 0.2478,
+"model_p": 0.2478,
+"mkt_p": 0.1828,
+"price": 320,
+"book": "FanDuel",
+"dec": 4.2,
+"ev": 0.0408,
+"fair": 304
+}
+],
+"n": 2,
+"prob": 0.06765,
+"fair": 1378,
+"offered": 1236,
+"dec": 13.36,
+"ev": -0.0965,
+"stake": 0.0,
+"hits_every": 15,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_12_CHI_DET",
+"prob": 0.273,
+"model_p": 0.273,
+"mkt_p": 0.2195,
+"price": 218,
+"book": "Kalshi",
+"dec": 3.18,
+"ev": -0.1319,
+"fair": 266
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_12_SEA_SF",
+"prob": 0.1761,
+"model_p": 0.1761,
+"mkt_p": 0.1685,
+"price": 400,
+"book": "FanDuel",
+"dec": 5.0,
+"ev": -0.1195,
+"fair": 468
+}
+],
+"n": 2,
+"prob": 0.04808,
+"fair": 1980,
+"offered": 1490,
+"dec": 15.9,
+"ev": -0.2356,
+"stake": 0.0,
+"hits_every": 21,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_12_PHI_DAL",
+"prob": 0.2478,
+"model_p": 0.2478,
+"mkt_p": 0.1828,
+"price": 320,
+"book": "FanDuel",
+"dec": 4.2,
+"ev": 0.0408,
+"fair": 304
+},
+{
+"pid": "00-0033280",
+"name": "Christian McCaffrey",
+"team": "SF",
+"game_id": "2026_12_SEA_SF",
+"prob": 0.1761,
+"model_p": 0.1761,
+"mkt_p": 0.1685,
+"price": 400,
+"book": "FanDuel",
+"dec": 5.0,
+"ev": -0.1195,
+"fair": 468
+}
+],
+"n": 2,
+"prob": 0.04364,
+"fair": 2192,
+"offered": 2000,
+"dec": 21.0,
+"ev": -0.0836,
+"stake": 0.0,
+"hits_every": 23,
+"paper": true
+}
+]
+},
+"value": {
+"flagged": "20261125T0137Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_12_PHI_DAL",
+"prob": 0.0184,
+"model_p": 0.0264,
+"mkt_p": 0.0104,
+"price": 10000,
+"book": "FanDuel",
+"dec": 101.0,
+"ev": 0.8584,
+"fair": 5335
+},
+{
+"pid": "00-0037252",
+"name": "Greg Dulcich",
+"team": "MIA",
+"game_id": "2026_12_NYJ_MIA",
+"prob": 0.0247,
+"model_p": 0.0308,
+"mkt_p": 0.0187,
+"price": 5500,
+"book": "DraftKings",
+"dec": 56.0,
+"ev": 0.3832,
+"fair": 3949
+},
+{
+"pid": "00-0039894",
+"name": "Xavier Worthy",
+"team": "KC",
+"game_id": "2026_12_KC_BUF",
+"prob": 0.0224,
+"model_p": 0.0282,
+"mkt_p": 0.0167,
+"price": 6000,
+"book": "DraftKings",
+"dec": 61.0,
+"ev": 0.3664,
+"fair": 4364
+},
+{
+"pid": "00-0039793",
+"name": "AJ Barner",
+"team": "SEA",
+"game_id": "2026_12_SEA_SF",
+"prob": 0.0364,
+"model_p": 0.0438,
+"mkt_p": 0.029,
+"price": 3300,
+"book": "FanDuel",
+"dec": 34.0,
+"ev": 0.2376,
+"fair": 2647
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 269858226,
+"offered": 1173054300,
+"dec": 11730544.0,
+"ev": 3.3469,
+"stake": 0.0,
+"hits_every": 2698583,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_12_PHI_DAL",
+"prob": 0.0184,
+"model_p": 0.0264,
+"mkt_p": 0.0104,
+"price": 10000,
+"book": "FanDuel",
+"dec": 101.0,
+"ev": 0.8584,
+"fair": 5335
+},
+{
+"pid": "00-0037252",
+"name": "Greg Dulcich",
+"team": "MIA",
+"game_id": "2026_12_NYJ_MIA",
+"prob": 0.0247,
+"model_p": 0.0308,
+"mkt_p": 0.0187,
+"price": 5500,
+"book": "DraftKings",
+"dec": 56.0,
+"ev": 0.3832,
+"fair": 3949
+},
+{
+"pid": "00-0039894",
+"name": "Xavier Worthy",
+"team": "KC",
+"game_id": "2026_12_KC_BUF",
+"prob": 0.0224,
+"model_p": 0.0282,
+"mkt_p": 0.0167,
+"price": 6000,
+"book": "DraftKings",
+"dec": 61.0,
+"ev": 0.3664,
+"fair": 4364
+},
+{
+"pid": "00-0039074",
+"name": "Davis Allen",
+"team": "LA",
+"game_id": "2026_12_GB_LA",
+"prob": 0.0122,
+"model_p": 0.0142,
+"mkt_p": 0.0102,
+"price": 10000,
+"book": "FanDuel",
+"dec": 101.0,
+"ev": 0.2322,
+"fair": 8097
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 805150971,
+"offered": 3484661500,
+"dec": 34846616.0,
+"ev": 3.328,
+"stake": 0.0,
+"hits_every": 8051511,
+"paper": true
+},
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0033077",
+"name": "Dak Prescott",
+"team": "DAL",
+"game_id": "2026_12_PHI_DAL",
+"prob": 0.0184,
+"model_p": 0.0264,
+"mkt_p": 0.0104,
+"price": 10000,
+"book": "FanDuel",
+"dec": 101.0,
+"ev": 0.8584,
+"fair": 5335
+},
+{
+"pid": "00-0037252",
+"name": "Greg Dulcich",
+"team": "MIA",
+"game_id": "2026_12_NYJ_MIA",
+"prob": 0.0247,
+"model_p": 0.0308,
+"mkt_p": 0.0187,
+"price": 5500,
+"book": "DraftKings",
+"dec": 56.0,
+"ev": 0.3832,
+"fair": 3949
+},
+{
+"pid": "00-0039894",
+"name": "Xavier Worthy",
+"team": "KC",
+"game_id": "2026_12_KC_BUF",
+"prob": 0.0224,
+"model_p": 0.0282,
+"mkt_p": 0.0167,
+"price": 6000,
+"book": "DraftKings",
+"dec": 61.0,
+"ev": 0.3664,
+"fair": 4364
+},
+{
+"pid": "00-0029604",
+"name": "Kirk Cousins",
+"team": "MIN",
+"game_id": "2026_12_ATL_MIN",
+"prob": 0.0054,
+"model_p": 0.0065,
+"mkt_p": 0.0044,
+"price": 22500,
+"book": "Caesars",
+"dec": 226.0,
+"ev": 0.2204,
+"fair": 18419
+}
+],
+"n": 4,
+"prob": 0.0,
+"fair": 1819044911,
+"offered": 7797361500,
+"dec": 77973616.0,
+"ev": 3.2865,
+"stake": 0.0,
+"hits_every": 18190450,
+"paper": true
+}
+]
+}
+}

@@ -1,0 +1,180 @@
+{
+"likely": {
+"flagged": "20261028T0003Z",
+"parlays": [
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_08_ARI_DAL",
+"prob": 0.3035,
+"model_p": 0.3035,
+"mkt_p": 0.2088,
+"price": 186,
+"book": "Caesars",
+"dec": 2.86,
+"ev": -0.132,
+"fair": 229
+},
+{
+"pid": "00-0039139",
+"name": "Jahmyr Gibbs",
+"team": "DET",
+"game_id": "2026_08_MIN_DET",
+"prob": 0.2226,
+"model_p": 0.2226,
+"mkt_p": 0.2081,
+"price": 200,
+"book": "FanDuel",
+"dec": 3.0,
+"ev": -0.3322,
+"fair": 349
+}
+],
+"n": 2,
+"prob": 0.06756,
+"fair": 1380,
+"offered": 758,
+"dec": 8.58,
+"ev": -0.4203,
+"stake": 0.0,
+"hits_every": 15,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_08_ARI_DAL",
+"prob": 0.3035,
+"model_p": 0.3035,
+"mkt_p": 0.2088,
+"price": 186,
+"book": "Caesars",
+"dec": 2.86,
+"ev": -0.132,
+"fair": 229
+},
+{
+"pid": "00-0032764",
+"name": "Derrick Henry",
+"team": "BAL",
+"game_id": "2026_08_BAL_BUF",
+"prob": 0.1908,
+"model_p": 0.1908,
+"mkt_p": 0.1761,
+"price": 240,
+"book": "Caesars",
+"dec": 3.4,
+"ev": -0.3513,
+"fair": 424
+}
+],
+"n": 2,
+"prob": 0.05791,
+"fair": 1627,
+"offered": 872,
+"dec": 9.72,
+"ev": -0.4369,
+"stake": 0.0,
+"hits_every": 17,
+"paper": true
+},
+{
+"mode": "likely",
+"legs": [
+{
+"pid": "00-0036997",
+"name": "Javonte Williams",
+"team": "DAL",
+"game_id": "2026_08_ARI_DAL",
+"prob": 0.3035,
+"model_p": 0.3035,
+"mkt_p": 0.2088,
+"price": 186,
+"book": "Caesars",
+"dec": 2.86,
+"ev": -0.132,
+"fair": 229
+},
+{
+"pid": "00-0037248",
+"name": "James Cook III",
+"team": "BUF",
+"game_id": "2026_08_BAL_BUF",
+"prob": 0.1653,
+"model_p": 0.1653,
+"mkt_p": 0.1412,
+"price": 320,
+"book": "Caesars",
+"dec": 4.2,
+"ev": -0.3057,
+"fair": 505
+}
+],
+"n": 2,
+"prob": 0.05017,
+"fair": 1893,
+"offered": 1101,
+"dec": 12.01,
+"ev": -0.3974,
+"stake": 0.0,
+"hits_every": 20,
+"paper": true
+}
+]
+},
+"value": {
+"flagged": "20261028T0003Z",
+"parlays": [
+{
+"mode": "value",
+"legs": [
+{
+"pid": "00-0036259",
+"name": "Jauan Jennings",
+"team": "MIN",
+"game_id": "2026_08_MIN_DET",
+"prob": 0.0125,
+"model_p": 0.0169,
+"mkt_p": 0.0081,
+"price": 10000,
+"book": "FanDuel",
+"dec": 101.0,
+"ev": 0.2625,
+"fair": 7900
+},
+{
+"pid": "00-0037742",
+"name": "Treylon Burks",
+"team": "WAS",
+"game_id": "2026_08_PHI_WAS",
+"prob": 0.0301,
+"model_p": 0.0442,
+"mkt_p": 0.0159,
+"price": 4000,
+"book": "Caesars",
+"dec": 41.0,
+"ev": 0.2341,
+"fair": 3222
+}
+],
+"n": 2,
+"prob": 0.00038,
+"fair": 265681,
+"offered": 414000,
+"dec": 4141.0,
+"ev": 0.5581,
+"stake": 2e-05,
+"hits_every": 2658,
+"paper": true
+}
+]
+}
+}
