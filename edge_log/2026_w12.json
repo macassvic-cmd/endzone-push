@@ -6033,5 +6033,177 @@
 "ok": true
 }
 ]
+},
+"00-0040563|yds|rec|19.5": {
+"pid": "00-0040563",
+"bet": "Efton Chism III Over 19.5 rec yds (alt)",
+"market": "yds_alt",
+"team": "NE",
+"role": "Bench",
+"kind": "rec",
+"line": 19.5,
+"flagged": "20261128T0416Z",
+"best": 202,
+"book": "DraftKings",
+"med": 202,
+"mkt_p": 0.3255,
+"blend_p": 0.4434,
+"model_p": 0.5613,
+"ev": 0.339,
+"ev_med": 0.339,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.72,
+"bet_down_to": 137,
+"best_venue": {
+"venue": "DraftKings",
+"price": 202,
+"net": 202,
+"size_label": "",
+"captured": "2026-11-28T04:15:46Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 202,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 178,
+"ok": true
+}
+]
+},
+"00-0034975|yds|rush|24.5": {
+"pid": "00-0034975",
+"bet": "Justice Hill Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "BAL",
+"role": "Rotational",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261128T0416Z",
+"best": 293,
+"book": "DraftKings",
+"med": 293,
+"mkt_p": 0.2408,
+"blend_p": 0.3282,
+"model_p": 0.4156,
+"ev": 0.2899,
+"ev_med": 0.2899,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.73,
+"bet_down_to": 220,
+"best_venue": {
+"venue": "DraftKings",
+"price": 293,
+"net": 293,
+"size_label": "",
+"captured": "2026-11-28T04:15:45Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 293,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 290,
+"ok": true
+}
+]
+},
+"00-0037256|yds|rush|24.5": {
+"pid": "00-0037256",
+"bet": "Rachaad White Over 24.5 rush yds (alt)",
+"market": "yds_alt",
+"team": "WAS",
+"role": "Rotational",
+"kind": "rush",
+"line": 24.5,
+"flagged": "20261128T0416Z",
+"best": 229,
+"book": "DraftKings",
+"med": 229,
+"mkt_p": 0.2977,
+"blend_p": 0.3665,
+"model_p": 0.4354,
+"ev": 0.2059,
+"ev_med": 0.2059,
+"rule": "alt rung v2: curve-judged, price < +300, model <= 2x curve",
+"stake": 0.25,
+"ratio": 1.46,
+"bet_down_to": 187,
+"best_venue": {
+"venue": "DraftKings",
+"price": 229,
+"net": 229,
+"size_label": "",
+"captured": "2026-11-28T04:15:44Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": 229,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": 205,
+"ok": true
+}
+]
+},
+"00-0034975|yds|rush|12.5": {
+"pid": "00-0034975",
+"bet": "Justice Hill Over 12.5 rush yds",
+"market": "yds",
+"team": "BAL",
+"role": "Rotational",
+"kind": "rush",
+"line": 12.5,
+"flagged": "20261128T0416Z",
+"best": -112,
+"book": "DraftKings",
+"med": -113,
+"mkt_p": 0.5,
+"blend_p": 0.5678,
+"model_p": 0.6357,
+"ev": 0.0749,
+"ev_med": 0.0704,
+"rule": "main line",
+"stake": 1.0,
+"ratio": 1.27,
+"bet_down_to": -117,
+"best_venue": {
+"venue": "DraftKings",
+"price": -112,
+"net": -112,
+"size_label": "",
+"captured": "2026-11-28T04:15:45Z",
+"fee": "none (vig in the price)",
+"fee_confirmed": true
+},
+"venues": [
+{
+"v": "DraftKings",
+"net": -112,
+"ok": true
+},
+{
+"v": "FanDuel",
+"net": -114,
+"ok": true
+}
+]
 }
 }
